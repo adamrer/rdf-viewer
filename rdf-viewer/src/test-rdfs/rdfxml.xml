@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:ex="http://example.org/">
+  
+  <rdf:Description rdf:about="http://example.org/person1">
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    <foaf:name>John Doe</foaf:name>
+    <foaf:mbox rdf:resource="mailto:john.doe@example.org"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://example.org/person2">
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    <foaf:name>Jane Doe</foaf:name>
+    <foaf:mbox rdf:resource="mailto:jane.doe@example.org"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="http://example.org/organization">
+    <rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
+    <foaf:name>Example Organization</foaf:name>
+    <foaf:member rdf:resource="http://example.org/person1"/>
+    <foaf:member rdf:resource="http://example.org/person2"/>
+  </rdf:Description>
+
+</rdf:RDF>
