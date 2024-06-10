@@ -1,8 +1,21 @@
 {
-  "dependencies": {
-    "@rdfjs/fetch": "^3.1.1",
-    "@rdfjs/namespace": "^2.0.1",
-    "rdf-utils-fs": "^3.0.0"
+  "name": "rdf-viewer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "type": "module"
+  "devDependencies": {
+    "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "n3": "^1.17.3",
+    "rdf-parse": "^2.3.3",
+    "rdflib": "^2.2.35",
+    "readable-web-to-node-stream": "^3.0.2",
+    "web-streams-polyfill": "^4.0.0"
+  }
 }

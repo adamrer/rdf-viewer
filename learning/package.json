@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@rdfjs/fetch": "^3.1.1",
+    "@rdfjs/namespace": "^2.0.1",
+    "rdf-utils-fs": "^3.0.0"
+  },
+  "type": "module"
+}
