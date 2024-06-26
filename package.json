@@ -1,21 +1,20 @@
 {
-  "name": "rdf-viewer",
+  "name": "rdf-viewer-ts",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/n3": "^1.16.4",
+    "typescript": "^5.2.2",
     "vite": "^5.2.0"
   },
   "dependencies": {
-    "n3": "^1.17.3",
-    "rdf-parse": "^2.3.3",
-    "rdflib": "^2.2.35",
-    "readable-web-to-node-stream": "^3.0.2",
-    "web-streams-polyfill": "^4.0.0"
+    "n3": "^1.17.4",
+    "rdf-parse": "^2.3.3"
   }
 }
