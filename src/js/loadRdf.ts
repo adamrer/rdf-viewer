@@ -1,6 +1,4 @@
-import rdfParser from "rdf-parse";
 import N3 from "n3";
-import { Readable } from "readable-stream";
 
 window.onload = function() {
   // example data source
@@ -43,24 +41,7 @@ function getEndpointUrls() : Array<string | null>{
     }
     return endpointUrls;
 }
-function fetchQuadsFromText(text : string | ArrayBuffer | null){
-    const inputStream : Readable = new Readable({
-        read() {
-            this.push(text);
-            this.push(null);
-        }
-    });
-    const quads : Array<N3.Quad> = [];
-    rdfParser.parse(inputStream, { contentType: 'text/turtle' })
-        .on('data', (quad) => {
-            quads.push(quad);
-        })
-        .on('error', (error) => {
-            console.error(error);
-        });
-    
-    return quads;
-}
+
 
 async function getQuadsFile(file : File, target : string | null = null) : Promise<Array<N3.Quad>>{
     const reader = new FileReader();
@@ -79,6 +60,9 @@ async function getQuadsFile(file : File, target : string | null = null) : Promis
                     const resultsDiv : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
                     printQuads(quads, file.name, resultsDiv);
                     console.log("Prefixes:", prefixes);
+                }
+                if (error){
+                    console.log(error.message);
                 }
             }
         );
@@ -121,7 +105,7 @@ async function fetchQuads() {
     //fetch quads from file
     const selectedFiles = Array.prototype.slice.call(getFiles()); // gets Array from ArrayLike
     selectedFiles.forEach(async file => {
-        const quads = await getQuadsFile(file, resourceUri);
+        await getQuadsFile(file, resourceUri);
         //printQuads(quads, file.name, resultsDiv);
 
     })
