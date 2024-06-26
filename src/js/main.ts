@@ -8,7 +8,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 
             <button id="add-data-source-btn" >Add data source</button>
             
-            <input type="file" id="source-input" accept=".ttl,.trig,.nt,.n3,.nq">
+            <input type="file" id="source-input" accept=".ttl,.trig,.nt,.n3,.nq" multiple>
 
 
             <h4>SPARQL endpoint data sources:</h4>
