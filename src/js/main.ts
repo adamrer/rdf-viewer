@@ -24,10 +24,18 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             
             
         </div>
+        
+        <div>
+            <label for="display-input">
+                Choose display:
+                <input type="file" id="display-input" accept=".ts,.js">
+            </label>
+        </div>
 
         <div>
             <button id='fetch-btn' >Fetch Triples</button>
         </div>
+        
     </div>
     <hr>
     <div id="results">

@@ -11,7 +11,8 @@ window.onload = function() {
 };
 function addEventListeners(){
     document.getElementById('add-data-source-btn')!.onclick = addDataSource; //add sparql data source
-    document.getElementById('fetch-btn')!.onclick = fetchQuads; 
+    document.getElementById('fetch-btn')!.onclick = showQuads;
+    
 }
 function addDataSource(){
     const source : HTMLInputElement = document.getElementById('add-data-source-text') as HTMLInputElement;
@@ -31,8 +32,8 @@ function addDataSource(){
     source.value = '';
 
 }
-function getFiles() : ArrayLike<File> {
-    const files : FileList = (document.getElementById('source-input')! as HTMLInputElement).files!;
+function getDataSourceFiles() : ArrayLike<File> {
+    const files : FileList = (document.getElementById('source-input') as HTMLInputElement).files!;
     return Array.from(files);
 
 }
@@ -97,7 +98,7 @@ async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, resultsD
     });
     resultsDiv.appendChild(list);
 }
-async function fetchQuads() {
+async function showQuads() {
     const endpointUrls = getEndpointUrls();
     const resourceUri = (document.getElementById('target-resource')! as HTMLInputElement).value;
    
@@ -109,15 +110,27 @@ async function fetchQuads() {
     resultsDiv.appendChild(resultTitle);
     resultTitle.textContent = `Results for ${resourceUri}`
     
+    // get display
+    const displayFile:File = (document.getElementById('display-input') as HTMLInputElement).files![0]
+    let printQuadsFunction = printQuads;
+    if (displayFile !== undefined){
+        const fileContent = await displayFile.text();
+        const blob = new Blob([fileContent], { type: "application/javascript" });
+        const blobURL = URL.createObjectURL(blob)
+        const displayModule = await import(blobURL)
+        printQuadsFunction = displayModule.printQuads;
+    }
+
+
     //fetch quads from files
-    const selectedFiles = Array.prototype.slice.call(getFiles()); // gets Array from ArrayLike
+    const selectedFiles = Array.prototype.slice.call(getDataSourceFiles()); // gets Array from ArrayLike
     selectedFiles.forEach(async file => {
         const quads = await getQuadsFile(file, resourceUri);
         const titleQuad = getTitleFrom(quads);
         if (titleQuad){
             resultTitle.textContent = `Results for ${titleQuad}`;
         }
-        printQuads(quads, file.name, resultsDiv);
+        printQuadsFunction(quads, file.name, resultsDiv);
         
         if (quads.length === 0) {
             resultsDiv.innerHTML += '<p>No results</p>';
@@ -134,7 +147,7 @@ async function fetchQuads() {
             if (titleQuad){
                 resultTitle.textContent = `Results for ${titleQuad}`;
             }
-            printQuads(quads, endpointUrl, resultsDiv);
+            printQuadsFunction(quads, endpointUrl, resultsDiv);
             if (quads.length === 0) {
                 resultsDiv.innerHTML += '<p>No results</p>';
             }
@@ -146,7 +159,7 @@ async function fetchQuads() {
 }
 async function getQuadsSparql(endpointUrl : string | null, target : string) : Promise<Array<N3.Quad> | null>{
     const query = `
-    SELECT ?predicate ?object
+    SELECT ?subject ?predicate ?object
     WHERE {
         <${target}> ?predicate ?object .
     }
