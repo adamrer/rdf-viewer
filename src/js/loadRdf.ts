@@ -159,7 +159,7 @@ async function showQuads() {
 }
 async function getQuadsSparql(endpointUrl : string | null, target : string) : Promise<Array<N3.Quad> | null>{
     const query = `
-    SELECT ?subject ?predicate ?object
+    SELECT ?predicate ?object
     WHERE {
         <${target}> ?predicate ?object .
     }
