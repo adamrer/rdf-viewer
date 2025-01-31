@@ -117,7 +117,7 @@ async function showQuads() {
         const fileContent = await displayFile.text();
         const blob = new Blob([fileContent], { type: "application/javascript" });
         const blobURL = URL.createObjectURL(blob)
-        const displayModule = await import(blobURL)
+        const displayModule = /* @vite-ignore */ await import(blobURL)
         printQuadsFunction = displayModule.printQuads;
     }
 
@@ -158,10 +158,12 @@ async function showQuads() {
     });
 }
 async function getQuadsSparql(endpointUrl : string | null, target : string) : Promise<Array<N3.Quad> | null>{
+    const escaped_target = decodeURIComponent(JSON.parse('"' + target.replace(/\"/g, '\\"' + '"') + '"'))
+    console.log(escaped_target)
     const query = `
     SELECT ?predicate ?object
     WHERE {
-        <${target}> ?predicate ?object .
+        <${escaped_target}> ?predicate ?object .
     }
 `;
     const queryUrl = `${endpointUrl}?query=${encodeURIComponent(query)}`;
