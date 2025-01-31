@@ -158,12 +158,12 @@ async function showQuads() {
     });
 }
 async function getQuadsSparql(endpointUrl : string | null, target : string) : Promise<Array<N3.Quad> | null>{
-    const escaped_target = decodeURIComponent(JSON.parse('"' + target.replace(/\"/g, '\\"' + '"') + '"'))
-    console.log(escaped_target)
+    const decoded_target = decodeURIComponent(JSON.parse('"' + target.replace(/\"/g, '\\"' + '"') + '"'))
+    console.log(decoded_target)
     const query = `
     SELECT ?predicate ?object
     WHERE {
-        <${escaped_target}> ?predicate ?object .
+        <${decoded_target}> ?predicate ?object .
     }
 `;
     const queryUrl = `${endpointUrl}?query=${encodeURIComponent(query)}`;
