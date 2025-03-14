@@ -9,12 +9,13 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/n3": "^1.16.4",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0"
+    "vite": "^6.2.2"
   },
   "dependencies": {
-    "n3": "^1.17.4",
+    "@types/n3": "^1.24.1",
+    "express": "^4.21.2",
+    "n3": "^1.24.0",
     "rdf-parse": "^2.3.3"
   }
 }

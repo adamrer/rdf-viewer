@@ -1,10 +1,12 @@
 import N3 from "n3";
 
+const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
+
 
 export interface DataSource {
     endpointUrl?: URL
     file?: File
-    fetchQuads(entityIri: string): Promise<FetchedQuads | null>
+    fetchQuads(entityIri: string, predicates: Array<string>|null): Promise<FetchedQuads | null>
 }
 
 export interface FetchedQuads{
@@ -20,14 +22,33 @@ export class SparqlDataSource implements DataSource {
         this.endpointUrl = endpointUrl
     }
 
-    async fetchQuads(entityIri: string): Promise<FetchedQuads | null> {
+    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
         const decoded_target = decodeURIComponent(JSON.parse('"' + entityIri.replace(/\"/g, '\\"' + '"') + '"'))
-        const query = `
+        let whereClause = `<${decoded_target}> ?predicate ?object .`
+        
+        if (predicates){
+            whereClause = ''
+            predicates.forEach(predicate => {
+                whereClause+=`<${decoded_target}> <${predicate}> ?object . \n`
+            });
+        }
+        
+        const query: string = 
+        predicates === null ? 
+        `
         SELECT ?predicate ?object
         WHERE {
-            <${decoded_target}> ?predicate ?object .
+            ${whereClause}
         }
-    `;
+        ` : 
+        `
+        SELECT ?object
+        WHERE {
+            ${whereClause}
+        }
+        `
+        
+        // console.log(query)
         const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query)}`;
         
         try {
@@ -44,7 +65,6 @@ export class SparqlDataSource implements DataSource {
     
             const json = await response.json();
             const quads = json.results.bindings;
-    
             return { dataSourceTitle: this.endpointUrl.toString(), quads: quads};
             
         } catch (error : any) {
@@ -62,7 +82,7 @@ export class FileDataSource implements DataSource {
         this.file = file
     }
 
-    async fetchQuads(entityIri: string): Promise<FetchedQuads | null> {
+    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
         const reader = new FileReader();
         reader.onerror = () => {
             console.error("Error reading file:", reader.error);
@@ -74,7 +94,8 @@ export class FileDataSource implements DataSource {
         parser.parse(await this.file.text(), 
             (error, quad) => {
                 if (quad){
-                    if (entityIri === null || (entityIri === quad.subject.value)){
+                    if (entityIri === null || (predicates === null && entityIri === quad.subject.value) 
+                        || (predicates !== null && entityIri === quad.subject.value && predicates.includes(quad.predicate.value))){
                         quads.push(quad);
                     }
                 } 
@@ -99,9 +120,28 @@ export interface QuadsFetcher {
 }
 
 export class Fetcher implements QuadsFetcher {
-    async fetchQuads(request: QuadsRequest): Promise<(FetchedQuads | null)[]> {
-        const promises = request.dataSources.map(ds => ds.fetchQuads(request.entityIri))
+    async fetchQuads(request: QuadsRequest, predicates: Array<string>|null = null): Promise<(FetchedQuads | null)[]> {
+        const promises = request.dataSources.map(ds => ds.fetchQuads(request.entityIri, predicates))
         return Promise.all(promises)
+    }
+    async getTitle(request: QuadsRequest): Promise<string> {
+        
+        const predicateTitleQuads = await this.fetchQuads(request, [titlePredicates[0]]);
+        let title: string | undefined = ''
+        if (predicateTitleQuads === null || predicateTitleQuads.length === 0){
+            title = request.entityIri;
+        }
+        else {
+            predicateTitleQuads.forEach(quads => {
+                if (quads?.quads.length !== 0){
+                    title = quads?.quads[0].object.value
+                }
+            });
+            if (title === undefined || title === ''){
+                title = request.entityIri
+            }
+        }
+        return title
     }
 }
 

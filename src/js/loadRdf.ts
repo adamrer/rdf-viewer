@@ -1,8 +1,6 @@
 import N3 from "n3";
 import {DataSource, SparqlDataSource, FileDataSource, QuadsRequest, Fetcher, FetchedQuads } from './interfaces/fetchQuads'
 
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
-
 
 window.onload = function() {
     addEventListeners();
@@ -47,6 +45,8 @@ function addDataSource(): void {
     source.value = '';
 
 }
+
+
 function getDataSourceFiles() : Array<File> {
     const files : FileList = (document.getElementById('source-input') as HTMLInputElement).files!;
     return Array.from(files);
@@ -62,32 +62,7 @@ function getEndpointUrls() : Array<string>{
 }
 
 
-async function getQuadsFile(file : File, target : string | null = null) : Promise<Array<N3.Quad>>{
-    const reader = new FileReader();
-    reader.onerror = () => {
-        console.error("Error reading file:", reader.error);
-    };
-    
-    const quads : Array<N3.Quad> = [];
-
-    const parser = new N3.Parser();
-    parser.parse(await file.text(), 
-        (error, quad) => {
-            if (quad){
-                if (target === null || (target === quad.subject.value)){
-                    quads.push(quad);
-                }
-            } 
-            if (error){
-                console.log(error.message);
-            }
-        }
-    );
-
-    return quads;
-
-}
-async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, resultsDiv : HTMLDivElement): Promise<void> {
+async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, fetcher: Fetcher, resultsDiv : HTMLDivElement): Promise<void> {
     const endpointTitle = document.createElement("h3");
     endpointTitle.textContent = endpointUrl;
 
@@ -97,18 +72,21 @@ async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, resultsD
     quads.forEach(async (quad) => {
         // const subject = resourceUrl;
         const predicate = quad.predicate.value;
-        let predicateTitle = await getTitleFor(predicate, endpointUrl); //TODO: use getQuadsFile aswell somehow
-        if (predicateTitle === null || predicateTitle === undefined){
-            predicateTitle = predicate;
-        }
+        const request = createQuadsRequest()
+        request.entityIri = predicate
+        const predicateTitle = await fetcher.getTitle(request)
+
         const object = quad.object.value;
-        let objectTitle : string | null | undefined = null;
-        if (object.startsWith('http'))//TODO: can't use termType (don't know why), don't use startsWith
-            objectTitle = await getTitleFor(object, endpointUrl);
+        let objectTitle = object
         
-        if (objectTitle === null || objectTitle === undefined)
-            objectTitle = object;
-        const QuadListItem = `<li><strong>Predicate:</strong> ${predicateTitle} <strong>Object:</strong> ${objectTitle}</li>`;
+        let objectHTML = object
+        if (quad.object.termType !== 'Literal' && quad.object.type !== 'literal'){
+            request.entityIri = object
+            objectTitle = await fetcher.getTitle(request)
+            objectHTML = `<a href=${object}>${objectTitle}</a>`
+        }
+
+        const QuadListItem = `<li><strong>Predicate:</strong> ${predicateTitle} <strong>Object:</strong> ${objectHTML}</li>`;
         list.innerHTML += QuadListItem;
     });
     resultsDiv.appendChild(list);
@@ -132,79 +110,14 @@ async function showQuads(): Promise<void> {
         const fileContent = await displayFile.text();
         const blob = new Blob([fileContent], { type: "application/javascript" });
         const blobURL = URL.createObjectURL(blob)
-        const displayModule = /* @vite-ignore */ await import(blobURL)
+        const displayModule = await import(blobURL)
         printQuadsFunction = displayModule.printQuads;
     }
 
     const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(request)
-
     quadsBySource.forEach(quads => {
-        printQuadsFunction(quads!.quads, quads!.dataSourceTitle, resultsDiv)
+        printQuadsFunction(quads!.quads, quads!.dataSourceTitle, fetcher, resultsDiv)
     });
 }
-async function getQuadsSparql(endpointUrl : string | null, target : string) : Promise<Array<N3.Quad> | null>{
-    const decoded_target = decodeURIComponent(JSON.parse('"' + target.replace(/\"/g, '\\"' + '"') + '"'))
-    const query = `
-    SELECT ?predicate ?object
-    WHERE {
-        <${decoded_target}> ?predicate ?object .
-    }
-`;
-    const queryUrl = `${endpointUrl}?query=${encodeURIComponent(query)}`;
-    
-    try {
-        const response = await fetch(queryUrl, {
-            headers: {
-                // json will have the result in .results.bindings
-                'Accept': 'application/sparql-results+json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
-        const json = await response.json();
-        const quads = json.results.bindings;
 
-        return quads;
-        
-    } catch (error : any) {
-        console.error('Error fetching data:', error);
-        document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;
-        return null;
-    }
-}
-function getTitleFrom(quads : Array<N3.Quad>) : string | null{
-
-    const titleQuad = quads.find(quad => titlePredicates.includes(quad.predicate.value))
-    if (titleQuad){
-        return titleQuad.object.value;
-    }
-    else{
-        return null;
-    }
-}
-async function getTitleFor(subject : string, sparqlEndpointUrl : string | null = null, file : File | null = null) : Promise<string|null|undefined>{
-    let quads : Array<N3.Quad> | null = [];
-    if (sparqlEndpointUrl){
-        quads = await getQuadsSparql(sparqlEndpointUrl, subject);
-    }
-    else if (file){
-        quads = await getQuadsFile(file, subject);
-    }
-    else{
-        return null;
-    }
-    
-    let titleQuad : N3.Quad | undefined = undefined;
-    if (quads){
-        titleQuad = quads.find(quad => titlePredicates.includes(quad.predicate.value))
-        if (titleQuad !== undefined){
-            return titleQuad.object.value;
-        }
-        else{
-            return null;
-        }
-    }
-}
