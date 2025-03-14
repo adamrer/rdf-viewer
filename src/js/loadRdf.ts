@@ -80,7 +80,7 @@ async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, fetcher:
         let objectTitle = object
         
         let objectHTML = object
-        if (quad.object.termType !== 'Literal' && quad.object.type !== 'literal'){
+        if (quad.object.termType !== 'Literal'){
             request.entityIri = object
             objectTitle = await fetcher.getTitle(request)
             objectHTML = `<a href=${object}>${objectTitle}</a>`

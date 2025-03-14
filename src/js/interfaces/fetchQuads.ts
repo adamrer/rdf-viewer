@@ -48,7 +48,6 @@ export class SparqlDataSource implements DataSource {
         }
         `
         
-        // console.log(query)
         const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query)}`;
         
         try {
