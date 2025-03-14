@@ -23,7 +23,7 @@ export class SparqlDataSource implements DataSource {
     }
 
     async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
-        const decoded_target = decodeURIComponent(JSON.parse('"' + entityIri.replace(/\"/g, '\\"' + '"') + '"'))
+        const decoded_target = decodeURIComponent(entityIri)
         let whereClause = `<${decoded_target}> ?predicate ?object .`
         
         if (predicates){
@@ -64,9 +64,25 @@ export class SparqlDataSource implements DataSource {
             }
     
             const json = await response.json();
-            const quads = json.results.bindings;
-            return { dataSourceTitle: this.endpointUrl.toString(), quads: quads};
-            
+            const jsonQuads = json.results.bindings;
+
+            const quads = jsonQuads.map((
+                quad: { 
+                    predicate: {
+                    type: string; value: string; 
+                }; object: {
+                    type: string; value: string; 
+                }; }) => {
+                    if (predicates){
+                        quad.predicate = {type: 'namedNode', value: predicates[0]}
+                    }   
+                    const predicate = N3.DataFactory.namedNode(quad.predicate.value)
+                    const object    = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                    return N3.DataFactory.quad(N3.DataFactory.namedNode(entityIri), predicate, object)
+            }
+            )
+            return { dataSourceTitle: this.endpointUrl.toString(), 
+                quads: quads}
         } catch (error : any) {
             console.error('Error fetching data:', error);
             document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;

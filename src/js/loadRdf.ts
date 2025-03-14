@@ -101,7 +101,7 @@ async function showQuads(): Promise<void> {
     resultsDiv.innerHTML = ``;
     const resultTitle = document.createElement('h2');
     resultsDiv.appendChild(resultTitle);
-    resultTitle.textContent = `Results for ${request.entityIri}`
+    resultTitle.textContent = `Results for ${await fetcher.getTitle(request)}`
     
     // get display
     const displayFile:File = (document.getElementById('display-input') as HTMLInputElement).files![0]
