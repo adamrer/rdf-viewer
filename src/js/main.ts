@@ -3,8 +3,7 @@ import {DataSource,
     FileDataSource, 
     Fetcher, 
     FetchedQuads } from './fetchQuads'
-import {DisplayPlugin, 
-    DisplayPluginModule, 
+import {DisplayPluginModule, 
     loadDefaultPlugins } from './plugin'
 
 window.onload = function() {
@@ -101,6 +100,7 @@ async function printQuads(quadsBySource : Array<FetchedQuads|null>, fetcher: Fet
     });
 }
 async function showQuads(): Promise<void> {
+    console.log("Selected plugin: "+localStorage.getItem("selectedPlugin"))
     const entityIri = getEntityIri()
     const fetcher: Fetcher = new Fetcher(getDataSources())
 
