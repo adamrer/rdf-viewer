@@ -2,16 +2,18 @@ import N3 from "n3";
 import {DataSource, 
     SparqlDataSource, 
     FileDataSource, 
-    QuadsRequest, 
     Fetcher, 
     FetchedQuads } from './fetchQuads'
-
+import {DisplayPlugin, 
+    DisplayPluginModule, 
+    loadDefaultPlugins } from './plugin'
 
 window.onload = function() {
     addEventListeners();
     // example data source
     (document.getElementById('add-data-source-text')! as HTMLInputElement).value = 'https://data.gov.cz/sparql';
     addDataSource();
+    loadDefaultPlugins();
 };
 function addEventListeners(): void {
     document.getElementById('add-data-source-btn')!.onclick = addDataSource; //add sparql data source
@@ -19,16 +21,18 @@ function addEventListeners(): void {
     
 }
 
-function createQuadsRequest(): QuadsRequest {
+function getDataSources(): Array<DataSource> {
     const endpointUrls = getEndpointUrls()
     const dataSources: Array<DataSource> = endpointUrls.map(url => new SparqlDataSource(new URL(url)))
     const dataSourceFiles = getDataSourceFiles()
     dataSources.push(...dataSourceFiles.map(file => new FileDataSource(file)))
 
-    const entityIri = (document.getElementById('target-resource')! as HTMLInputElement).value
+    return dataSources
 
-    return {entityIri: entityIri, dataSources: dataSources}
+}
 
+function getEntityIri(): string {
+    return (document.getElementById('target-resource')! as HTMLInputElement).value
 }
 
 
@@ -67,62 +71,50 @@ function getEndpointUrls() : Array<string>{
 }
 
 
-async function printQuads(quads : Array<N3.Quad>, endpointUrl : string, fetcher: Fetcher, resultsDiv : HTMLDivElement): Promise<void> {
-    const endpointTitle = document.createElement("h3");
-    endpointTitle.textContent = endpointUrl;
-
-    resultsDiv.appendChild(endpointTitle);
-
-    const list = document.createElement("ul");
-    quads.forEach(async (quad) => {
-        // const subject = resourceUrl;
-        const predicate = quad.predicate.value;
-        const request = createQuadsRequest()
-        request.entityIri = predicate
-        const predicateTitle = await fetcher.getTitle(request)
-
-        const object = quad.object.value;
-        let objectTitle = object
+async function printQuads(quadsBySource : Array<FetchedQuads>, fetcher: Fetcher, resultsDiv : HTMLDivElement): Promise<void> {
+    quadsBySource.forEach(fetchedQuads => {
         
-        let objectHTML = object
-        if (quad.object.termType !== 'Literal'){
-            request.entityIri = object
-            objectTitle = await fetcher.getTitle(request)
-            objectHTML = `<a href=${object}>${objectTitle}</a>`
-        }
+        const endpointTitle = document.createElement("h3");
+        endpointTitle.textContent = fetchedQuads.dataSourceTitle;
+        
+        resultsDiv.appendChild(endpointTitle);
+        
+        const list = document.createElement("ul");
+        fetchedQuads.quads.forEach(async (quad) => {
+            // const subject = resourceUrl;
+            const entityIri = getEntityIri()
+            
+            const predicateTitle = await fetcher.getTitle(entityIri)
+            
+            const object = quad.object.value;
+            let objectTitle = object
+            
+            let objectHTML = object
+            if (quad.object.termType !== 'Literal'){
+                objectTitle = await fetcher.getTitle(object)
+                objectHTML = `<a href=${object}>${objectTitle}</a>`
+            }
 
-        const QuadListItem = `<li><strong>Predicate:</strong> ${predicateTitle} <strong>Object:</strong> ${objectHTML}</li>`;
-        list.innerHTML += QuadListItem;
+            const QuadListItem = `<li><strong>Predicate:</strong> ${predicateTitle} <strong>Object:</strong> ${objectHTML}</li>`;
+            list.innerHTML += QuadListItem;
+            resultsDiv.appendChild(list);
+        });
     });
-    resultsDiv.appendChild(list);
 }
 async function showQuads(): Promise<void> {
-    const request = createQuadsRequest()
-    const fetcher: Fetcher = new Fetcher()
+    const entityIri = getEntityIri()
+    const fetcher: Fetcher = new Fetcher(getDataSources())
 
     const resultsDiv : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
 
     // Clear previous results
     resultsDiv.innerHTML = ``;
-    const resultTitle = document.createElement('h2');
-    resultsDiv.appendChild(resultTitle);
-    resultTitle.textContent = `Results for ${await fetcher.getTitle(request)}`
     
     // get display
-    const displayFile:File = (document.getElementById('display-input') as HTMLInputElement).files![0]
-    let printQuadsFunction = printQuads;
-    if (displayFile !== undefined){
-        const fileContent = await displayFile.text();
-        const blob = new Blob([fileContent], { type: "application/javascript" });
-        const blobURL = URL.createObjectURL(blob)
-        const displayModule = await import(blobURL)
-        printQuadsFunction = displayModule.printQuads;
-    }
+    const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
 
-    const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(request)
-    quadsBySource.forEach(quads => {
-        printQuadsFunction(quads!.quads, quads!.dataSourceTitle, fetcher, resultsDiv)
-    });
+    const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(entityIri)
+    displayModule.printQuads(quadsBySource, fetcher, resultsDiv)
 }
 
 

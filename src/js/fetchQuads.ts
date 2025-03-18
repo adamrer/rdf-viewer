@@ -124,27 +124,31 @@ export class FileDataSource implements DataSource {
     }
 }
 
-export interface QuadsRequest {
-    entityIri: string
-    dataSources: Array<DataSource>
-}
+
 
 
 export interface QuadsFetcher {
-    fetchQuads(request: QuadsRequest): Promise<(FetchedQuads | null)[]>
+    dataSources: Array<DataSource>
+    fetchQuads(entityIri: string): Promise<(FetchedQuads | null)[]>
 }
 
 export class Fetcher implements QuadsFetcher {
-    async fetchQuads(request: QuadsRequest, predicates: Array<string>|null = null): Promise<(FetchedQuads | null)[]> {
-        const promises = request.dataSources.map(ds => ds.fetchQuads(request.entityIri, predicates))
+    dataSources: Array<DataSource>
+
+    constructor(dataSources: Array<DataSource>){
+        this.dataSources = dataSources
+    }
+
+    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<(FetchedQuads | null)[]> {
+        const promises = this.dataSources.map(ds => ds.fetchQuads(entityIri, predicates))
         return Promise.all(promises)
     }
-    async getTitle(request: QuadsRequest): Promise<string> {
+    async getTitle(entityIri: string): Promise<string> {
         
-        const predicateTitleQuads = await this.fetchQuads(request, [titlePredicates[0]]);
+        const predicateTitleQuads = await this.fetchQuads(entityIri, [titlePredicates[0]]);
         let title: string | undefined = ''
         if (predicateTitleQuads === null || predicateTitleQuads.length === 0){
-            title = request.entityIri;
+            title = entityIri;
         }
         else {
             predicateTitleQuads.forEach(quads => {
@@ -153,7 +157,7 @@ export class Fetcher implements QuadsFetcher {
                 }
             });
             if (title === undefined || title === ''){
-                title = request.entityIri
+                title = entityIri
             }
         }
         return title
@@ -161,15 +165,3 @@ export class Fetcher implements QuadsFetcher {
 }
 
 
-// -----------
-
-export interface DisplayPlugin {
-    url: URL
-    forClass: string
-    name: string
-}
-
-
-export interface QuadsDisplayer {
-    display(quads: Array<N3.Quad>, plugin: DisplayPlugin, element: HTMLElement): void
-}
