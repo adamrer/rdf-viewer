@@ -48,12 +48,10 @@ function createPluginMenu(): void {
         radio.id = pluginUrl;
         radio.value = pluginUrl;
     
-        // Předvybrání uloženého pluginu
         if (localStorage.getItem("selectedPlugin") === pluginUrl) {
             radio.checked = true;
         }
     
-        // Přidáme onchange event
         radio.addEventListener("change", () => {
             console.log(`Plugin změněn na: ${plugin.name}`);
             localStorage.setItem("selectedPlugin", pluginUrl);
@@ -63,10 +61,9 @@ function createPluginMenu(): void {
         label.htmlFor = pluginUrl;
         label.textContent = plugin.name;
     
-        // Připojíme tlačítko a popisek do pluginDiv
         pluginDiv?.appendChild(radio);
         pluginDiv?.appendChild(label);
-        pluginDiv?.appendChild(document.createElement("br")); // nový řádek
+        pluginDiv?.appendChild(document.createElement("br")); 
     });
 
 }
