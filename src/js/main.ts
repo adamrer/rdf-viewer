@@ -1,4 +1,3 @@
-import N3 from "n3";
 import {DataSource, 
     SparqlDataSource, 
     FileDataSource, 
@@ -71,16 +70,16 @@ function getEndpointUrls() : Array<string>{
 }
 
 
-async function printQuads(quadsBySource : Array<FetchedQuads>, fetcher: Fetcher, resultsDiv : HTMLDivElement): Promise<void> {
+async function printQuads(quadsBySource : Array<FetchedQuads|null>, fetcher: Fetcher, resultsDiv : HTMLDivElement): Promise<void> {
     quadsBySource.forEach(fetchedQuads => {
         
         const endpointTitle = document.createElement("h3");
-        endpointTitle.textContent = fetchedQuads.dataSourceTitle;
+        endpointTitle.textContent = fetchedQuads!.dataSourceTitle;
         
         resultsDiv.appendChild(endpointTitle);
         
         const list = document.createElement("ul");
-        fetchedQuads.quads.forEach(async (quad) => {
+        fetchedQuads?.quads.forEach(async (quad) => {
             // const subject = resourceUrl;
             const entityIri = getEntityIri()
             
@@ -114,7 +113,12 @@ async function showQuads(): Promise<void> {
     const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
 
     const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(entityIri)
-    displayModule.printQuads(quadsBySource, fetcher, resultsDiv)
+    if (displayModule !== undefined){
+        displayModule.printQuads(quadsBySource, fetcher, resultsDiv)
+    }
+    else{
+        printQuads(quadsBySource, fetcher, resultsDiv)
+    }
 }
 
 
