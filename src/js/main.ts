@@ -113,10 +113,7 @@ async function printQuads(quadsBySource : Array<FetchedQuads|null>, fetcher: Fet
         
         const list = document.createElement("ul");
         fetchedQuads?.quads.forEach(async (quad) => {
-            // const subject = resourceUrl;
-            const entityIri = getEntityIri()
-            
-            const predicateTitle = await fetcher.getTitle(entityIri)
+            const predicateTitle = await fetcher.getTitle(quad.predicate.value)
             
             const object = quad.object.value;
             let objectTitle = object
