@@ -3,7 +3,7 @@ import {DataSource,
     FileDataSource, 
     Fetcher, 
     FetchedQuads } from './fetchQuads'
-import {DisplayPluginModule, 
+import {DisplayPlugin, DisplayPluginModule, 
     loadDefaultPlugins } from './plugin'
 
 window.onload = function() {
@@ -12,6 +12,7 @@ window.onload = function() {
     (document.getElementById('add-data-source-text')! as HTMLInputElement).value = 'https://data.gov.cz/sparql';
     addDataSource();
     loadDefaultPlugins();
+    createPluginMenu();
 };
 function addEventListeners(): void {
     document.getElementById('add-data-source-btn')!.onclick = addDataSource; //add sparql data source
@@ -33,6 +34,42 @@ function getEntityIri(): string {
     return (document.getElementById('target-resource')! as HTMLInputElement).value
 }
 
+
+
+function createPluginMenu(): void {
+    const pluginDiv = document.getElementById('plugins')
+    const plugins: Array<DisplayPlugin> = JSON.parse(localStorage.getItem("plugins")!)
+
+    plugins.forEach(plugin => {
+        const pluginUrl = plugin.url.toString()
+        const radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = "plugin";
+        radio.id = pluginUrl;
+        radio.value = pluginUrl;
+    
+        // Předvybrání uloženého pluginu
+        if (localStorage.getItem("selectedPlugin") === pluginUrl) {
+            radio.checked = true;
+        }
+    
+        // Přidáme onchange event
+        radio.addEventListener("change", () => {
+            console.log(`Plugin změněn na: ${plugin.name}`);
+            localStorage.setItem("selectedPlugin", pluginUrl);
+        });
+    
+        const label = document.createElement("label");
+        label.htmlFor = pluginUrl;
+        label.textContent = plugin.name;
+    
+        // Připojíme tlačítko a popisek do pluginDiv
+        pluginDiv?.appendChild(radio);
+        pluginDiv?.appendChild(label);
+        pluginDiv?.appendChild(document.createElement("br")); // nový řádek
+    });
+
+}
 
 function addDataSource(): void {
     const source : HTMLInputElement = document.getElementById('add-data-source-text') as HTMLInputElement;
@@ -109,16 +146,17 @@ async function showQuads(): Promise<void> {
     // Clear previous results
     resultsDiv.innerHTML = ``;
     
-    // get display
-    const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
-
     const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(entityIri)
-    if (displayModule !== undefined){
+    // get display
+    try{
+        const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
         displayModule.printQuads(quadsBySource, fetcher, resultsDiv)
+
     }
-    else{
+    catch{
         printQuads(quadsBySource, fetcher, resultsDiv)
     }
+
 }
 
 
