@@ -37,6 +37,9 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+        run: cd plugin-server
+        run: npm ci
+        run: cd ..
       - name: Run plugin server
         run: node plugin-server/server.js
       - name: Build
