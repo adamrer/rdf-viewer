@@ -25,8 +25,13 @@ export class SparqlQueryBuilder implements QueryBuilder{
         this.subject_ = iri
         return this
     }
-    predicate(iri: string): QueryBuilder{
-        this.predicates_.push(iri)
+    predicate(iri: string|string[]): QueryBuilder{
+        if (typeof iri === "string"){
+            this.predicates_.push(iri)
+        }
+        else{
+            this.predicates_.push(...iri)
+        }
         return this
     }
     lang(languageTag: string): QueryBuilder{
@@ -47,20 +52,20 @@ export class SparqlQueryBuilder implements QueryBuilder{
     }
 
     build(): Query {
-        const s = this.subject_ === null ? "?s" : `<${decodeURIComponent(this.subject_)}>`
+        const s = this.subject_ === null ? "?subject" : `<${decodeURIComponent(this.subject_)}>`
         
         this.predicates_.map(pred => decodeURIComponent(pred))
-        const p = this.predicates_.length === 0 ? "?p" : `<${this.predicates_.join('>|<')}>`
+        const p = this.predicates_.length === 0 ? "?predicate" : `<${this.predicates_.join('>|<')}>`
 
         let filterString = ""
         if (this.withoutLangTag_ || this.langs_.length !== 0){
-            filterString = `FILTER ( ISIRI(?o) `
+            filterString = `FILTER ( ISIRI(?object) `
             if (this.withoutLangTag_){
-                filterString += "|| (!(langMatches(lang(?o),\"*\")))"
+                filterString += "|| (!(langMatches(lang(?object),\"*\")))"
             }
             if (this.langs_.length !== 0){
                 this.langs_.forEach(languageTag => {
-                    filterString += `|| (lang(?o) = \"${languageTag}\") `
+                    filterString += `|| (lang(?object) = \"${languageTag}\") `
                     
                 });
             }
@@ -72,7 +77,7 @@ export class SparqlQueryBuilder implements QueryBuilder{
 
         const query: string = `SELECT * 
 WHERE {
-    ${s} ${p} ?o .
+    ${s} ${p} ?object .
     ${filterString}
 }
 ${offsetString}
