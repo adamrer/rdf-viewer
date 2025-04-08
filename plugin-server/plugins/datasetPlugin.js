@@ -18,19 +18,19 @@ export async function printQuads(quadsBySource, fetcher, resultsDiv) {
 
     const descriptionListEl = document.createElement("dl")
     
-    addDescription(descriptionEl, "Téma", await fetcher.getTitle(getObjectFromQuads(quadsBySource, "https://www.w3.org/ns/dcat#theme")))
+    addDescription(descriptionListEl, "Téma", await fetcher.getTitle(getObjectFromQuads(quadsBySource, "https://www.w3.org/ns/dcat#theme")))
     
-    addDescription(descriptionEl, "Dokumentace", getObjectFromQuads(quadsBySource, "http://xmlns.com/foaf/0.1/page"))
+    addDescription(descriptionListEl, "Dokumentace", getObjectFromQuads(quadsBySource, "http://xmlns.com/foaf/0.1/page"))
     
     const periodicityQuads = await fetcher.fetchQuads(getObjectFromQuads(quadsBySource, dcterms + "accrualPeriodicity"))
-    addDescription(descriptionEl, "Periodicita aktualizace", getObjectFromQuads(periodicityQuads, "http://www.w3.org/2004/02/skos/core#prefLabel"))
+    addDescription(descriptionListEl, "Periodicita aktualizace", getObjectFromQuads(periodicityQuads, "http://www.w3.org/2004/02/skos/core#prefLabel"))
     
-    addDescription(descriptionEl, "Související geografické území", getObjectFromQuads(quadsBySource, dcterms + "spatial"))
+    addDescription(descriptionListEl, "Související geografické území", getObjectFromQuads(quadsBySource, dcterms + "spatial"))
     
     const contactPointQuads = await fetcher.fetchQuads(getObjectFromQuads(quadsBySource, dcat + "contactPoint"))
-    addDescription(descriptionEl, "Kontaktní bod", getObjectFromQuads(contactPointQuads, "http://www.w3.org/2006/vcard/ns#fn" ))
+    addDescription(descriptionListEl, "Kontaktní bod", getObjectFromQuads(contactPointQuads, "http://www.w3.org/2006/vcard/ns#fn" ))
     
-    resultsDiv.appendChild(descriptionEl)
+    resultsDiv.appendChild(descriptionListEl)
 
 
 }
