@@ -1,11 +1,10 @@
 import N3 from "n3";
+import { SparqlQueryBuilder } from "./QueryBuilder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
 
 
 export interface DataSource {
-    endpointUrl?: URL
-    file?: File
     fetchQuads(entityIri: string, predicates: Array<string>|null): Promise<FetchedQuads | null>
 }
 
@@ -23,31 +22,13 @@ export class SparqlDataSource implements DataSource {
     }
 
     async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
-        const decoded_target = decodeURIComponent(entityIri)
-        let whereClause = `<${decoded_target}> ?predicate ?object .`
-        
-        if (predicates){
-            whereClause = ''
-            predicates.forEach(predicate => {
-                whereClause+=`<${decoded_target}> <${predicate}> ?object . \n`
-            });
+
+        const builder = new SparqlQueryBuilder()
+        builder.subject(entityIri)
+        if (predicates !== null){
+            builder.predicate(predicates)
         }
-        
-        const query: string = 
-        predicates === null ? 
-        `
-        SELECT ?predicate ?object
-        WHERE {
-            ${whereClause}
-        }
-        ` : 
-        `
-        SELECT ?object
-        WHERE {
-            ${whereClause}
-        }
-        `
-        
+        const query = builder.build().str()
         const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query)}`;
         
         try {
