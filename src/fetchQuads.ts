@@ -1,5 +1,5 @@
 import N3 from "n3";
-import { SparqlQueryBuilder } from "./QueryBuilder";
+import { SparqlQueryBuilder } from "./queryBuilder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
 

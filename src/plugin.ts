@@ -8,7 +8,7 @@ export interface DisplayPlugin {
 }
 
 export interface DisplayPluginModule {
-    printQuads(quads: Array<FetchedQuads|null>, fetcher: Fetcher, resultsDiv: HTMLElement): Promise<void>
+    displayQuads(quads: Array<FetchedQuads|null>, fetcher: Fetcher, resultsDiv: HTMLElement): Promise<void>
 }
 
 export interface QuadsDisplayer {

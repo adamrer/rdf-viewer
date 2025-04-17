@@ -1,4 +1,6 @@
-import { Query } from "./Query"
+export interface Query{
+    str(): string
+}
 
 export interface QueryBuilder {
     subject(iri: string): QueryBuilder // sets the subject. subject can be only one
