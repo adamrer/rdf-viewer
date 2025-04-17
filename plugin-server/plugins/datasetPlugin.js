@@ -2,7 +2,7 @@ const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/
 const dcterms = "http://purl.org/dc/terms/"
 const dcat = "http://www.w3.org/ns/dcat#"
 
-export async function printQuads(quadsBySource, fetcher, resultsDiv) {
+export async function displayQuads(quadsBySource, fetcher, resultsDiv) {
     const entityIri = quadsBySource[0].quads[0].subject.value
     const resultTitle = document.createElement('h1');
     resultTitle.textContent = getObjectFromQuads(quadsBySource, titlePredicates[0])
