@@ -1,12 +1,14 @@
-import {Fetcher, FetchedQuads } from './fetchQuads'
-import {DisplayPluginModule, loadDefaultPlugins } from './plugin'
-import {addDataSource, createPluginMenu, getEntityIri, getDataSources } from './ui'
-import {displayQuads} from './defaultDisplayQuads.js'
+import { SimpleFetcher } from './fetchQuads'
+import { DisplayPluginModule, loadDefaultPlugins } from './plugin'
+import { addDataSource, createPluginMenu, getEntityIri, getDataSources } from './ui'
+import { displayQuads } from './defaultDisplayQuads.js'
 
 window.onload = function() {
     addEventListeners();
     // example data source
     (document.getElementById('add-data-source-text')! as HTMLInputElement).value = 'https://data.gov.cz/sparql';
+    addDataSource();
+    (document.getElementById('add-data-source-text')! as HTMLInputElement).value = 'https://data.mf.gov.cz/lod/sparql';
     addDataSource();
     loadDefaultPlugins();
     createPluginMenu();
@@ -19,24 +21,21 @@ function addEventListeners(): void {
 }
 
 async function showQuads(): Promise<void> {
-    console.log("Selected plugin: "+localStorage.getItem("selectedPlugin"))
     const entityIri = getEntityIri()
-    const fetcher: Fetcher = new Fetcher(getDataSources())
-
+    const fetcher: SimpleFetcher = new SimpleFetcher(getDataSources())
     const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
 
     // Clear previous results
     resultsEl.innerHTML = ``;
     
-    const quadsBySource: (FetchedQuads|null)[] = await fetcher.fetchQuads(entityIri)
     // get display
     try{
         const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
-        displayModule.displayQuads(quadsBySource, fetcher, resultsEl)
-
+        displayModule.displayQuads(entityIri, fetcher, resultsEl)
     }
-    catch{
-        displayQuads(quadsBySource, fetcher, resultsEl)
+    catch (error){
+        displayQuads(entityIri, fetcher, resultsEl)
+        console.error(error)
     }
 
 }
