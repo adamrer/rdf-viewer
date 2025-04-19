@@ -106,6 +106,7 @@ export class FileDataSource implements DataSource {
         //         }
         //     }
         // );
+        query
     
         return {dataSourceTitle: this.file.name, quads: []};
     }
