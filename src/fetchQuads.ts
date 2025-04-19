@@ -1,4 +1,4 @@
-import N3, { StreamParser, Quad } from "n3";
+import N3 from 'n3'
 import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./queryBuilder";
 
 
