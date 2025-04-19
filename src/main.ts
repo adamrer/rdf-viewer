@@ -1,7 +1,7 @@
 import { SimpleFetcher } from './fetchQuads'
 import { DisplayPluginModule, loadDefaultPlugins } from './plugin'
 import { addDataSource, createPluginMenu, getEntityIri, getDataSources } from './ui'
-import { displayQuads } from './defaultDisplayQuads.js'
+import { displayQuads } from './defaultDisplayQuads'
 
 window.onload = function() {
     addEventListeners();
