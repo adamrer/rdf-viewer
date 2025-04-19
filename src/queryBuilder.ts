@@ -2,16 +2,16 @@ export interface Query{
     str(): string
 }
 
-interface QueryBuilder{
+export interface QueryBuilder{
     build(): Query
 }
 
 export interface SimpleQueryBuilder extends QueryBuilder {
     subject(iri: string): SimpleQueryBuilder // sets the subject. subject can be only one
-    predicate(iri: string): SimpleQueryBuilder // adds predicates to or
+    predicates(iris: string[]): SimpleQueryBuilder // adds predicates to or
     
-    lang(language: string): SimpleQueryBuilder // adds language tag to or
-    withoutLangTag(): SimpleQueryBuilder // will fetch objects without language tags
+    lang(languages: string[]): SimpleQueryBuilder // adds language tag to or
+    quadsWithoutLang(): SimpleQueryBuilder // will fetch objects without language tags
     limit(number: number): SimpleQueryBuilder
     offset(number: number): SimpleQueryBuilder
 
@@ -19,33 +19,30 @@ export interface SimpleQueryBuilder extends QueryBuilder {
 }
 
 
-export class SparqlQueryBuilder implements SimpleQueryBuilder {
-    private subject_: string|null = null
-    private predicates_: string[] = []
-    private langs_: string[] = []
-    private limit_: number|null = null
-    private offset_: number = 0
-    private withoutLangTag_: boolean = false
+class SparqlQueryBuilder implements SimpleQueryBuilder {
+    subject_: string|null = null
+    predicates_: string[] = []
+    langs_: string[] = []
+    limit_: number|null = null
+    offset_: number = 0
+    withoutLang_: boolean = false
 
     subject(iri: string): SimpleQueryBuilder{
         this.subject_ = iri
         return this
     }
-    predicate(iri: string|string[]): SimpleQueryBuilder{
-        if (typeof iri === "string"){
-            this.predicates_.push(iri)
-        }
-        else{
-            this.predicates_.push(...iri)
-        }
+    predicates(iris: string[]): SimpleQueryBuilder{
+        
+        this.predicates_.push(...iris)
+        
         return this
     }
-    lang(languageTag: string): SimpleQueryBuilder{
-        this.langs_.push(languageTag)
+    lang(languages: string[]): SimpleQueryBuilder{
+        this.langs_.push(...languages)
         return this
     }
-    withoutLangTag(): SimpleQueryBuilder{
-        this.withoutLangTag_ = true
+    quadsWithoutLang(): SimpleQueryBuilder{
+        this.withoutLang_ = true
         return this
     }
     limit(number: number): SimpleQueryBuilder{
@@ -58,37 +55,59 @@ export class SparqlQueryBuilder implements SimpleQueryBuilder {
     }
 
     build(): Query {
-        const s = this.subject_ === null ? "?subject" : `<${decodeURIComponent(this.subject_)}>`
+        const subject = this.subject_ === null ? "?subject" : `<${decodeURIComponent(this.subject_)}>`
         
-        this.predicates_.map(pred => decodeURIComponent(pred))
-        const p = this.predicates_.length === 0 ? "?predicate" : `<${this.predicates_.join('>|<')}>`
+        const graphVar = "?graph"
+        const subjectVar = "?subject"
+        const predicateVar = "?predicate"
+        const objectVar = "?object"
 
-        let filterString = ""
-        if (this.withoutLangTag_ || this.langs_.length !== 0){
-            filterString = `FILTER ( ISIRI(?object) `
-            if (this.withoutLangTag_){
-                filterString += "|| (!(langMatches(lang(?object),\"*\")))"
+        this.predicates_.map(pred => decodeURIComponent(pred))
+
+        let langFilter = ""
+        if (this.withoutLang_ || this.langs_.length !== 0){
+            langFilter = `FILTER ( ISIRI(?object) `
+            if (this.withoutLang_){
+                langFilter += "|| (!(langMatches(lang(?object),\"*\")))"
             }
             if (this.langs_.length !== 0){
                 this.langs_.forEach(languageTag => {
-                    filterString += `|| (lang(?object) = \"${languageTag}\") `
+                    langFilter += `|| (lang(?object) = \"${languageTag}\") `
                     
                 });
             }
-            filterString += ") ."
+            langFilter += ") ."
         }
+
+        const predicateFilter = this.predicates_.length === 0 ? "" : `FILTER ( ${predicateVar} IN ( <${this.predicates_.join('>,<')}> ) ) .`
 
         const limitString = this.limit_ === null ? "" : `LIMIT ${this.limit_}`
         const offsetString = this.offset_ === 0 ? "" : `OFFSET ${this.offset_}`
 
-        const query: string = `SELECT * 
-WHERE {
-    GRAPH ?graph { ${s} ${p} ?object . }
-    ${filterString}
-}
-${offsetString}
-${limitString}
-`
+        const query: string = `SELECT DISTINCT ${graphVar} ${subjectVar} ${predicateVar} ${objectVar}
+        WHERE {
+            BIND (${subject} AS ${subjectVar}) .
+            {
+                GRAPH ${graphVar} { 
+                    ${subjectVar} ${predicateVar} ${objectVar} . 
+                    ${langFilter}
+                    ${predicateFilter}
+                }
+            }
+            UNION
+            {
+                ${subjectVar} ${predicateVar} ${objectVar} . 
+                ${langFilter}
+                ${predicateFilter}
+            }
+        }
+        ${offsetString}
+        ${limitString}
+        `
         return {str(): string {return query} }
     }
+}
+
+export function simpleBuilder(): SimpleQueryBuilder{
+    return new SparqlQueryBuilder()
 }
