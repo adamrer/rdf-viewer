@@ -48,6 +48,9 @@ export class SparqlDataSource implements DataSource {
 
             const quads = jsonQuads.map((
                 quad: { 
+                    graph: {
+                        type: string; value: string;
+                    }
                     predicate: {
                     type: string; value: string; 
                 }; object: {
@@ -56,9 +59,12 @@ export class SparqlDataSource implements DataSource {
                     if (predicates){
                         quad.predicate = {type: 'namedNode', value: predicates[0]}
                     }   
+                    const graph = N3.DataFactory.namedNode(quad.graph.value)
                     const predicate = N3.DataFactory.namedNode(quad.predicate.value)
-                    const object    = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
-                    return N3.DataFactory.quad(N3.DataFactory.namedNode(entityIri), predicate, object)
+                    
+                    const object    = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value) : 
+                        quad.object.type === 'blankNode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                    return N3.DataFactory.quad(N3.DataFactory.namedNode(entityIri), predicate, object, graph)
             }
             )
             return { dataSourceTitle: this.endpointUrl.toString(), 
