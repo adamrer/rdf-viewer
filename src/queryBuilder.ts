@@ -2,20 +2,24 @@ export interface Query{
     str(): string
 }
 
-export interface QueryBuilder {
-    subject(iri: string): QueryBuilder // sets the subject. subject can be only one
-    predicate(iri: string): QueryBuilder // adds predicates to or
+interface QueryBuilder{
+    build(): Query
+}
+
+export interface SimpleQueryBuilder extends QueryBuilder {
+    subject(iri: string): SimpleQueryBuilder // sets the subject. subject can be only one
+    predicate(iri: string): SimpleQueryBuilder // adds predicates to or
     
-    lang(language: string): QueryBuilder // adds language tag to or
-    withoutLangTag(): QueryBuilder // will fetch objects without language tags
-    limit(number: number): QueryBuilder
-    offset(number: number): QueryBuilder
+    lang(language: string): SimpleQueryBuilder // adds language tag to or
+    withoutLangTag(): SimpleQueryBuilder // will fetch objects without language tags
+    limit(number: number): SimpleQueryBuilder
+    offset(number: number): SimpleQueryBuilder
 
     build(): Query
 }
 
 
-export class SparqlQueryBuilder implements QueryBuilder{
+export class SparqlQueryBuilder implements SimpleQueryBuilder {
     private subject_: string|null = null
     private predicates_: string[] = []
     private langs_: string[] = []
@@ -23,11 +27,11 @@ export class SparqlQueryBuilder implements QueryBuilder{
     private offset_: number = 0
     private withoutLangTag_: boolean = false
 
-    subject(iri: string): QueryBuilder{
+    subject(iri: string): SimpleQueryBuilder{
         this.subject_ = iri
         return this
     }
-    predicate(iri: string|string[]): QueryBuilder{
+    predicate(iri: string|string[]): SimpleQueryBuilder{
         if (typeof iri === "string"){
             this.predicates_.push(iri)
         }
@@ -36,19 +40,19 @@ export class SparqlQueryBuilder implements QueryBuilder{
         }
         return this
     }
-    lang(languageTag: string): QueryBuilder{
+    lang(languageTag: string): SimpleQueryBuilder{
         this.langs_.push(languageTag)
         return this
     }
-    withoutLangTag(): QueryBuilder{
+    withoutLangTag(): SimpleQueryBuilder{
         this.withoutLangTag_ = true
         return this
     }
-    limit(number: number): QueryBuilder{
+    limit(number: number): SimpleQueryBuilder{
         this.limit_ = number
         return this
     }
-    offset(number: number): QueryBuilder{
+    offset(number: number): SimpleQueryBuilder{
         this.offset_ = number
         return this
     }
@@ -75,11 +79,11 @@ export class SparqlQueryBuilder implements QueryBuilder{
         }
 
         const limitString = this.limit_ === null ? "" : `LIMIT ${this.limit_}`
-        const offsetString = this.offset_ === null ? "" : `OFFSET ${this.offset_}`
+        const offsetString = this.offset_ === 0 ? "" : `OFFSET ${this.offset_}`
 
         const query: string = `SELECT * 
 WHERE {
-    ${s} ${p} ?object .
+    GRAPH ?graph { ${s} ${p} ?object . }
     ${filterString}
 }
 ${offsetString}
