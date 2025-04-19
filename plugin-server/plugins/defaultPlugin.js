@@ -1,12 +1,22 @@
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
+const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ]
 
-
-export async function displayQuads(quadsBySource, fetcher, resultsDiv) {
+export async function displayQuads(entityIri, fetcher, resultsEl) {
     
     const resultTitle = document.createElement('h2');
-    resultsDiv.appendChild(resultTitle);
+    resultsEl.appendChild(resultTitle);
     
-    resultTitle.textContent = `Results for ${getLabelFromQuads(quadsBySource)}`
+    const builder = fetcher.builder()
+    const query = builder.subject(entityIri).build()
+    
+    const quadsBySource = await fetcher.fetchQuads(query)
+
+    
+    let entityLabel = getLabelFromQuads(quadsBySource)
+    if (entityLabel  === null){
+        entityLabel = entityIri
+    }
+    
+    resultTitle.textContent = `Results for ${entityLabel}`
     
 
     quadsBySource.forEach(fetchedQuads => {
@@ -15,44 +25,63 @@ export async function displayQuads(quadsBySource, fetcher, resultsDiv) {
         endpointTitle.textContent = fetchedQuads.dataSourceTitle;        
         endpointResultDiv.appendChild(endpointTitle);
         
-        const table = createAttributeTable()
-        const tbody = document.createElement("tbody");
-
-        fetchedQuads.quads.forEach(async (quad) => {
-            
-            const predicateTitle = await fetcher.getTitle(quad.predicate.value)
-            
-            const object = quad.object.value;
-            let objectTitle = object
-            
-            let objectHTML = object
-            if (quad.object.termType !== 'Literal'){
-                objectTitle = await fetcher.getTitle(object)
-                objectHTML = `<a href=${object}>${objectTitle}</a>`
-            }
-            const row = document.createElement("tr")
-            const attribute = document.createElement("td")
-            attribute.innerText = predicateTitle
-            const value = document.createElement("td")
-            value.innerHTML = objectHTML
-            attribute.style.border = "1px solid rgb(160 160 160)"
-            value.style.border = "1px solid rgb(160 160 160)"
-            row.appendChild(attribute)
-            row.appendChild(value)
-            tbody.appendChild(row)
-        });
         if (fetchedQuads.quads.length === 0){
             const noQuadsEl = document.createElement("p")
             noQuadsEl.innerText = "No data found from this data source"
             endpointResultDiv.appendChild(noQuadsEl)
         }
-        table.appendChild(tbody)
-        table.style.border = "1px solid rgb(160 160 160)"
-        table.style.margin = "1rem"
-        endpointResultDiv.appendChild(table);
+        else{
+
+            const table = createAttributeTable()
+            const tbody = document.createElement("tbody");
+    
+            fetchedQuads.quads.forEach(async (quad) => {
+                
+                const predicateTitle = await getTitle(quad.predicate.value, fetcher)
+                
+                const object = quad.object.value;
+                let objectTitle = object
+                
+                let objectHTML = object
+                if (quad.object.termType !== 'Literal'){
+                    objectTitle = await getTitle(object, fetcher)
+                    objectHTML = `<a href=${object}>${objectTitle}</a>`
+                }
+                const row = document.createElement("tr")
+                const attribute = document.createElement("td")
+                attribute.innerText = predicateTitle
+                const value = document.createElement("td")
+                value.innerHTML = objectHTML
+                attribute.style.border = "1px solid rgb(160 160 160)"
+                value.style.border = "1px solid rgb(160 160 160)"
+                row.appendChild(attribute)
+                row.appendChild(value)
+                tbody.appendChild(row)
+            });
+            
+            table.appendChild(tbody)
+            table.style.border = "1px solid rgb(160 160 160)"
+            table.style.margin = "1rem"
+            endpointResultDiv.appendChild(table);
+        }
         
-        resultsDiv.appendChild(endpointResultDiv)
+        resultsEl.appendChild(endpointResultDiv)
     });
+}
+
+async function getTitle(iri, fetcher){
+    const builder = fetcher.builder()
+    builder.subject(iri)
+    builder.predicates(titlePredicates)
+    const quadsBySource = await fetcher.fetchQuads(builder.build())
+    let title = iri
+    quadsBySource.forEach(fetchedQuads =>{
+        if (fetchedQuads.quads.length !== 0){
+            title = fetchedQuads.quads[0].object.value
+            return
+        }
+    })
+    return title
 }
 
 function createAttributeTable(){
@@ -76,11 +105,10 @@ function createAttributeTable(){
 
 function getLabelFromQuads(fetchedQuads){
     if (fetchedQuads.length!==0){
-
-        let title = fetchedQuads[0].quads[0].subject.value
+        let title = null
         fetchedQuads.forEach(fetchedQuad => {
             fetchedQuad.quads.forEach(quad => {
-                if (quad.predicate.value == titlePredicates[0])
+                if (titlePredicates.includes(quad.predicate.value))
                     title = quad.object.value
                     return
             })
@@ -92,3 +120,4 @@ function getLabelFromQuads(fetchedQuads){
         return ''
     }
 }
+

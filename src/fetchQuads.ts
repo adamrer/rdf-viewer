@@ -1,19 +1,35 @@
-import N3 from "n3";
-import { SparqlQueryBuilder } from "./queryBuilder";
-
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
+import N3, { StreamParser, Quad } from "n3";
+import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./queryBuilder";
 
 
 export interface DataSource {
-    fetchQuads(entityIri: string, predicates: Array<string>|null): Promise<FetchedQuads | null>
+    fetchQuads(query: Query): Promise<DataSourceFetchResult | null>
 }
 
-export interface FetchedQuads{
+export interface DataSourceFetchResult{
     dataSourceTitle: string
 
     quads: Array<N3.Quad>
 }
 
+
+interface ResultNamedNode {
+    type: string; 
+    value: string;
+}
+
+interface ResultLiteral {
+    type: string; 
+    value: string; 
+    "xml:lang"?: string;
+}
+
+interface ResultQuad{
+    graph: ResultNamedNode
+    subject: ResultNamedNode
+    predicate: ResultNamedNode; 
+    object: ResultLiteral|ResultNamedNode; 
+}
 export class SparqlDataSource implements DataSource {
     endpointUrl: URL;
 
@@ -21,20 +37,13 @@ export class SparqlDataSource implements DataSource {
         this.endpointUrl = endpointUrl
     }
 
-    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult | null> {
 
-        const builder = new SparqlQueryBuilder()
-        builder.subject(entityIri)
-        if (predicates !== null){
-            builder.predicate(predicates)
-        }
-        const query = builder.build().str()
-        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query)}`;
+        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
         
         try {
             const response = await fetch(queryUrl, {
                 headers: {
-                    // json will have the result in .results.bindings
                     'Accept': 'application/sparql-results+json'
                 }
             });
@@ -47,24 +56,14 @@ export class SparqlDataSource implements DataSource {
             const jsonQuads = json.results.bindings;
 
             const quads = jsonQuads.map((
-                quad: { 
-                    graph: {
-                        type: string; value: string;
-                    }
-                    predicate: {
-                    type: string; value: string; 
-                }; object: {
-                    type: string; value: string; 
-                }; }) => {
-                    if (predicates){
-                        quad.predicate = {type: 'namedNode', value: predicates[0]}
-                    }   
-                    const graph = N3.DataFactory.namedNode(quad.graph.value)
+                quad: ResultQuad) => {
+                    const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
                     const predicate = N3.DataFactory.namedNode(quad.predicate.value)
                     
-                    const object    = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value) : 
-                        quad.object.type === 'blankNode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
-                    return N3.DataFactory.quad(N3.DataFactory.namedNode(entityIri), predicate, object, graph)
+                    const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultLiteral)["xml:lang"]) : 
+                    quad.object.type === 'blankNode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                    
+                    return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
             }
             )
             return { dataSourceTitle: this.endpointUrl.toString(), 
@@ -77,6 +76,7 @@ export class SparqlDataSource implements DataSource {
     }
 }
 
+
 export class FileDataSource implements DataSource {
     file: File;
 
@@ -84,30 +84,30 @@ export class FileDataSource implements DataSource {
         this.file = file
     }
 
-    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<FetchedQuads | null> {
-        const reader = new FileReader();
-        reader.onerror = () => {
-            console.error("Error reading file:", reader.error);
-        };
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult | null> { // TODO: query quads store
+        // const reader = new FileReader();
+        // reader.onerror = () => {
+        //     console.error("Error reading file:", reader.error);
+        // };
         
-        const quads : Array<N3.Quad> = [];
+        // const quads : Array<N3.Quad> = [];
     
-        const parser = new N3.Parser();
-        parser.parse(await this.file.text(), 
-            (error, quad) => {
-                if (quad){
-                    if (entityIri === null || (predicates === null && entityIri === quad.subject.value) 
-                        || (predicates !== null && entityIri === quad.subject.value && predicates.includes(quad.predicate.value))){
-                        quads.push(quad);
-                    }
-                } 
-                if (error){
-                    console.log(error.message);
-                }
-            }
-        );
+        // const parser = new N3.Parser();
+        // parser.parse(await this.file.text(), 
+        //     (error, quad) => {
+        //         if (quad){
+        //             if (entityIri === null || (predicates === null && entityIri === quad.subject.value) 
+        //                 || (predicates !== null && entityIri === quad.subject.value && predicates.includes(quad.predicate.value))){
+        //                 quads.push(quad);
+        //             }
+        //         } 
+        //         if (error){
+        //             console.log(error.message);
+        //         }
+        //     }
+        // );
     
-        return {dataSourceTitle: this.file.name, quads: quads};
+        return {dataSourceTitle: this.file.name, quads: []};
     }
 }
 
@@ -116,39 +116,28 @@ export class FileDataSource implements DataSource {
 
 export interface QuadsFetcher {
     dataSources: Array<DataSource>
-    fetchQuads(entityIri: string): Promise<(FetchedQuads | null)[]>
+    fetchQuads(query: Query): Promise<(DataSourceFetchResult | null)[]>
+    builder(): QueryBuilder
 }
 
-export class Fetcher implements QuadsFetcher {
+export class SimpleFetcher implements QuadsFetcher {
     dataSources: Array<DataSource>
 
     constructor(dataSources: Array<DataSource>){
         this.dataSources = dataSources
     }
 
-    async fetchQuads(entityIri: string, predicates: Array<string>|null = null): Promise<(FetchedQuads | null)[]> {
-        const promises = this.dataSources.map(ds => ds.fetchQuads(entityIri, predicates))
+    async fetchQuads(query: Query): Promise<(DataSourceFetchResult | null)[]> {
+        const promises = this.dataSources.map(ds => ds.fetchQuads(query))
         return Promise.all(promises)
     }
-    async getTitle(entityIri: string): Promise<string> {
-        
-        const predicateTitleQuads = await this.fetchQuads(entityIri, [titlePredicates[0]]);
-        let title: string | undefined = ''
-        if (predicateTitleQuads === null || predicateTitleQuads.length === 0){
-            title = entityIri;
-        }
-        else {
-            predicateTitleQuads.forEach(quads => {
-                if (quads?.quads.length !== 0){
-                    title = quads?.quads[0].object.value
-                }
-            });
-            if (title === undefined || title === ''){
-                title = entityIri
-            }
-        }
-        return title
+    
+    builder() : SimpleQueryBuilder{
+        return simpleBuilder()
     }
+
+
+
 }
 
 

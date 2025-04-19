@@ -1,15 +1,20 @@
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] //TODO: no global variables
+const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel', "http://www.w3.org/2006/vcard/ns#fn" ] //TODO: no global variables
 const dcterms = "http://purl.org/dc/terms/"
 const dcat = "http://www.w3.org/ns/dcat#"
 
-export async function displayQuads(quadsBySource, fetcher, resultsDiv) {
-    const entityIri = quadsBySource[0].quads[0].subject.value
+export async function displayQuads(entityIri, fetcher, resultsDiv) {//TODO: get all quads from fetcher with builder
+    
+    const builder = fetcher.builder()
+    const query = builder.subject(entityIri).build()
+    
+    const quadsBySource = await fetcher.fetchQuads(query)
+    
     const resultTitle = document.createElement('h1');
     resultTitle.textContent = getObjectFromQuads(quadsBySource, titlePredicates[0])
     resultsDiv.appendChild(resultTitle);
 
     const publisherEl = document.createElement("h2")
-    publisherEl.innerText = await fetcher.getTitle(getObjectFromQuads(quadsBySource, dcterms + "publisher"))
+    publisherEl.innerText = await getTitle(getObjectFromQuads(quadsBySource, dcterms + "publisher"), fetcher)
     resultsDiv.appendChild(publisherEl);
 
     const descriptionEl = document.createElement("p")
@@ -18,17 +23,22 @@ export async function displayQuads(quadsBySource, fetcher, resultsDiv) {
 
     const descriptionListEl = document.createElement("dl")
     
-    addDescription(descriptionListEl, "Téma", await fetcher.getTitle(getObjectFromQuads(quadsBySource, "https://www.w3.org/ns/dcat#theme")))
+    
+    addDescription(descriptionListEl, "Téma", getObjectFromQuads(quadsBySource, dcat + "theme"), fetcher)
     
     addDescription(descriptionListEl, "Dokumentace", getObjectFromQuads(quadsBySource, "http://xmlns.com/foaf/0.1/page"))
     
-    const periodicityQuads = await fetcher.fetchQuads(getObjectFromQuads(quadsBySource, dcterms + "accrualPeriodicity"))
-    addDescription(descriptionListEl, "Periodicita aktualizace", getObjectFromQuads(periodicityQuads, "http://www.w3.org/2004/02/skos/core#prefLabel"))
+    const periodicity = await getTitle(getObjectFromQuads(quadsBySource, dcterms + "accrualPeriodicity"), fetcher)
+    addDescription(descriptionListEl, "Periodicita aktualizace", periodicity)
     
     addDescription(descriptionListEl, "Související geografické území", getObjectFromQuads(quadsBySource, dcterms + "spatial"))
     
-    const contactPointQuads = await fetcher.fetchQuads(getObjectFromQuads(quadsBySource, dcat + "contactPoint"))
-    addDescription(descriptionListEl, "Kontaktní bod", getObjectFromQuads(contactPointQuads, "http://www.w3.org/2006/vcard/ns#fn" ))
+    const contactPointIri = getObjectFromQuads(quadsBySource, dcat + "contactPoint")
+    if (contactPointIri !== null){
+        const contactPoint = await getTitle(contactPointIri, fetcher)
+        addDescription(descriptionListEl, "Kontaktní bod", contactPoint)
+    }
+    console.log("ještě funguje")
     
     resultsDiv.appendChild(descriptionListEl)
 
@@ -57,4 +67,19 @@ function getObjectFromQuads(fetchedQuads, predicate){
         
     });
     return object
+}
+
+async function getTitle(iri, fetcher){
+    const builder = fetcher.builder()
+    builder.subject(iri)
+    builder.predicates(titlePredicates)
+    const quadsBySource = await fetcher.fetchQuads(builder.build())
+    let title = iri
+    quadsBySource.forEach(fetchedQuads =>{
+        if (fetchedQuads.quads.length !== 0){
+            title = fetchedQuads.quads[0].object.value
+            return
+        }
+    })
+    return title
 }

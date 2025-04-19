@@ -1,5 +1,5 @@
-import { FetchedQuads, Fetcher } from "./fetchQuads"
-import N3 from 'n3'
+import { SimpleFetcher } from "./fetchQuads"
+
 
 export interface DisplayPlugin {
     url: URL
@@ -8,11 +8,7 @@ export interface DisplayPlugin {
 }
 
 export interface DisplayPluginModule {
-    displayQuads(quads: Array<FetchedQuads|null>, fetcher: Fetcher, resultsDiv: HTMLElement): Promise<void>
-}
-
-export interface QuadsDisplayer {
-    display(quads: Array<N3.Quad>, plugin: DisplayPlugin, element: HTMLElement): void
+    displayQuads(entityIri: string, fetcher: SimpleFetcher, resultsDiv: HTMLElement): Promise<void>
 }
 
 export function loadDefaultPlugins(): void {
