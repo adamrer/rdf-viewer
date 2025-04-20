@@ -66,13 +66,13 @@ class SparqlQueryBuilder implements SimpleQueryBuilder {
 
         let langFilter = ""
         if (this.withoutLang_ || this.langs_.length !== 0){
-            langFilter = `FILTER ( ISIRI(?object) `
+            langFilter = `FILTER ( ISIRI(?object) || ISBLANK(?object) `
             if (this.withoutLang_){
                 langFilter += "|| (!(langMatches(lang(?object),\"*\")))"
             }
             if (this.langs_.length !== 0){
                 this.langs_.forEach(languageTag => {
-                    langFilter += `|| (lang(?object) = \"${languageTag}\") `
+                    langFilter += ` || (lang(?object) = \"${languageTag}\") `
                     
                 });
             }
