@@ -1,5 +1,10 @@
 import N3 from 'n3'
+import { Quad } from 'n3'
 import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./queryBuilder";
+import { Quadstore } from 'quadstore';
+import { MemoryLevel } from 'memory-level';
+import { AbstractLevel } from 'abstract-level'
+import { Engine } from 'quadstore-comunica'
 
 
 export interface DataSource {
@@ -9,7 +14,7 @@ export interface DataSource {
 export interface DataSourceFetchResult{
     dataSourceTitle: string
 
-    quads: Array<N3.Quad>
+    quads: Array<Quad>
 }
 
 
@@ -61,7 +66,7 @@ export class SparqlDataSource implements DataSource {
                     const predicate = N3.DataFactory.namedNode(quad.predicate.value)
                     
                     const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultLiteral)["xml:lang"]) : 
-                    quad.object.type === 'blankNode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                    quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
                     
                     return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
             }
@@ -85,30 +90,48 @@ export class FileDataSource implements DataSource {
     }
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> { // TODO: query quads store
-        // const reader = new FileReader();
-        // reader.onerror = () => {
-        //     console.error("Error reading file:", reader.error);
-        // };
         
-        // const quads : Array<N3.Quad> = [];
-    
-        // const parser = new N3.Parser();
-        // parser.parse(await this.file.text(), 
-        //     (error, quad) => {
-        //         if (quad){
-        //             if (entityIri === null || (predicates === null && entityIri === quad.subject.value) 
-        //                 || (predicates !== null && entityIri === quad.subject.value && predicates.includes(quad.predicate.value))){
-        //                 quads.push(quad);
-        //             }
-        //         } 
-        //         if (error){
-        //             console.log(error.message);
-        //         }
-        //     }
-        // );
-        query
-    
-        return {dataSourceTitle: this.file.name, quads: []};
+        const backend = new MemoryLevel() as AbstractLevel<string, string>
+        const dataFactory = N3.DataFactory
+        const store = new Quadstore({backend, dataFactory})
+        const engine = new Engine(store)
+
+        await store.open()
+        const reader = new FileReader();
+        reader.onerror = () => {
+            console.error("Error reading file: ", reader.error);
+        };
+        
+        const parser = new N3.Parser();
+        const fileText = await this.file.text();
+        parser.parse(fileText, (err, quad) => {
+          if (err) console.error(err);
+          else if (quad) store.put(quad);
+        });
+
+        const bindingsStream = await engine.queryBindings(query.str())
+        const quads: Quad[] = []
+        try{
+            await new Promise<void>((resolve, reject) => {
+                bindingsStream.on('data', binding => {
+                    const entries = binding.entries
+                    const graph = entries.get('graph') !== undefined ? N3.DataFactory.namedNode(entries.get('graph')?.value) : undefined
+                    const quad = N3.DataFactory.quad(entries.get('subject'), entries.get('predicate'), entries.get('object'), graph)
+                    quads.push(quad)
+        
+                })
+                .on('error', error => {
+                    console.error("Error getting result from file data source: ", error)
+                    reject(error)
+                })
+                .on('end', () => resolve())
+            })
+        }
+        catch (error){
+            console.error(error)
+        }
+
+        return {dataSourceTitle: this.file.name, quads: quads};
     }
 }
 

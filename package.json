@@ -15,7 +15,10 @@
   "dependencies": {
     "@types/n3": "^1.24.1",
     "express": "^4.21.2",
+    "memory-level": "^3.0.0",
     "n3": "^1.24.0",
+    "quadstore": "^15.0.0",
+    "quadstore-comunica": "^6.0.0",
     "rdf-parse": "^2.3.3"
   }
 }
