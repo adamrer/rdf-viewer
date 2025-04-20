@@ -3,7 +3,7 @@ import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./queryB
 
 
 export interface DataSource {
-    fetchQuads(query: Query): Promise<DataSourceFetchResult | null>
+    fetchQuads(query: Query): Promise<DataSourceFetchResult>
 }
 
 export interface DataSourceFetchResult{
@@ -37,7 +37,7 @@ export class SparqlDataSource implements DataSource {
         this.endpointUrl = endpointUrl
     }
 
-    async fetchQuads(query: Query): Promise<DataSourceFetchResult | null> {
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
 
         const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
         
@@ -71,7 +71,7 @@ export class SparqlDataSource implements DataSource {
         } catch (error : any) {
             console.error('Error fetching data:', error);
             document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;
-            return null;
+            throw error;
         }
     }
 }
@@ -84,7 +84,7 @@ export class FileDataSource implements DataSource {
         this.file = file
     }
 
-    async fetchQuads(query: Query): Promise<DataSourceFetchResult | null> { // TODO: query quads store
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult> { // TODO: query quads store
         // const reader = new FileReader();
         // reader.onerror = () => {
         //     console.error("Error reading file:", reader.error);
@@ -117,7 +117,7 @@ export class FileDataSource implements DataSource {
 
 export interface QuadsFetcher {
     dataSources: Array<DataSource>
-    fetchQuads(query: Query): Promise<(DataSourceFetchResult | null)[]>
+    fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]>
     builder(): QueryBuilder
 }
 
@@ -128,7 +128,7 @@ export class SimpleFetcher implements QuadsFetcher {
         this.dataSources = dataSources
     }
 
-    async fetchQuads(query: Query): Promise<(DataSourceFetchResult | null)[]> {
+    async fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]> {
         const promises = this.dataSources.map(ds => ds.fetchQuads(query))
         return Promise.all(promises)
     }

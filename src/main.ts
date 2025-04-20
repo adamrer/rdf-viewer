@@ -1,6 +1,6 @@
 import { SimpleFetcher } from './fetchQuads'
 import { DisplayPluginModule, loadDefaultPlugins } from './plugin'
-import { addDataSource, createPluginMenu, getEntityIri, getDataSources } from './ui'
+import { addDataSource, createPluginMenu, getEntityIri, getDataSources, getLanguage } from './ui'
 import { displayQuads } from './defaultDisplayQuads'
 
 window.onload = function() {
@@ -24,17 +24,20 @@ async function showQuads(): Promise<void> {
     const entityIri = getEntityIri()
     const fetcher: SimpleFetcher = new SimpleFetcher(getDataSources())
     const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
-
+    const lang: string = getLanguage()
     // Clear previous results
     resultsEl.innerHTML = ``;
     
     // get display
     try{
         const displayModule: DisplayPluginModule = await import(localStorage.getItem("selectedPlugin")!)
-        displayModule.displayQuads(entityIri, fetcher, resultsEl)
+        displayModule.displayQuads(entityIri, fetcher, lang, resultsEl)
     }
     catch (error){
-        displayQuads(entityIri, fetcher, resultsEl)
+        const messageParagraph = document.createElement('p')
+        messageParagraph.innerText = "Failed to load plugin. Using default display."
+        resultsEl.appendChild(messageParagraph)
+        displayQuads(entityIri, fetcher, lang, resultsEl)
         console.error(error)
     }
 

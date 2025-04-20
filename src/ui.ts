@@ -14,11 +14,13 @@ export function getDataSources(): Array<DataSource> {
 }
 
 export function getEntityIri(): string {
-    return (document.getElementById('target-resource')! as HTMLInputElement).value
+    return (document.getElementById('target-resource') as HTMLInputElement).value
 }
 
 
-
+export function getLanguage(): string {
+    return (document.getElementById('language') as HTMLInputElement).value
+}
 export function createPluginMenu(): void {
     const pluginDiv = document.getElementById('plugins')
     const plugins: Array<DisplayPlugin> = JSON.parse(localStorage.getItem("plugins")!)
