@@ -1,8 +1,8 @@
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel', "http://www.w3.org/2006/vcard/ns#fn" ] //TODO: no global variables
+const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel', "http://www.w3.org/2006/vcard/ns#fn" ] 
 const dcterms = "http://purl.org/dc/terms/"
 const dcat = "http://www.w3.org/ns/dcat#"
 
-export async function displayQuads(entityIri, fetcher, language, resultsDiv) {//TODO: get all quads from fetcher with builder
+export async function displayQuads(entityIri, fetcher, language, resultsDiv) {
     
     const builder = fetcher.builder()
     const query = builder.subject(entityIri)
@@ -41,7 +41,6 @@ export async function displayQuads(entityIri, fetcher, language, resultsDiv) {//
         const contactPoint = await getTitle(contactPointIri, fetcher, language)
         addDescription(descriptionListEl, "Kontaktní bod", contactPoint)
     }
-    console.log("ještě funguje")
     
     resultsDiv.appendChild(descriptionListEl)
 
