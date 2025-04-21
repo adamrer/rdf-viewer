@@ -42,6 +42,18 @@ export class SparqlDataSource implements DataSource {
         this.endpointUrl = endpointUrl
     }
 
+    parseJsonQuads(jsonQuads: any): Quad[]{
+        return jsonQuads.map((quad: ResultQuad) => {
+                const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
+                const predicate = N3.DataFactory.namedNode(quad.predicate.value)
+                
+                const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultLiteral)["xml:lang"]) : 
+                quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                
+                return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
+            })
+    }
+
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
 
         const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
@@ -60,17 +72,7 @@ export class SparqlDataSource implements DataSource {
             const json = await response.json();
             const jsonQuads = json.results.bindings;
 
-            const quads = jsonQuads.map((
-                quad: ResultQuad) => {
-                    const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
-                    const predicate = N3.DataFactory.namedNode(quad.predicate.value)
-                    
-                    const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultLiteral)["xml:lang"]) : 
-                    quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
-                    
-                    return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
-            }
-            )
+            const quads = this.parseJsonQuads(jsonQuads)
             return { dataSourceTitle: this.endpointUrl.toString(), 
                 quads: quads}
         } catch (error : any) {
@@ -89,7 +91,7 @@ export class FileDataSource implements DataSource {
         this.file = file
     }
 
-    async fetchQuads(query: Query): Promise<DataSourceFetchResult> { // TODO: query quads store
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult> { 
         
         const backend = new MemoryLevel() as AbstractLevel<string, string>
         const dataFactory = N3.DataFactory
@@ -110,28 +112,21 @@ export class FileDataSource implements DataSource {
         });
 
         const bindingsStream = await engine.queryBindings(query.str())
-        const quads: Quad[] = []
-        try{
-            await new Promise<void>((resolve, reject) => {
-                bindingsStream.on('data', binding => {
-                    const entries = binding.entries
-                    const graph = entries.get('graph') !== undefined ? N3.DataFactory.namedNode(entries.get('graph')?.value) : undefined
-                    const quad = N3.DataFactory.quad(entries.get('subject'), entries.get('predicate'), entries.get('object'), graph)
-                    quads.push(quad)
-        
-                })
-                .on('error', error => {
-                    console.error("Error getting result from file data source: ", error)
-                    reject(error)
-                })
-                .on('end', () => resolve())
+        return new Promise<DataSourceFetchResult>((resolve, reject) =>{
+            const quads: Quad[] = []
+            bindingsStream.on('data', binding => {
+                const entries = binding.entries
+                const graph = entries.get('graph') !== undefined ? N3.DataFactory.namedNode(entries.get('graph')?.value) : undefined
+                const quad = N3.DataFactory.quad(entries.get('subject'), entries.get('predicate'), entries.get('object'), graph)
+                quads.push(quad)
+    
             })
-        }
-        catch (error){
-            console.error(error)
-        }
-
-        return {dataSourceTitle: this.file.name, quads: quads};
+            .on('error', error => {
+                console.error(`Error getting result from ${this.file.name} source: `, error)
+                reject(error)
+            })
+            .on('end', () => resolve({dataSourceTitle: this.file.name, quads: quads}))
+        })
     }
 }
 
