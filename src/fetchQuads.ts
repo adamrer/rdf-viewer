@@ -55,31 +55,28 @@ export class SparqlDataSource implements DataSource {
     }
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
-
-        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
         
-        try {
-            const response = await fetch(queryUrl, {
+        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
+        return new Promise((resolve, reject) =>{
+            fetch(queryUrl, {
                 headers: {
                     'Accept': 'application/sparql-results+json'
                 }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-    
-            const json = await response.json();
-            const jsonQuads = json.results.bindings;
+            })
+            .then((response) => response.json())
+            .then((jsonResponse) => {
+                const jsonQuads = jsonResponse.results.bindings;
 
-            const quads = this.parseJsonQuads(jsonQuads)
-            return { dataSourceTitle: this.endpointUrl.toString(), 
-                quads: quads}
-        } catch (error : any) {
-            console.error('Error fetching data:', error);
-            document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;
-            throw error;
-        }
+                const quads = this.parseJsonQuads(jsonQuads)
+                const result: DataSourceFetchResult = { dataSourceTitle: this.endpointUrl.toString(), quads: quads}
+                resolve(result)
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+                document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;
+                reject(error);
+            })
+        })
     }
 }
 
@@ -102,12 +99,16 @@ export class FileDataSource implements DataSource {
         const reader = new FileReader();
         reader.onerror = () => {
             console.error("Error reading file: ", reader.error);
+            throw reader.error
         };
         
         const parser = new N3.Parser();
         const fileText = await this.file.text();
         parser.parse(fileText, (err, quad) => {
-          if (err) console.error(err);
+          if (err) {
+            console.error("Error parsing file: ", err);
+            throw err
+        }
           else if (quad) store.put(quad);
         });
 
@@ -125,7 +126,10 @@ export class FileDataSource implements DataSource {
                 console.error(`Error getting result from ${this.file.name} source: `, error)
                 reject(error)
             })
-            .on('end', () => resolve({dataSourceTitle: this.file.name, quads: quads}))
+            .on('end', () => {
+                const result = {dataSourceTitle: this.file.name, quads: quads}
+                resolve(result)
+            })
         })
     }
 }

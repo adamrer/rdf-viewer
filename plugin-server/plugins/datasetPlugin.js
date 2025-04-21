@@ -2,32 +2,39 @@ const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/
 const dcterms = "http://purl.org/dc/terms/"
 const dcat = "http://www.w3.org/ns/dcat#"
 
-export async function displayQuads(entityIri, fetcher, language, resultsDiv) {
-    
+export async function displayQuads(entityIri, fetcher, language, resultsEl) {
+    const messageEl = document.createElement('p');
+    resultsEl.appendChild(messageEl);
+
     const builder = fetcher.builder()
-    const query = builder.subject(entityIri)
-                        .lang([language])
-                        .quadsWithoutLang()
-                        .build()
+    const query = 
+        builder.subject(entityIri)
+            .lang([language])
+            .quadsWithoutLang()
+            .build()
+    
+    messageEl.textContent = 'Loading data...';
     
     const quadsBySource = await fetcher.fetchQuads(query)
     
+    
     const resultTitle = document.createElement('h1');
     resultTitle.textContent = getObjectFromQuads(quadsBySource, titlePredicates[0])
-    resultsDiv.appendChild(resultTitle);
-
+    resultsEl.appendChild(resultTitle);
+    
     const publisherEl = document.createElement("h2")
-    publisherEl.innerText = await getTitle(getObjectFromQuads(quadsBySource, dcterms + "publisher"), fetcher, language)
-    resultsDiv.appendChild(publisherEl);
-
+    const publisherTitle = await getTitle(getObjectFromQuads(quadsBySource, dcterms + "publisher"), fetcher, language)
+    publisherEl.innerText = publisherTitle
+    resultsEl.appendChild(publisherEl);
+    
     const descriptionEl = document.createElement("p")
     descriptionEl.innerText = getObjectFromQuads(quadsBySource, dcterms + "description")
-    resultsDiv.appendChild(descriptionEl)
-
-    const descriptionListEl = await createDescriptionList(quadsBySource, fetcher, language)
+    resultsEl.appendChild(descriptionEl)
     
-    resultsDiv.appendChild(descriptionListEl)
-
+    const descriptionListEl = await createDescriptionList(quadsBySource, fetcher, language)
+    resultsEl.appendChild(descriptionListEl)
+    
+    messageEl.textContent = 'Data successfully loaded!';
 
 }
 async function createDescriptionList(quadsBySource, fetcher, language){

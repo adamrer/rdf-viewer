@@ -1,58 +1,91 @@
-const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ]
+const titlePredicates = [ 
+    'http://purl.org/dc/terms/title', 
+    'https://www.w3.org/2000/01/rdf-schema#label', 
+    'http://www.w3.org/2004/02/skos/core#prefLabel' 
+]
+
 
 export async function displayQuads(entityIri, fetcher, language, resultsEl) {
-    
+    const messageEl = document.createElement('p');
+    resultsEl.appendChild(messageEl);
+  
     const resultTitle = document.createElement('h2');
     resultsEl.appendChild(resultTitle);
-    
-    const builder = fetcher.builder()
-    const query = builder.subject(entityIri)
-                        .lang([language])
-                        .quadsWithoutLang()
-                        .build()
-    
-    const quadsBySource = await fetcher.fetchQuads(query)
-
-    
-    let entityLabel = getLabelFromQuads(quadsBySource)
-    if (entityLabel  === null){
-        entityLabel = entityIri
-    }
-    
-    resultTitle.textContent = `Results for ${entityLabel}`
-    
-
-    quadsBySource.forEach(fetchedQuads => {
-        const endpointResultDiv = document.createElement("div");
-        const endpointTitle = document.createElement("h3");
-        endpointTitle.textContent = fetchedQuads.dataSourceTitle;        
-        endpointResultDiv.appendChild(endpointTitle);
+  
+    messageEl.textContent = 'Loading data...';
+  
+    const builder = fetcher.builder();
+    const query = builder
+        .subject(entityIri)
+        .lang([language])
+        .quadsWithoutLang()
+        .build();
         
-        if (fetchedQuads.quads.length === 0){
-            const noQuadsEl = document.createElement("p")
-            noQuadsEl.innerText = "No data found from this data source"
-            endpointResultDiv.appendChild(noQuadsEl)
-        }
-        else{
+    try {
 
-            const table = createAttributeTable()
-            const tbody = document.createElement("tbody");
-    
-            fetchedQuads.quads.forEach(async (quad) => {
-                const preparedRow = await prepareRow(quad, fetcher, language)
-                addQuadToTableBody(preparedRow, tbody)
+        const quadsBySource = await fetcher.fetchQuads(query);
+
+        let entityLabel = getLabelFromQuads(quadsBySource);
+        if (!entityLabel) {
+            entityLabel = entityIri;
+        }
+        resultTitle.textContent = `Results for ${entityLabel}`;
+
+        const preparedRowsBySource = await prepareRows(
+            quadsBySource,
+            fetcher,
+            language
+        );
+
+        messageEl.textContent = 'Data successfully loaded!';
+        
+        renderTable(preparedRowsBySource, resultsEl)
+
+        } catch (error) {
+            messageEl.textContent = 'Error occurred while loading data';
+            console.error(error);
+        }
+}
+function prepareRows(quadsBySource, fetcher, language){
+    return Promise.all(
+        quadsBySource.map(async (fetched) => {
+          const rows = await Promise.all(
+            fetched.quads.map((quad) => prepareRow(quad, fetcher, language))
+          );
+          return {
+            dataSourceTitle: fetched.dataSourceTitle,
+            quads: rows,
+          };
+        })
+      );
+}
+
+function renderTable(preparedRowsBySource, resultsEl){
+    const table = createAttributeTable();
+    const tbody = document.createElement('tbody');
+
+    preparedRowsBySource.forEach((source) => {
+        const endpointResultEl = document.createElement('div');
+        const endpointTitle = document.createElement('h3');
+        endpointTitle.textContent = source.dataSourceTitle;
+        endpointResultEl.appendChild(endpointTitle);
+
+        if (source.quads.length === 0) {
+            const noQuadsEl = document.createElement('p');
+            noQuadsEl.innerText = 'No data found from this data source';
+            endpointResultEl.appendChild(noQuadsEl);
+        } else {
+            source.quads.forEach((row) => {
+                addRowToTableBody(row, tbody);
             });
-            
-            table.appendChild(tbody)
-            table.style.border = "1px solid rgb(160 160 160)"
-            table.style.margin = "1rem"
-            endpointResultDiv.appendChild(table);
         }
-        
-        resultsEl.appendChild(endpointResultDiv)
+
+        table.appendChild(tbody);
+        endpointResultEl.appendChild(table);
+        resultsEl.appendChild(endpointResultEl);
     });
 }
-function addQuadToTableBody(preparedRow, tableBodyEl){
+function addRowToTableBody(preparedRow, tableBodyEl){
     const row = document.createElement("tr")
     const attribute = document.createElement("td")
     attribute.innerText = preparedRow.predicate
@@ -64,19 +97,18 @@ function addQuadToTableBody(preparedRow, tableBodyEl){
     row.appendChild(value)
     tableBodyEl.appendChild(row)
 }
-
+async function getObjectTitle(object, fetcher, language){
+    if (object.termType === 'Literal') {
+        return object.value;
+      }
+      const title = await getTitle(object.value, fetcher, language);
+      return `<a href="${object.value}">${title}</a>`;
+}
 async function prepareRow(quad, fetcher, language){
-    const predicateTitle = await getTitle(quad.predicate.value, fetcher, language)
-                
-    const object = quad.object.value;
-    let objectTitle = object
-    
-    let objectHTML = object
-    if (quad.object.termType !== 'Literal'){
-        objectTitle = await getTitle(object, fetcher, language)
-        objectHTML = `<a href=${object}>${objectTitle}</a>`
-    }
-    return {predicate: predicateTitle, object: objectHTML}
+    const predicate = await getTitle(quad.predicate.value, fetcher, language)
+    const object = await getObjectTitle(quad.object, fetcher, language)
+    return { predicate, object }
+
 }
 
 async function getTitle(iri, fetcher, language){
@@ -106,7 +138,9 @@ function createAttributeTable(){
     
     trValue.style.border = "1px solid rgb(160 160 160)"
     trAttribute.style.border = "1px solid rgb(160 160 160)"
-    
+    table.style.border = "1px solid rgb(160 160 160)"
+    table.style.margin = "1rem"
+
     thead.appendChild(trAttribute)
     thead.appendChild(trValue)
     table.appendChild(thead);
