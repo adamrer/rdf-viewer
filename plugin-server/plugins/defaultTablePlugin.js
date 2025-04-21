@@ -39,27 +39,8 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
             const tbody = document.createElement("tbody");
     
             fetchedQuads.quads.forEach(async (quad) => {
-                
-                const predicateTitle = await getTitle(quad.predicate.value, fetcher, language)
-                
-                const object = quad.object.value;
-                let objectTitle = object
-                
-                let objectHTML = object
-                if (quad.object.termType !== 'Literal'){
-                    objectTitle = await getTitle(object, fetcher, language)
-                    objectHTML = `<a href=${object}>${objectTitle}</a>`
-                }
-                const row = document.createElement("tr")
-                const attribute = document.createElement("td")
-                attribute.innerText = predicateTitle
-                const value = document.createElement("td")
-                value.innerHTML = objectHTML
-                attribute.style.border = "1px solid rgb(160 160 160)"
-                value.style.border = "1px solid rgb(160 160 160)"
-                row.appendChild(attribute)
-                row.appendChild(value)
-                tbody.appendChild(row)
+                const preparedRow = await prepareRow(quad, fetcher, language)
+                addQuadToTableBody(preparedRow, tbody)
             });
             
             table.appendChild(tbody)
@@ -70,6 +51,32 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
         
         resultsEl.appendChild(endpointResultDiv)
     });
+}
+function addQuadToTableBody(preparedRow, tableBodyEl){
+    const row = document.createElement("tr")
+    const attribute = document.createElement("td")
+    attribute.innerText = preparedRow.predicate
+    const value = document.createElement("td")
+    value.innerHTML = preparedRow.object
+    attribute.style.border = "1px solid rgb(160 160 160)"
+    value.style.border = "1px solid rgb(160 160 160)"
+    row.appendChild(attribute)
+    row.appendChild(value)
+    tableBodyEl.appendChild(row)
+}
+
+async function prepareRow(quad, fetcher, language){
+    const predicateTitle = await getTitle(quad.predicate.value, fetcher, language)
+                
+    const object = quad.object.value;
+    let objectTitle = object
+    
+    let objectHTML = object
+    if (quad.object.termType !== 'Literal'){
+        objectTitle = await getTitle(object, fetcher, language)
+        objectHTML = `<a href=${object}>${objectTitle}</a>`
+    }
+    return {predicate: predicateTitle, object: objectHTML}
 }
 
 async function getTitle(iri, fetcher, language){

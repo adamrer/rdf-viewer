@@ -24,6 +24,13 @@ export async function displayQuads(entityIri, fetcher, language, resultsDiv) {
     descriptionEl.innerText = getObjectFromQuads(quadsBySource, dcterms + "description")
     resultsDiv.appendChild(descriptionEl)
 
+    const descriptionListEl = await createDescriptionList(quadsBySource, fetcher, language)
+    
+    resultsDiv.appendChild(descriptionListEl)
+
+
+}
+async function createDescriptionList(quadsBySource, fetcher, language){
     const descriptionListEl = document.createElement("dl")
     
     
@@ -41,12 +48,8 @@ export async function displayQuads(entityIri, fetcher, language, resultsDiv) {
         const contactPoint = await getTitle(contactPointIri, fetcher, language)
         addDescription(descriptionListEl, "Kontaktní bod", contactPoint)
     }
-    
-    resultsDiv.appendChild(descriptionListEl)
-
-
+    return descriptionListEl
 }
-
 function addDescription(dlElement, term, description){
     const dt = document.createElement("dt")
     dt.innerHTML = term.bold()
