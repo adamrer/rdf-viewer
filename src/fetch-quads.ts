@@ -12,7 +12,7 @@ export interface DataSource {
 }
 
 export interface DataSourceFetchResult{
-    dataSourceTitle: string
+    identifier: string
 
     quads: Array<Quad>
 }
@@ -68,7 +68,7 @@ export class SparqlDataSource implements DataSource {
                 const jsonQuads = jsonResponse.results.bindings;
 
                 const quads = this.parseJsonQuads(jsonQuads)
-                const result: DataSourceFetchResult = { dataSourceTitle: this.endpointUrl.toString(), quads: quads}
+                const result: DataSourceFetchResult = { identifier: this.endpointUrl.toString(), quads: quads}
                 resolve(result)
             })
             .catch((error) => {
@@ -127,7 +127,7 @@ export class FileDataSource implements DataSource {
                 reject(error)
             })
             .on('end', () => {
-                const result = {dataSourceTitle: this.file.name, quads: quads}
+                const result = {identifier: this.file.name, quads: quads}
                 resolve(result)
             })
         })

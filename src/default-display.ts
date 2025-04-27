@@ -16,13 +16,12 @@ export async function displayQuads(entityIri: string, fetcher: SimpleFetcher, la
     quadsBySource.forEach(fetchedQuads => {
         
         const endpointTitle = document.createElement("h3");
-        endpointTitle.textContent = fetchedQuads.dataSourceTitle;
+        endpointTitle.textContent = fetchedQuads.identifier;
         
         resultsEl.appendChild(endpointTitle);
         
         const list = document.createElement("ul");
         fetchedQuads?.quads.forEach(async (quad) => {
-            console.log(quad)
             const predicateTitle = await getTitle(quad.predicate.value, fetcher, language)
             
             const object = quad.object.value;
