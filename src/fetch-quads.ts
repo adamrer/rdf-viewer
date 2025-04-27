@@ -1,6 +1,6 @@
 import N3 from 'n3'
 import { Quad } from 'n3'
-import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./queryBuilder";
+import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./query-builder";
 import { Quadstore } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'

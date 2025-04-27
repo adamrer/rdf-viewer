@@ -1,6 +1,6 @@
 import {DataSource, 
     SparqlDataSource, 
-    FileDataSource } from './fetchQuads'
+    FileDataSource } from './fetch-quads'
     import {DisplayPlugin} from './plugin'
 
 export function getDataSources(): Array<DataSource> {

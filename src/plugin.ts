@@ -1,4 +1,4 @@
-import { SimpleFetcher } from "./fetchQuads"
+import { SimpleFetcher } from "./fetch-quads"
 
 
 export interface DisplayPlugin {
