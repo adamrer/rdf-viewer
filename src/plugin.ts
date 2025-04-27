@@ -1,5 +1,6 @@
 import { SimpleFetcher } from "./fetch-quads"
 
+const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 
 export interface DisplayPlugin {
     url: URL
@@ -13,8 +14,8 @@ export interface DisplayPluginModule {
 
 export function loadDefaultPlugins(): void {
     const plugins: Array<DisplayPlugin> = [
-        { url: new URL('http://localhost:3000/plugins/default-table-plugin.js'), name: 'Default Table Plugin', classes: [] },
-        { url: new URL('http://localhost:3000/plugins/dataset-plugin.js'), name: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
+        { url: new URL(`${pluginBaseUrl}default-table-plugin.js`), name: 'Default Table Plugin', classes: [] },
+        { url: new URL(`${pluginBaseUrl}dataset-plugin.js`), name: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
     ]
     const selectedPluginUrl = plugins[1].url
 
