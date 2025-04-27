@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "typescript": "^5.2.2",
-    "vite": "^6.2.2"
+    "vite": "^6.2.2",
+    "vite-plugin-static-copy": "^2.3.1"
   },
   "dependencies": {
     "@types/n3": "^1.24.1",
