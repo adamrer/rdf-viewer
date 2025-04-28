@@ -1,4 +1,5 @@
 import { SimpleFetcher } from "./fetch-quads";
+import { NO_LANG_SPECIFIED } from "./query-builder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] 
 
@@ -8,8 +9,7 @@ export async function displayQuads(entityIri: string, fetcher: SimpleFetcher, la
 
     const builder = fetcher.builder()
     const query = builder.subject(entityIri)
-                        .lang([language])
-                        .quadsWithoutLang()
+                        .lang([language, ""])
                         .build()
     const quadsBySource = await fetcher.fetchQuads(query)
 
@@ -44,8 +44,7 @@ async function getTitle(iri: string, fetcher: SimpleFetcher, language: string){
     const builder = fetcher.builder()
     builder.subject(iri)
         .predicates(titlePredicates)
-        .lang([language])
-        .quadsWithoutLang()
+        .lang([language, NO_LANG_SPECIFIED])
     const quadsBySource = await fetcher.fetchQuads(builder.build())
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{

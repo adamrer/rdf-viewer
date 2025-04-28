@@ -17,8 +17,7 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
     const builder = fetcher.builder();
     const query = builder
         .subject(entityIri)
-        .lang([language])
-        .quadsWithoutLang()
+        .lang([language, ""])
         .build();
         
     try {
@@ -115,8 +114,7 @@ async function getTitle(iri, fetcher, language){
     const builder = fetcher.builder()
     builder.subject(iri)
         .predicates(titlePredicates)
-        .lang([language])
-        .quadsWithoutLang()
+        .lang([language, ""])
     const quadsBySource = await fetcher.fetchQuads(builder.build())
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{

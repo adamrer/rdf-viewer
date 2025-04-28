@@ -1,3 +1,7 @@
+export const NO_LANG_SPECIFIED = ""
+type lang = typeof NO_LANG_SPECIFIED | string
+
+
 export interface Query{
     str(): string
 }
@@ -10,8 +14,8 @@ export interface SimpleQueryBuilder extends QueryBuilder {
     subject(iri: string): SimpleQueryBuilder // sets the subject. subject can be only one
     predicates(iris: string[]): SimpleQueryBuilder // adds predicates to or
     
-    lang(languages: string[]): SimpleQueryBuilder // adds language tag to or
-    quadsWithoutLang(): SimpleQueryBuilder // will fetch objects without language tags
+    lang(languages: lang[]): SimpleQueryBuilder // adds language tag to or
+    
     limit(number: number): SimpleQueryBuilder
     offset(number: number): SimpleQueryBuilder
 
@@ -20,58 +24,55 @@ export interface SimpleQueryBuilder extends QueryBuilder {
 
 
 class SparqlQueryBuilder implements SimpleQueryBuilder {
-    subject_: string|null = null
-    predicates_: string[] = []
-    langs_: string[] = []
-    limit_: number|null = null
-    offset_: number = 0
-    withoutLang_: boolean = false
+    subjectIri: string|null = null
+    predicateIris: string[] = []
+    langTags: string[] = []
+    limitNum: number|null = null
+    offsetNum: number = 0
+    withoutLang: boolean = false
 
     subject(iri: string): SimpleQueryBuilder{
-        this.subject_ = iri
+        this.subjectIri = iri
         return this
     }
     predicates(iris: string[]): SimpleQueryBuilder{
         
-        this.predicates_.push(...iris)
+        this.predicateIris.push(...iris)
         
         return this
     }
     lang(languages: string[]): SimpleQueryBuilder{
-        this.langs_.push(...languages)
-        return this
-    }
-    quadsWithoutLang(): SimpleQueryBuilder{
-        this.withoutLang_ = true
+        this.langTags.push(...languages)
+        languages.includes(NO_LANG_SPECIFIED) ? this.withoutLang = true : this.withoutLang = false
         return this
     }
     limit(number: number): SimpleQueryBuilder{
-        this.limit_ = number
+        this.limitNum = number
         return this
     }
     offset(number: number): SimpleQueryBuilder{
-        this.offset_ = number
+        this.offsetNum = number
         return this
     }
 
     build(): Query {
-        const subject = this.subject_ === null ? "?subject" : `<${decodeURIComponent(this.subject_)}>`
+        const subject = this.subjectIri === null ? "?subject" : `<${decodeURIComponent(this.subjectIri)}>`
         
         const graphVar = "?graph"
         const subjectVar = "?subject"
         const predicateVar = "?predicate"
         const objectVar = "?object"
 
-        this.predicates_.map(pred => decodeURIComponent(pred))
+        this.predicateIris.map(pred => decodeURIComponent(pred))
 
         let langFilter = ""
-        if (this.withoutLang_ || this.langs_.length !== 0){
+        if (this.withoutLang || this.langTags.length !== 0){
             langFilter = `FILTER ( ISIRI(?object) || ISBLANK(?object) `
-            if (this.withoutLang_){
+            if (this.withoutLang){
                 langFilter += "|| (!(langMatches(lang(?object),\"*\")))"
             }
-            if (this.langs_.length !== 0){
-                this.langs_.forEach(languageTag => {
+            if (this.langTags.length !== 0){
+                this.langTags.forEach(languageTag => {
                     langFilter += ` || (lang(?object) = \"${languageTag}\") `
                     
                 });
@@ -79,10 +80,10 @@ class SparqlQueryBuilder implements SimpleQueryBuilder {
             langFilter += ") ."
         }
 
-        const predicateFilter = this.predicates_.length === 0 ? "" : `FILTER ( ${predicateVar} IN ( <${this.predicates_.join('>,<')}> ) ) .`
+        const predicateFilter = this.predicateIris.length === 0 ? "" : `FILTER ( ${predicateVar} IN ( <${this.predicateIris.join('>,<')}> ) ) .`
 
-        const limitString = this.limit_ === null ? "" : `LIMIT ${this.limit_}`
-        const offsetString = this.offset_ === 0 ? "" : `OFFSET ${this.offset_}`
+        const limitString = this.limitNum === null ? "" : `LIMIT ${this.limitNum}`
+        const offsetString = this.offsetNum === 0 ? "" : `OFFSET ${this.offsetNum}`
 
         const query: string = `SELECT DISTINCT ${graphVar} ${subjectVar} ${predicateVar} ${objectVar}
         WHERE {

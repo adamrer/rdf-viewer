@@ -11,8 +11,7 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl){
     const builder = fetcher.builder();
     const query = builder
         .subject(entityIri)
-        .lang([language])
-        .quadsWithoutLang()
+        .lang([language, ""])
         .build();
 
     try{
@@ -41,7 +40,6 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl){
         messageEl.textContent = "Data loaded successfully!"
 
         const mergedQuads = mergeQuads(quadsBySource)
-        console.log(quadsBySource, mergedQuads)
         resultsEl.appendChild(createDescriptionList(mergedQuads))
 
     }
@@ -116,7 +114,6 @@ async function getObjectDisplay(object, fetcher, language){
     if (object.termType === 'Literal') {
         return object.value;
     }
-    console.log("joe mam")
     const title = await getTitle(object.value, fetcher, language);
     return `<a href="${object.value}">${title}</a>`;
 }
@@ -132,8 +129,7 @@ async function getTitle(iri, fetcher, language){
     const builder = fetcher.builder()
     builder.subject(iri)
         .predicates(titlePredicates)
-        .lang([language])
-        .quadsWithoutLang()
+        .lang([language, ""])
     const quadsBySource = await fetcher.fetchQuads(builder.build())
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{
