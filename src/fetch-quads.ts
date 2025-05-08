@@ -17,16 +17,19 @@ export interface DataSourceFetchResult{
     quads: Array<Quad>
 }
 
+// SPARQL JSON result RDF term types
+type ResultType = "uri" | "literal" | "bnode"
 
 interface ResultNamedNode {
-    type: string; 
+    type: ResultType; 
     value: string;
 }
 
 interface ResultLiteral {
-    type: string; 
+    type: ResultType; 
     value: string; 
     "xml:lang"?: string;
+    datatype?: string;
 }
 
 interface ResultQuad{
