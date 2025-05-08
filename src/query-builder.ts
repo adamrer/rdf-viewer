@@ -1,5 +1,5 @@
 export const NO_LANG_SPECIFIED = ""
-type lang = typeof NO_LANG_SPECIFIED | string
+export type Language = typeof NO_LANG_SPECIFIED | string
 
 
 export interface Query{
@@ -14,7 +14,7 @@ export interface SimpleQueryBuilder extends QueryBuilder {
     subject(iri: string): SimpleQueryBuilder // sets the subject. subject can be only one
     predicates(iris: string[]): SimpleQueryBuilder // adds predicates to or
     
-    lang(languages: lang[]): SimpleQueryBuilder // adds language tag to or
+    lang(languages: Language[]): SimpleQueryBuilder // adds language tag to or
     
     limit(number: number): SimpleQueryBuilder
     offset(number: number): SimpleQueryBuilder
