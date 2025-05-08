@@ -1,4 +1,4 @@
-import { SimpleFetcher } from './fetch-quads'
+import { Fetcher } from './fetch-quads'
 import { DisplayPluginModule, loadDefaultPlugins } from './plugin'
 import { addDataSource, createPluginMenu, getEntityIri, getDataSources, getLanguage } from './ui'
 import { displayQuads } from './default-display'
@@ -22,7 +22,7 @@ function addEventListeners(): void {
 
 async function showQuads(): Promise<void> {
     const entityIri = getEntityIri()
-    const fetcher: SimpleFetcher = new SimpleFetcher(getDataSources())
+    const fetcher: Fetcher = new Fetcher(getDataSources())
     const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
     const lang: string = getLanguage()
     // Clear previous results

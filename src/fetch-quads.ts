@@ -6,38 +6,69 @@ import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
 import { Engine } from 'quadstore-comunica'
 
-
+/**
+ * Interface for a data source from which it is possible to fetch RDF quads.
+ */
 export interface DataSource {
+    /**
+     * Fetches RDF quads from data source corresponding to the query. 
+     * 
+     * @param query - Query which specifies the desired quads to fetch.
+     * @returns DataSourceFetchResult Promise which contains the quads.
+     * @see DataSourceFetchResult
+     */
     fetchQuads(query: Query): Promise<DataSourceFetchResult>
 }
 
+/**
+ * Interface for the result of fetching quads from a data source.
+ */
 export interface DataSourceFetchResult{
+    /** Unique identifier of the data source from which the result origins. */
     identifier: string
-
+    /** Array of quads obtained from the data source. */
     quads: Array<Quad>
 }
 
-// SPARQL JSON result RDF term types
+/** SPARQL JSON result RDF term types */
 type ResultType = "uri" | "literal" | "bnode"
 
-interface ResultNamedNode {
-    type: ResultType; 
-    value: string;
-}
 
-interface ResultLiteral {
+/**
+ * Interface for a node, which can be a named node, literal or blank node, from JSON SPARQL result.
+ * 
+ * @see https://www.w3.org/TR/2013/REC-sparql11-results-json-20130321/#select-encode-terms
+ */
+interface ResultTerm {
+    /** Type of the node */
     type: ResultType; 
+    /** Value of the node */
     value: string; 
+    /** If the node is of a type literal, this represents a language tag */
     "xml:lang"?: string;
+    /** If the node is of a type literal, this represents the type of the literal */
     datatype?: string;
 }
 
-interface ResultQuad{
-    graph: ResultNamedNode
-    subject: ResultNamedNode
-    predicate: ResultNamedNode; 
-    object: ResultLiteral|ResultNamedNode; 
+/**
+ * Interface for a quad obtained from JSON SPARQL result.
+ */
+interface ResultQuad {
+    /** Term representing the graph of the quad */
+    graph: ResultTerm;
+    /** Term representing the subject of the quad */
+    subject: ResultTerm;
+    /** Term representing the predicate of the quad */
+    predicate: ResultTerm; 
+    /** Term representing the object of the quad */
+    object: ResultTerm; 
 }
+
+/**
+ * Class for fetching RDF quads from SPARQL endpoint.
+ * 
+ * @see DataSource
+ */
 export class SparqlDataSource implements DataSource {
     endpointUrl: URL;
 
@@ -45,12 +76,17 @@ export class SparqlDataSource implements DataSource {
         this.endpointUrl = endpointUrl
     }
 
+    /**
+     * 
+     * @param jsonQuads - Result JSON of the queried quads
+     * @returns Array of parsed quads
+     */
     parseJsonQuads(jsonQuads: any): Quad[]{
         return jsonQuads.map((quad: ResultQuad) => {
                 const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
                 const predicate = N3.DataFactory.namedNode(quad.predicate.value)
                 
-                const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultLiteral)["xml:lang"]) : 
+                const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultTerm)["xml:lang"]) : 
                 quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
                 
                 return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
@@ -83,7 +119,11 @@ export class SparqlDataSource implements DataSource {
     }
 }
 
-
+/**
+ * Class for fetching RDF quads from an RDF file.
+ * 
+ * @see DataSource
+ */
 export class FileDataSource implements DataSource {
     file: File;
 
@@ -139,14 +179,33 @@ export class FileDataSource implements DataSource {
 
 
 
-
+/**
+ * Interface for fetching quads from multiple data sources 
+ * 
+ * @see DataSource
+ */
 export interface QuadsFetcher {
+    /** Array of data sources to fetch from */
     dataSources: Array<DataSource>
+    /**
+     * Fetches RDF quads from all of the specified data sources
+     * 
+     * @param query - Query which specifies the desired quads to fetch.
+     */
     fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]>
+
+    /**
+     * @returns a query builder for creating the query
+     */
     builder(): QueryBuilder
 }
 
-export class SimpleFetcher implements QuadsFetcher {
+/**
+ * Class implementing the QuadsFetcher interface.
+ * 
+ * @see QuadsFetcher
+ */
+export class Fetcher implements QuadsFetcher {
     dataSources: Array<DataSource>
 
     constructor(dataSources: Array<DataSource>){
@@ -161,9 +220,6 @@ export class SimpleFetcher implements QuadsFetcher {
     builder() : SimpleQueryBuilder{
         return simpleBuilder()
     }
-
-
-
 }
 
 

@@ -1,4 +1,4 @@
-import { SimpleFetcher } from "./fetch-quads"
+import { Fetcher } from "./fetch-quads"
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 
@@ -9,7 +9,7 @@ export interface DisplayPlugin {
 }
 
 export interface DisplayPluginModule {
-    displayQuads(entityIri: string, fetcher: SimpleFetcher, language: string, resultsDiv: HTMLElement): Promise<void>
+    displayQuads(entityIri: string, fetcher: Fetcher, language: string, resultsDiv: HTMLElement): Promise<void>
 }
 
 function getPluginUrl(pluginName: string): string {

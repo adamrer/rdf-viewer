@@ -1,10 +1,10 @@
-import { SimpleFetcher } from "./fetch-quads";
+import { Fetcher } from "./fetch-quads";
 import { NO_LANG_SPECIFIED } from "./query-builder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] 
 
 
-export async function displayQuads(entityIri: string, fetcher: SimpleFetcher, language: string, resultsEl: HTMLElement) {
+export async function displayQuads(entityIri: string, fetcher: Fetcher, language: string, resultsEl: HTMLElement) {
     
 
     const builder = fetcher.builder()
@@ -40,7 +40,7 @@ export async function displayQuads(entityIri: string, fetcher: SimpleFetcher, la
     });
 }
 
-async function getTitle(iri: string, fetcher: SimpleFetcher, language: string){
+async function getTitle(iri: string, fetcher: Fetcher, language: string){
     const builder = fetcher.builder()
     builder.subject(iri)
         .predicates(titlePredicates)
