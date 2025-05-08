@@ -1,28 +1,85 @@
+/**
+ * Represents no language tag specified for a literal
+ */
 export const NO_LANG_SPECIFIED = ""
+
+/**
+ * Type representing a language tag of a literal
+ */
 export type Language = typeof NO_LANG_SPECIFIED | string
 
-
+/**
+ * Interface for a query which will be passed to a QueryFetcher.0,
+ * 
+ * @see QueryFetcher
+ */
 export interface Query{
     str(): string
 }
 
+/**
+ * Interface for a class for creating a Query.
+ * 
+ * @see Query
+ */
 export interface QueryBuilder{
     build(): Query
 }
 
+/**
+ * Interface for simple query builder with limited functionality.
+ * 
+ * @see QueryBuilder
+ */
 export interface SimpleQueryBuilder extends QueryBuilder {
-    subject(iri: string): SimpleQueryBuilder // sets the subject. subject can be only one
-    predicates(iris: string[]): SimpleQueryBuilder // adds predicates to or
+    /**
+     * Sets the subject of desired quads.
+     * 
+     * @param iri - IRI of an entity
+     */
+    subject(iri: string): SimpleQueryBuilder 
     
-    lang(languages: Language[]): SimpleQueryBuilder // adds language tag to or
+    /**
+     * Specifies what predicates can appear in the result of the query.
+     * 
+     * @param iris - Array of predicate IRIs that can appear in the result.
+     */
+    predicates(iris: string[]): SimpleQueryBuilder
     
+    /**
+     * Specifies the languages the objects of the result quads can have.
+     * 
+     * @param languages - Array of language tags that the objects can have in the result of the query
+     */
+    lang(languages: Language[]): SimpleQueryBuilder 
+    
+    /**
+     * Sets the maximum number of quads in the result of the query
+     * 
+     * @param number - The max number of quads in the result of the query
+     */
     limit(number: number): SimpleQueryBuilder
+
+    /**
+     * Sets the offset of returned quads.
+     * 
+     * @param number - The offset of returned quads
+     */
     offset(number: number): SimpleQueryBuilder
 
+
+    /**
+     * Builds the query
+     * 
+     * @returns a query implementing the Query interface
+     * @see Query
+     */
     build(): Query
 }
 
-
+/**
+ * @see SimpleQueryBuilder
+ */
 class SparqlQueryBuilder implements SimpleQueryBuilder {
     subjectIri: string|null = null
     predicateIris: string[] = []
