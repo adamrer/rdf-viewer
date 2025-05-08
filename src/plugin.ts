@@ -3,14 +3,20 @@ import { Language } from "./query-builder"
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 
+/**
+ * Interface representing a recorded plugin in the memory.
+ */
 export interface DisplayPlugin {
+    /** URL from which is the plugin accessible */
     url: string
-    name: string
+    /** Label which will be displayed to the user */
+    label: string
+    /** Classes which the plugin can display */
     classes: Array<string>
 }
 
 /**
- * Interface for representing the display plugin for displaying RDF quads.
+ * Interface representing the display plugin for displaying an RDF entity.
  */
 export interface DisplayPluginModule {
     /**
@@ -33,9 +39,9 @@ function getPluginUrl(pluginName: string): string {
  */
 export function loadDefaultPlugins(): void {
     const plugins: Array<DisplayPlugin> = [
-        { url: getPluginUrl('default-merge-plugin.js'), name: 'Default Merge Plugin', classes: [] },
-        { url: getPluginUrl('default-table-plugin.js'), name: 'Default Table Plugin', classes: [] },
-        { url: getPluginUrl('dataset-plugin.js'), name: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
+        { url: getPluginUrl('default-merge-plugin.js'), label: 'Default Merge Plugin', classes: [] },
+        { url: getPluginUrl('default-table-plugin.js'), label: 'Default Table Plugin', classes: [] },
+        { url: getPluginUrl('dataset-plugin.js'), label: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
     ]
     const selectedPluginUrl = plugins[0].url
 

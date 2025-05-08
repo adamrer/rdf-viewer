@@ -38,13 +38,13 @@ export function createPluginMenu(): void {
         }
     
         radio.addEventListener("change", () => {
-            console.log(`Plugin změněn na: ${plugin.name}`);
+            console.log(`Plugin změněn na: ${plugin.label}`);
             localStorage.setItem("selectedPlugin", pluginUrl);
         });
     
         const label = document.createElement("label");
         label.htmlFor = pluginUrl;
-        label.textContent = plugin.name;
+        label.textContent = plugin.label;
     
         pluginDiv?.appendChild(radio);
         pluginDiv?.appendChild(label);
