@@ -9,7 +9,7 @@ export const NO_LANG_SPECIFIED = ""
 export type Language = typeof NO_LANG_SPECIFIED | string
 
 /**
- * Interface for a query which will be passed to a QueryFetcher.0,
+ * Interface for a query which will be passed to a QueryFetcher,
  * 
  * @see QueryFetcher
  */
