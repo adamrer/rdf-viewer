@@ -1,5 +1,8 @@
-import { DataFactory, NamedNode, Quad, Term, Variable } from "n3"
+import { BlankNode, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
 import toNT from '@rdfjs/to-ntriples'
+
+// created by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
+
 
 interface INode {
     type: string
@@ -32,15 +35,73 @@ class TriplePattern implements ITriplePattern {
     }
 }
 
+type GroupGraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional
+
+interface IGraphPattern extends INode {
+    type: string
+    children: GroupGraphPattern[]
+    keyword: string
+    
+}
+
+abstract class GraphPattern implements IGraphPattern {
+    type: string
+    children: GroupGraphPattern[]
+    keyword: string
+
+    constructor(keyword: string, children: GroupGraphPattern[] = []){
+        this.keyword = keyword.toLocaleUpperCase()
+        this.type = keyword.toLocaleLowerCase()
+        this.children = children
+    }
+
+    add(patterns: GroupGraphPattern[]): GraphPattern {
+        if (this.children){
+            this.children.push(...patterns)
+        }
+        else{
+            this.children = patterns
+        }
+        return this
+    }
+
+    toSparql(): string {
+        const header = `${this.keyword} {`
+        const children = this.children.map(pattern => pattern.toSparql()).join('\n')
+        const footer = '}'
+
+        return [header, children, footer].join('\n')
+    }
+}
+
 interface IUnion extends INode {
     type: 'union'
-    left: IGraphPattern
-    right: IGraphPattern
+    leftChildren: GroupGraphPattern[]
+    rightChildren: GroupGraphPattern[]
+}
+
+class Union implements IUnion {
+    type = 'union' as const
+    leftChildren: GroupGraphPattern[]
+    rightChildren: GroupGraphPattern[]
+    constructor(leftChildren: GroupGraphPattern[] = [], rightChildren: GroupGraphPattern[] = []){
+        this.leftChildren = leftChildren
+        this.rightChildren = rightChildren
+    }
+    toSparql(): string {
+        const left = `{
+${this.leftChildren.map(pattern => pattern.toSparql()).join('\n')}
+}`
+        const right = `{
+${this.rightChildren.map(pattern => pattern.toSparql()).join('\n')}
+}`
+        return [left, 'UNION', right].join('\n')
+    }
 }
 
 interface ISelect extends INode {
     type: 'select'
-    where?: IWhere
+    where: Where
     distinct: boolean
     variables: Variable[]
     limit?: number
@@ -48,7 +109,6 @@ interface ISelect extends INode {
 
     setLimit(value: number): ISelect
     setOffset(value: number): ISelect
-    setWhere(where: IWhere): ISelect
     
 }
 
@@ -56,11 +116,11 @@ class Select implements ISelect {
     type = "select" as const
     variables: Variable[]
     distinct: boolean
-    where?: IWhere
+    where: Where
     limit?: number
     offset?: number
 
-    constructor(variables: Variable[], distinct: boolean = false, where?: IWhere, limit?: number, offset?: number){
+    constructor(variables: Variable[], distinct: boolean = false, where: Where, limit?: number, offset?: number){
         this.where = where
         this.distinct = distinct
         this.variables = variables
@@ -75,25 +135,46 @@ class Select implements ISelect {
         this.offset = value
         return this
     }
-    setWhere(where: IWhere): Select {
-        this.where = where
-        return this
-    }
     toSparql(): string {
-        const header = `SELECT ${this.distinct ? 'DISTINCT ' : ''} ${this.variables.map(variable => variable.value).join(', ')}`
+        const header = `SELECT ${this.distinct ? 'DISTINCT' : ''} ${this.variables.map(variable => toNT(variable)).join(', ')}`
         
         const limit = this.limit ? `LIMIT ${this.limit}` : ''
         const offset = this.offset ? `OFFSET ${this.offset}` : ''
-        const footer = [limit, offset]
+        const footerArray: string[] | null = []
+        this.limit ? footerArray.push(limit) : {}
+        this.offset ? footerArray.push(offset) : {}
+        const footerString = footerArray.length==0 ? null : footerArray.join('\n');
         
-        return [header, this.where?.toSparql(), footer].join('\n')
+        const result = [header]
+        this.where ? result.push(this.where.toSparql()) : {}
+        footerString ? result.push(footerString) : {}
+
+        return result.join('\n')
     }
     
 }
+
+// type Expression = IExpression | string | number
+
 interface IBind extends INode {
     type: 'bind'
     expression: IExpression
     variable: Variable
+}
+
+class Bind implements IBind {
+    type = "bind" as const
+    expression: IExpression
+    variable: Variable
+
+    constructor(expression: IExpression, variable: Variable){
+        this.expression = expression
+        this.variable = variable
+    }
+
+    toSparql(): string {
+        return `BIND ( ${this.expression.toSparql()} AS ${toNT(this.variable)} )`
+    }
 }
 
 interface IOptional extends INode {
@@ -101,10 +182,32 @@ interface IOptional extends INode {
     children: GroupGraphPattern[]
 }
 
+class Optional extends GraphPattern {
+    
+    constructor(children: GroupGraphPattern[] = []){
+        super('optional', children)
+    }
+}
+
 interface IFilter extends INode {
     type: 'filter'
     constraint: IExpression
 }
+
+class Filter implements IFilter {
+    type = 'filter' as const
+    constraint: IExpression
+    
+    constructor(constraint: IExpression){
+        this.constraint = constraint
+    }
+
+    toSparql(): string {
+        return `FILTER (${this.constraint.toSparql()})`
+    }
+
+}
+
 
 interface IGraph extends INode {
     type: 'graph'
@@ -112,11 +215,38 @@ interface IGraph extends INode {
     children: GroupGraphPattern[]
 }
 
+class Graph extends GraphPattern {
+    graph: Variable | NamedNode
+    constructor(graph: Variable | NamedNode, children: GroupGraphPattern[] = []){
+        super('graph', children)
+        this.graph = graph
+    }
+    override toSparql(): string {
+        const header = `${this.keyword} ${toNT(this.graph)} {`
+        const children = this.children.map(pattern => pattern.toSparql()).join('\n')
+        const footer = '}'
+
+        return [header, children, footer].join('\n')
+    }
+}
+
 type NumericOperator =  '+' | '-' | '*' | '/'
 type ConditionalOperator = '&&' | '||' 
 type RelationalOperator = '=' | '!=' | '<' | '>' | '<=' | '>=' | 'IN' | 'NOT IN'
 type Operator = NumericOperator | ConditionalOperator | RelationalOperator
 type ExpressionArg = IExpression | Term | number | string | IExpressionList | IBuiltInCall
+
+function expressionArgToString(arg: ExpressionArg): string{
+    if (arg instanceof NamedNode || arg instanceof Variable || arg instanceof BlankNode || arg instanceof Literal || arg instanceof DefaultGraph){
+        return toNT(arg)
+    }
+    const argType = typeof(arg)
+    if (argType === 'string' || argType === 'number'){
+        return arg.toString()
+    }
+    return (arg as IExpression|IExpressionList|IBuiltInCall).toSparql()
+    
+}
 
 interface IExpression extends INode {
     type: 'expression'
@@ -136,10 +266,10 @@ class Expression implements IExpression {
 
     toSparql(): string {
         if (this.args.length === 1){
-            return `${this.operator}(${this.args[0]})`
+            return `${this.operator}(${expressionArgToString(this.args[0])})`
         }
         if (this.args.length === 2){
-            return `${this.args[0]} ${this.operator} ${this.args[1]}`
+            return `${expressionArgToString(this.args[0])} ${this.operator} ${expressionArgToString(this.args[1])}`
         }
         
         return ''
@@ -147,7 +277,7 @@ class Expression implements IExpression {
 }
 
 
-type Func = 'STR' | 'LANG' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI'
+type UnaryFunc = 'STR' | 'LANG' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI'
 | 'BNODE'
 | 'ABS'
 | 'CEIL'
@@ -159,63 +289,72 @@ type Func = 'STR' | 'LANG' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI'
 | 'isLITERAL'
 | 'isNUMERIC'
 
+type Func = UnaryFunc
+
 interface IBuiltInCall extends INode{
     type: 'builtInCall'
     func: Func
-    args: IExpression|Variable
+    firstArg: IExpression|Variable
+    secondArg?: IExpression
+    thirdArg?: IExpression
 }
+
+class BuiltInCall implements IBuiltInCall {
+    type = 'builtInCall' as const
+    func: Func
+    firstArg: IExpression|Variable
+    secondArg?: IExpression
+    thirdArg?: IExpression
+
+    constructor(func: Func, firstArg: IExpression|Variable, secondArg?: IExpression, thirdArg?: IExpression){
+        this.func = func
+        this.firstArg = firstArg
+        this.secondArg = secondArg
+        this.thirdArg = thirdArg
+    }
+
+    toSparql(): string {
+
+        const args = [this.firstArg instanceof Variable ? toNT(this.firstArg) : this.firstArg.toSparql()]
+        this.secondArg ? args.push(this.secondArg.toSparql()) : {}
+        this.thirdArg ? args.push(this.thirdArg.toSparql()) : {}
+        return `${this.func}(${args.join(', ')})`
+    }
+}
+
 
 
 interface IExpressionList extends INode {
     type: 'expressionList'
-    expressions: IExpression[]
+    expressions: ExpressionArg[]
 }
 
-type GroupGraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional
+class ExpressionList implements IExpressionList {
+    type = 'expressionList' as const
+    expressions: ExpressionArg[]
+
+    constructor(expressions: ExpressionArg[]){
+        this.expressions = expressions
+    }
+
+    toSparql(): string {
+        return `(${this.expressions.map(expr => expressionArgToString(expr)).join(', ')})`
+    }
+}
 
 interface IWhere extends INode {
     type: 'where'
-    children?: GroupGraphPattern[]
+    children: GroupGraphPattern[]
 
     add(patterns: GroupGraphPattern[]): IWhere
 }
 
-class Where implements IWhere {
-    type = 'where' as const
-    children?: GroupGraphPattern[]
-
-    constructor(children?: GroupGraphPattern[]){
-        this.children = children
-    }
-
-    add(patterns: GroupGraphPattern[]): Where {
-        if (this.children){
-            this.children.push(...patterns)
-        }
-        else{
-            this.children = patterns
-        }
-        return this
-    }
-
-    toSparql(): string {
-        const header = `WHERE {`
-        const children = this.children?.map(pattern => pattern.toSparql()).join('\n')
-        const footer = '}'
-
-        return [header, children, footer].join('\n')
+class Where extends GraphPattern {
+    constructor(children: GroupGraphPattern[] = []){
+        super('where', children)
     }
 }
 
-interface IGraphPattern extends INode {
-    type: 'graphPattern'
-    children: GroupGraphPattern[]
-    
-}
-
-const where: Where = new Where([new TriplePattern(DataFactory.blankNode("b1"), DataFactory.namedNode('http://purl.org/dc/terms/title'), DataFactory.variable("title"))])
-const select: Select = new Select([DataFactory.variable("title")], true).setWhere(where)
-console.log(select.toSparql())
 
 
 export type {
@@ -238,6 +377,13 @@ export {
     Select,
     Where,
     TriplePattern,
-    Expression
+    Expression,
+    ExpressionList,
+    Bind,
+    BuiltInCall,
+    Union,
+    Optional,
+    Filter,
+    Graph
 
 }
