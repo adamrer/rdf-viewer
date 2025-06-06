@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import { Bind, BuiltInCall, Expression, ExpressionList, Filter, Graph, Optional, Select, TriplePattern, Union, Where } from "../query";
+import { Bind, BuiltInCall, OperatorExpression, ExpressionList, Filter, Graph, Optional, Select, TriplePattern, Union, Where } from "../query";
 import { DataFactory } from 'n3';
 
 
@@ -12,10 +12,10 @@ WHERE {
 })
 
 test('creates select', () => {
-    const bind: Bind = new Bind(new Expression('<', [DataFactory.variable('num'), 3]), DataFactory.variable('variable'))
-    const filter: Filter = new Filter(new Expression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))]))
+    const bind: Bind = new Bind(new OperatorExpression('<', [DataFactory.variable('num'), 3]), DataFactory.variable('variable'))
+    const filter: Filter = new Filter(new OperatorExpression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))]))
         const graph: Graph = new Graph(DataFactory.variable('graph'), [
-        new Filter(new Expression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))])),
+        new Filter(new OperatorExpression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))])),
         new TriplePattern(DataFactory.blankNode('b1'), DataFactory.namedNode('http://purl.org/dc/terms/title'), DataFactory.variable("title"))
     ])
     const where: Where = new Where([
@@ -51,7 +51,7 @@ _:b1 <http://purl.org/dc/terms/title> ?title .
 })
 
 test('creates bind', () => {
-    const bind: Bind = new Bind(new Expression('<', [DataFactory.variable('num'), 3]), DataFactory.variable('variable'))
+    const bind: Bind = new Bind(new OperatorExpression('<', [DataFactory.variable('num'), 3]), DataFactory.variable('variable'))
     expect(bind.toSparql()).toBe(`BIND ( ?num < 3 AS ?variable )`)
 })
 
@@ -61,13 +61,13 @@ test('creates built-in call', () => {
 })
 
 test('creates filter with IN', () => {
-    const filter: Filter = new Filter(new Expression('IN', [DataFactory.variable('variable'), 
+    const filter: Filter = new Filter(new OperatorExpression('IN', [DataFactory.variable('variable'), 
         new ExpressionList(['hola', 3, DataFactory.literal('Joe', 'en')])] ))
     expect(filter.toSparql()).toBe(`FILTER (?variable IN (hola, 3, "Joe"@en))`)
 })
 
 test('creates filter', () => {
-    const filter: Filter = new Filter(new Expression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))]))
+    const filter: Filter = new Filter(new OperatorExpression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))]))
     expect(filter.toSparql()).toBe(`FILTER (isIRI(?object) || isBLANK(?object))`)
 })
 
@@ -94,7 +94,7 @@ _:b1 <http://purl.org/dc/terms/title> ?title .
 
 test('creates graph block', () => {
     const graph: Graph = new Graph(DataFactory.variable('graph'), [
-        new Filter(new Expression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))])),
+        new Filter(new OperatorExpression('||', [new BuiltInCall('isIRI', DataFactory.variable('object')), new BuiltInCall('isBLANK', DataFactory.variable('object'))])),
         new TriplePattern(DataFactory.blankNode('b1'), DataFactory.namedNode('http://purl.org/dc/terms/title'), DataFactory.variable("title"))
     ])
     expect(graph.toSparql()).toBe(`GRAPH ?graph {
