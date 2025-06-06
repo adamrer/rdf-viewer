@@ -2,6 +2,8 @@ import {expect, test} from 'vitest';
 import { sparqlStepBuilder } from '../query-builder';
 import { DataFactory } from 'n3';
 import * as sparql from '../query';
+import toNT from '@rdfjs/to-ntriples'
+
 
 test('creates full select query', () => {
     const builder = sparqlStepBuilder()
@@ -86,4 +88,60 @@ test ('creates select query with * selector', () => {
 WHERE {
 ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/dcat#Dataset> .
 }`)
+})
+
+test('creates simple query builder query', () => {
+    const builder = sparqlStepBuilder()
+
+    const entityIri = DataFactory.namedNode('https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS')
+    const graphVar = DataFactory.variable('graph')
+    const subjectVar = DataFactory.variable('subject')
+    const predicateVar = DataFactory.variable('predicate')
+    const objectVar = DataFactory.variable('object')
+    
+    const graphPattern = builder.graphPatternBuilder().triple(subjectVar, predicateVar, objectVar)
+                    .filter(
+                        sparql.or(
+                            sparql.isIri(objectVar), 
+                            sparql.or(
+                                sparql.isBlank(objectVar), 
+                                sparql.or(
+                                    sparql.not(sparql.langMatches(sparql.lang(objectVar), DataFactory.literal("*"))), 
+                                    sparql.eq(sparql.lang(objectVar), DataFactory.literal("cs"))))))
+                    
+
+    const wherePattern = builder.graphPatternBuilder()
+        .bind(
+            entityIri,
+            subjectVar
+        ).union(
+            builder.graphPatternBuilder().graph(
+                graphVar,
+                graphPattern.build()
+            ).build(),
+            [...graphPattern.build()]
+        ).build()
+    const select = builder.select([
+        DataFactory.variable('graph'),
+        DataFactory.variable('subject'),
+        DataFactory.variable('predicate'),
+        DataFactory.variable('object'),
+    ]).where(wherePattern).limit(100).offset(99).build()
+    expect(select.toSparql()).toBe(`SELECT DISTINCT ${toNT(graphVar)}, ${toNT(subjectVar)}, ${toNT(predicateVar)}, ${toNT(objectVar)}
+WHERE {
+BIND ( ${toNT(entityIri)} AS ${toNT(subjectVar)} )
+{
+GRAPH ?graph {
+${toNT(subjectVar)} ${toNT(predicateVar)} ${toNT(objectVar)} .
+FILTER (isIRI(${toNT(objectVar)}) || isBLANK(${toNT(objectVar)}) || !(langMatches(LANG(${toNT(objectVar)}), \"*\")) || LANG(${toNT(objectVar)}) = ${toNT(DataFactory.literal("cs"))})
+}
+}
+UNION
+{
+${toNT(subjectVar)} ${toNT(predicateVar)} ${toNT(objectVar)} .
+FILTER (isIRI(${toNT(objectVar)}) || isBLANK(${toNT(objectVar)}) || !(langMatches(LANG(${toNT(objectVar)}), \"*\")) || LANG(${toNT(objectVar)}) = ${toNT(DataFactory.literal("cs"))})
+}
+}
+LIMIT 100
+OFFSET 99`)
 })

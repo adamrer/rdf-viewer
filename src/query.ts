@@ -305,8 +305,11 @@ type UnaryFunc = 'STR' | 'LANG' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI'
 | 'isBLANK'
 | 'isLITERAL'
 | 'isNUMERIC'
+| '!'
 
-type Func = UnaryFunc
+type BinaryFunc = 'langMatches'
+
+type Func = UnaryFunc | BinaryFunc
 
 interface IBuiltInCall extends INode{
     type: 'builtInCall'
@@ -398,6 +401,8 @@ const datatype = (arg: Expression) => new BuiltInCall('DATATYPE', arg)
 const bound = (arg: Expression) => new BuiltInCall('BOUND', arg)
 const iri = (arg: Expression) => new BuiltInCall('IRI', arg)
 const uri = (arg: Expression) => new BuiltInCall('URI', arg)
+const not = (arg: Expression) => new BuiltInCall('!', arg)
+const langMatches = (firstArg: Expression, secondArg: Expression) => new BuiltInCall('langMatches', firstArg, secondArg)
 
 
 export type {
@@ -446,6 +451,7 @@ export {
     datatype,
     bound,
     iri,
-    uri
-
+    uri,
+    not,
+    langMatches
 }
