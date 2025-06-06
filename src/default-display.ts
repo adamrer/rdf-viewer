@@ -1,5 +1,5 @@
 import { Fetcher } from "./fetch-quads";
-import { NO_LANG_SPECIFIED } from "./query-builder";
+import { NO_LANG_SPECIFIED, SimpleQueryBuilder } from "./query-builder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] 
 
@@ -7,7 +7,7 @@ const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/
 export async function displayQuads(entityIri: string, fetcher: Fetcher, language: string, resultsEl: HTMLElement) {
     
 
-    const builder = fetcher.builder()
+    const builder = (fetcher.builder() as SimpleQueryBuilder)
     const query = builder.subject(entityIri)
                         .lang([language, ""])
                         .build()
@@ -41,7 +41,7 @@ export async function displayQuads(entityIri: string, fetcher: Fetcher, language
 }
 
 async function getTitle(iri: string, fetcher: Fetcher, language: string){
-    const builder = fetcher.builder()
+    const builder = fetcher.builder() as SimpleQueryBuilder
     builder.subject(iri)
         .predicates(titlePredicates)
         .lang([language, NO_LANG_SPECIFIED])
