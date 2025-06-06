@@ -1,8 +1,14 @@
 import { BlankNode, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
 import toNT from '@rdfjs/to-ntriples'
 
-// created by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
+// created with sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
+type QueryType = 'select'|'construct'|'ask'|'describe'
+
+interface Query {
+    type: QueryType
+    toSparql(): string
+}
 
 interface INode {
     type: string
@@ -35,27 +41,27 @@ class TriplePattern implements ITriplePattern {
     }
 }
 
-type GroupGraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional
+type GraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional
 
 interface IGraphPattern extends INode {
     type: string
-    children: GroupGraphPattern[]
+    children: GraphPattern[]
     keyword: string
     
 }
 
-abstract class GraphPattern implements IGraphPattern {
+abstract class GraphPatternClause implements IGraphPattern {
     type: string
-    children: GroupGraphPattern[]
+    children: GraphPattern[]
     keyword: string
 
-    constructor(keyword: string, children: GroupGraphPattern[] = []){
+    constructor(keyword: string, children: GraphPattern[] = []){
         this.keyword = keyword.toLocaleUpperCase()
         this.type = keyword.toLocaleLowerCase()
         this.children = children
     }
 
-    add(patterns: GroupGraphPattern[]): GraphPattern {
+    add(patterns: GraphPattern[]): GraphPatternClause {
         if (this.children){
             this.children.push(...patterns)
         }
@@ -76,15 +82,15 @@ abstract class GraphPattern implements IGraphPattern {
 
 interface IUnion extends INode {
     type: 'union'
-    leftChildren: GroupGraphPattern[]
-    rightChildren: GroupGraphPattern[]
+    leftChildren: GraphPattern[]
+    rightChildren: GraphPattern[]
 }
 
 class Union implements IUnion {
     type = 'union' as const
-    leftChildren: GroupGraphPattern[]
-    rightChildren: GroupGraphPattern[]
-    constructor(leftChildren: GroupGraphPattern[] = [], rightChildren: GroupGraphPattern[] = []){
+    leftChildren: GraphPattern[]
+    rightChildren: GraphPattern[]
+    constructor(leftChildren: GraphPattern[] = [], rightChildren: GraphPattern[] = []){
         this.leftChildren = leftChildren
         this.rightChildren = rightChildren
     }
@@ -98,30 +104,38 @@ ${this.rightChildren.map(pattern => pattern.toSparql()).join('\n')}
         return [left, 'UNION', right].join('\n')
     }
 }
+type AllSelector = '*'
+
+function isAllSelector(value:SelectVariables): boolean{
+    return value === '*'
+}
+
+type SelectVariables = Variable[]|AllSelector
 
 interface ISelect extends INode {
     type: 'select'
     where: Where
     distinct: boolean
-    variables: Variable[]
+    variables: SelectVariables
     limit?: number
     offset?: number
 
     setLimit(value: number): ISelect
     setOffset(value: number): ISelect
+    setWhere(where: Where): ISelect
     
 }
 
-class Select implements ISelect {
+class Select implements ISelect, Query {
     type = "select" as const
-    variables: Variable[]
+    variables: SelectVariables
     distinct: boolean
     where: Where
     limit?: number
     offset?: number
 
-    constructor(variables: Variable[], distinct: boolean = false, where: Where, limit?: number, offset?: number){
-        this.where = where
+    constructor(variables: SelectVariables, distinct: boolean = false, where?: Where, limit?: number, offset?: number){
+        this.where = where ? where : new Where()
         this.distinct = distinct
         this.variables = variables
         this.limit = limit
@@ -135,8 +149,12 @@ class Select implements ISelect {
         this.offset = value
         return this
     }
+    setWhere(where: Where): ISelect {
+        this.where = where
+        return this
+    }
     toSparql(): string {
-        const header = `SELECT ${this.distinct ? 'DISTINCT' : ''} ${this.variables.map(variable => toNT(variable)).join(', ')}`
+        const header = `SELECT ${this.distinct ? 'DISTINCT ' : ''}${isAllSelector(this.variables) ? this.variables : (this.variables as Variable[]).map(variable => toNT(variable)).join(', ')}`
         
         const limit = this.limit ? `LIMIT ${this.limit}` : ''
         const offset = this.offset ? `OFFSET ${this.offset}` : ''
@@ -154,56 +172,55 @@ class Select implements ISelect {
     
 }
 
-// type Expression = IExpression | string | number
 
 interface IBind extends INode {
     type: 'bind'
-    expression: IExpression
+    expression: Expression
     variable: Variable
 }
 
 class Bind implements IBind {
     type = "bind" as const
-    expression: IExpression
+    expression: Expression
     variable: Variable
 
-    constructor(expression: IExpression, variable: Variable){
+    constructor(expression: Expression, variable: Variable){
         this.expression = expression
         this.variable = variable
     }
 
     toSparql(): string {
-        return `BIND ( ${this.expression.toSparql()} AS ${toNT(this.variable)} )`
+        return `BIND ( ${expressionToString(this.expression)} AS ${toNT(this.variable)} )`
     }
 }
 
 interface IOptional extends INode {
     type: 'optional'
-    children: GroupGraphPattern[]
+    children: GraphPattern[]
 }
 
-class Optional extends GraphPattern {
+class Optional extends GraphPatternClause {
     
-    constructor(children: GroupGraphPattern[] = []){
+    constructor(children: GraphPattern[] = []){
         super('optional', children)
     }
 }
 
 interface IFilter extends INode {
     type: 'filter'
-    constraint: IExpression
+    constraint: Expression
 }
 
 class Filter implements IFilter {
     type = 'filter' as const
-    constraint: IExpression
+    constraint: Expression
     
-    constructor(constraint: IExpression){
+    constructor(constraint: Expression){
         this.constraint = constraint
     }
 
     toSparql(): string {
-        return `FILTER (${this.constraint.toSparql()})`
+        return `FILTER (${expressionToString(this.constraint)})`
     }
 
 }
@@ -212,12 +229,12 @@ class Filter implements IFilter {
 interface IGraph extends INode {
     type: 'graph'
     graph: NamedNode | Variable
-    children: GroupGraphPattern[]
+    children: GraphPattern[]
 }
 
-class Graph extends GraphPattern {
+class Graph extends GraphPatternClause {
     graph: Variable | NamedNode
-    constructor(graph: Variable | NamedNode, children: GroupGraphPattern[] = []){
+    constructor(graph: Variable | NamedNode, children: GraphPattern[] = []){
         super('graph', children)
         this.graph = graph
     }
@@ -234,9 +251,9 @@ type NumericOperator =  '+' | '-' | '*' | '/'
 type ConditionalOperator = '&&' | '||' 
 type RelationalOperator = '=' | '!=' | '<' | '>' | '<=' | '>=' | 'IN' | 'NOT IN'
 type Operator = NumericOperator | ConditionalOperator | RelationalOperator
-type ExpressionArg = IExpression | Term | number | string | IExpressionList | IBuiltInCall
+type Expression = IOperatorExpression | Term | number | string | IExpressionList | IBuiltInCall
 
-function expressionArgToString(arg: ExpressionArg): string{
+function expressionToString(arg: Expression): string{
     if (arg instanceof NamedNode || arg instanceof Variable || arg instanceof BlankNode || arg instanceof Literal || arg instanceof DefaultGraph){
         return toNT(arg)
     }
@@ -244,32 +261,32 @@ function expressionArgToString(arg: ExpressionArg): string{
     if (argType === 'string' || argType === 'number'){
         return arg.toString()
     }
-    return (arg as IExpression|IExpressionList|IBuiltInCall).toSparql()
+    return (arg as IOperatorExpression|IExpressionList|IBuiltInCall).toSparql()
     
 }
 
-interface IExpression extends INode {
+interface IOperatorExpression extends INode {
     type: 'expression'
     operator: Operator
-    args: ExpressionArg[]
+    args: Expression[]
 }
 
-class Expression implements IExpression {
+class OperatorExpression implements IOperatorExpression {
     type = 'expression' as const
     operator: Operator
-    args: ExpressionArg[]
+    args: Expression[]
 
-    constructor(operator: Operator, args: ExpressionArg[]){
+    constructor(operator: Operator, args: Expression[]){
         this.operator = operator
         this.args = args
     }
 
     toSparql(): string {
         if (this.args.length === 1){
-            return `${this.operator}(${expressionArgToString(this.args[0])})`
+            return `${this.operator}(${expressionToString(this.args[0])})`
         }
         if (this.args.length === 2){
-            return `${expressionArgToString(this.args[0])} ${this.operator} ${expressionArgToString(this.args[1])}`
+            return `${expressionToString(this.args[0])} ${this.operator} ${expressionToString(this.args[1])}`
         }
         
         return ''
@@ -294,19 +311,19 @@ type Func = UnaryFunc
 interface IBuiltInCall extends INode{
     type: 'builtInCall'
     func: Func
-    firstArg: IExpression|Variable
-    secondArg?: IExpression
-    thirdArg?: IExpression
+    firstArg: Expression
+    secondArg?: Expression
+    thirdArg?: Expression
 }
 
 class BuiltInCall implements IBuiltInCall {
     type = 'builtInCall' as const
     func: Func
-    firstArg: IExpression|Variable
-    secondArg?: IExpression
-    thirdArg?: IExpression
+    firstArg: Expression
+    secondArg?: Expression
+    thirdArg?: Expression
 
-    constructor(func: Func, firstArg: IExpression|Variable, secondArg?: IExpression, thirdArg?: IExpression){
+    constructor(func: Func, firstArg: Expression, secondArg?: Expression, thirdArg?: Expression){
         this.func = func
         this.firstArg = firstArg
         this.secondArg = secondArg
@@ -315,9 +332,9 @@ class BuiltInCall implements IBuiltInCall {
 
     toSparql(): string {
 
-        const args = [this.firstArg instanceof Variable ? toNT(this.firstArg) : this.firstArg.toSparql()]
-        this.secondArg ? args.push(this.secondArg.toSparql()) : {}
-        this.thirdArg ? args.push(this.thirdArg.toSparql()) : {}
+        const args = [expressionToString(this.firstArg)]
+        this.secondArg ? args.push(expressionToString(this.secondArg)) : {}
+        this.thirdArg ? args.push(expressionToString(this.thirdArg)) : {}
         return `${this.func}(${args.join(', ')})`
     }
 }
@@ -326,64 +343,109 @@ class BuiltInCall implements IBuiltInCall {
 
 interface IExpressionList extends INode {
     type: 'expressionList'
-    expressions: ExpressionArg[]
+    expressions: Expression[]
 }
 
 class ExpressionList implements IExpressionList {
     type = 'expressionList' as const
-    expressions: ExpressionArg[]
+    expressions: Expression[]
 
-    constructor(expressions: ExpressionArg[]){
+    constructor(expressions: Expression[]){
         this.expressions = expressions
     }
 
     toSparql(): string {
-        return `(${this.expressions.map(expr => expressionArgToString(expr)).join(', ')})`
+        return `(${this.expressions.map(expr => expressionToString(expr)).join(', ')})`
     }
 }
 
-interface IWhere extends INode {
-    type: 'where'
-    children: GroupGraphPattern[]
 
-    add(patterns: GroupGraphPattern[]): IWhere
-}
-
-class Where extends GraphPattern {
-    constructor(children: GroupGraphPattern[] = []){
+class Where extends GraphPatternClause {
+    constructor(children: GraphPattern[] = []){
         super('where', children)
     }
 }
 
+// Operator expressions
+const lt = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('<', [firstArg, secondArg])
+const le = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('<=', [firstArg, secondArg])
+const gt = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('>', [firstArg, secondArg])
+const ge = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('>=', [firstArg, secondArg])
+const eq = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('=', [firstArg, secondArg])
+const ne = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('!=', [firstArg, secondArg])
+
+const and = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('&&', [firstArg, secondArg])
+const or = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('||', [firstArg, secondArg])
+
+const mul = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('*', [firstArg, secondArg])
+const add = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('+', [firstArg, secondArg])
+const sub = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('-', [firstArg, secondArg])
+const div = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('/', [firstArg, secondArg])
+
+const inExpr = (firstArg: Expression, secondArg: ExpressionList) => new OperatorExpression('IN', [firstArg, secondArg])
+const notIn = (firstArg: Expression, secondArg: ExpressionList) => new OperatorExpression('NOT IN', [firstArg, secondArg])
+
+// Built-in calls
+const isIri = (arg: Expression) => new BuiltInCall('isIRI', arg)
+const isUri = (arg: Expression) => new BuiltInCall('isURI', arg)
+const isBlank = (arg: Expression) => new BuiltInCall('isBLANK', arg)
+const isLiteral = (arg: Expression) => new BuiltInCall('isLITERAL', arg)
+const isNumeric = (arg: Expression) => new BuiltInCall('isNUMERIC', arg)
+const ceil = (arg: Expression) => new BuiltInCall('CEIL', arg)
+const abs = (arg: Expression) => new BuiltInCall('ABS', arg)
+const lang = (arg: Expression) => new BuiltInCall('LANG', arg)
+const datatype = (arg: Expression) => new BuiltInCall('DATATYPE', arg)
+const bound = (arg: Expression) => new BuiltInCall('BOUND', arg)
+const iri = (arg: Expression) => new BuiltInCall('IRI', arg)
+const uri = (arg: Expression) => new BuiltInCall('URI', arg)
 
 
 export type {
-    INode,
-    ISelect,
-    IWhere,
-    ITriplePattern,
-    IGraphPattern,
-    IUnion,
-    IFilter,
-    IOptional,
-    IBind,
-    IBuiltInCall,
-    IExpression,
-    IExpressionList,
-    IGraph,
+    QueryType,
+    Query,
+    SelectVariables,
+    GraphPattern,
+    Expression
 }
 
 export {
     Select,
     Where,
     TriplePattern,
-    Expression,
+    OperatorExpression,
     ExpressionList,
     Bind,
     BuiltInCall,
     Union,
     Optional,
     Filter,
-    Graph
+    Graph,
+    GraphPatternClause,
+    lt,
+    le,
+    gt,
+    ge,
+    eq,
+    ne,
+    and,
+    or,
+    mul,
+    add,
+    sub,
+    div,
+    inExpr as in,
+    notIn,
+    isIri,
+    isUri,
+    isBlank,
+    isLiteral,
+    isNumeric,
+    ceil,
+    abs,
+    lang,
+    datatype,
+    bound,
+    iri,
+    uri
 
 }

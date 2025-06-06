@@ -1,6 +1,6 @@
 import N3 from 'n3'
 import { Quad } from 'n3'
-import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder } from "./query-builder";
+import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder, sparqlStepBuilder, QueryStepBuilder } from "./query-builder";
 import { Quadstore } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
@@ -9,7 +9,7 @@ import { Engine } from 'quadstore-comunica'
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
  */
-export interface DataSource {
+interface DataSource {
     /**
      * Fetches RDF quads from data source corresponding to the query. 
      * 
@@ -23,7 +23,7 @@ export interface DataSource {
 /**
  * Interface for the result of fetching quads from a data source.
  */
-export interface DataSourceFetchResult{
+interface DataSourceFetchResult{
     /** Unique identifier of the data source from which the result origins. */
     identifier: string
     /** Array of quads obtained from the data source. */
@@ -69,7 +69,7 @@ interface ResultQuad {
  * 
  * @see DataSource
  */
-export class SparqlDataSource implements DataSource {
+class SparqlDataSource implements DataSource {
     endpointUrl: URL;
 
     constructor(endpointUrl: URL){
@@ -95,7 +95,7 @@ export class SparqlDataSource implements DataSource {
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
         
-        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.str())}`;
+        const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.toSparql())}`;
         return new Promise((resolve, reject) =>{
             fetch(queryUrl, {
                 headers: {
@@ -124,7 +124,7 @@ export class SparqlDataSource implements DataSource {
  * 
  * @see DataSource
  */
-export class FileDataSource implements DataSource {
+class FileDataSource implements DataSource {
     file: File;
 
     constructor(file: File){
@@ -155,7 +155,7 @@ export class FileDataSource implements DataSource {
           else if (quad) store.put(quad);
         });
 
-        const bindingsStream = await engine.queryBindings(query.str())
+        const bindingsStream = await engine.queryBindings(query.toSparql())
         return new Promise<DataSourceFetchResult>((resolve, reject) =>{
             const quads: Quad[] = []
             bindingsStream.on('data', binding => {
@@ -184,7 +184,7 @@ export class FileDataSource implements DataSource {
  * 
  * @see DataSource
  */
-export interface QuadsFetcher {
+interface QuadsFetcher {
     /** Array of data sources to fetch from */
     dataSources: Array<DataSource>
     /**
@@ -197,7 +197,7 @@ export interface QuadsFetcher {
     /**
      * @returns a query builder for creating the query
      */
-    builder(): QueryBuilder
+    builder(): QueryBuilder|QueryStepBuilder
 }
 
 /**
@@ -205,7 +205,7 @@ export interface QuadsFetcher {
  * 
  * @see QuadsFetcher
  */
-export class Fetcher implements QuadsFetcher {
+class Fetcher implements QuadsFetcher {
     dataSources: Array<DataSource>
 
     constructor(dataSources: Array<DataSource>){
@@ -223,3 +223,33 @@ export class Fetcher implements QuadsFetcher {
 }
 
 
+class FetcherWithStepBuilder implements QuadsFetcher {
+    dataSources: Array<DataSource>
+
+    constructor(dataSources: Array<DataSource>){
+        this.dataSources = dataSources
+    }
+
+    async fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]> {
+        const promises = this.dataSources.map(ds => ds.fetchQuads(query))
+        return Promise.all(promises)
+    }
+    
+    builder() {
+        return sparqlStepBuilder()
+    }
+}
+
+
+export type {
+    DataSource,
+    DataSourceFetchResult,
+    QuadsFetcher
+}
+
+export {
+    SparqlDataSource,
+    FileDataSource,
+    Fetcher,
+    FetcherWithStepBuilder
+}

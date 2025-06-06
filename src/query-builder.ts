@@ -1,28 +1,23 @@
+import { NamedNode, Term, Variable } from "n3"
+import { Query, Bind, Expression, Filter, Graph, GraphPattern, Select, SelectVariables, TriplePattern, Union, Where } from "./query"
+
 /**
  * Represents no language tag specified for a literal
  */
-export const NO_LANG_SPECIFIED = ""
+const NO_LANG_SPECIFIED = ""
 
 /**
  * Type representing a language tag of a literal
  */
-export type Language = typeof NO_LANG_SPECIFIED | string
+type Language = typeof NO_LANG_SPECIFIED | string
 
-/**
- * Interface for a query which will be passed to a QueryFetcher,
- * 
- * @see QueryFetcher
- */
-export interface Query{
-    str(): string
-}
 
 /**
  * Interface for a class for creating a Query.
  * 
  * @see Query
  */
-export interface QueryBuilder{
+interface QueryBuilder{
     build(): Query
 }
 
@@ -31,7 +26,7 @@ export interface QueryBuilder{
  * 
  * @see QueryBuilder
  */
-export interface SimpleQueryBuilder extends QueryBuilder {
+interface SimpleQueryBuilder extends QueryBuilder {
     /**
      * Sets the subject of desired quads.
      * 
@@ -77,10 +72,91 @@ export interface SimpleQueryBuilder extends QueryBuilder {
     build(): Query
 }
 
+
+class GraphPatternBuilder {
+    patterns: GraphPattern[]
+    constructor(patterns: GraphPattern[] = []){
+        this.patterns = patterns
+    }
+    triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder {
+        this.patterns.push(new TriplePattern(subject, predicate, object))
+        return this
+    }
+    filter(constraint: Expression): GraphPatternBuilder{
+        this.patterns.push(new Filter(constraint))
+        return this
+    }
+    bind(expression: Expression, variable: Variable): GraphPatternBuilder {
+        this.patterns.push(new Bind(expression, variable))
+        return this
+    }
+    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilder {
+        this.patterns.push(new Union(left, right))
+        return this
+    }
+    graph(graph: Variable | NamedNode, children: GraphPattern[] = []): GraphPatternBuilder {
+        this.patterns.push(new Graph(graph, children))
+        return this
+    }
+    
+    build(): GraphPattern[] {
+        return this.patterns
+    }
+}
+
+// Can add interfaces for Ask, Describe and Construct
+type QueryStepBuilder = SelectStepBuilder // |AskStepBuilder|DescribeStepBuilder|ConstructStepBuilder
+
+interface SelectStepBuilder {
+    select(variables: SelectVariables, distinct: boolean): QueryBuilder
+}
+
+// selectBuilder (variables, distinct) -> whereBuilder (adding patterns) -> solutionBuilder (limit, offset) -> build
+class SparqlQueryBuilder {
+    select(variables: SelectVariables, distinct: boolean = true): SelectStep {
+        return new SelectStep(variables, distinct)
+    }
+
+    graphPatternBuilder(patterns: GraphPattern[] = []): GraphPatternBuilder {
+        return new GraphPatternBuilder(patterns)
+    }
+
+}
+interface ISelectStep extends QueryBuilder {
+    where(children: GraphPattern[]): SelectStep
+    limit(value: number): SelectStep
+    offset(value: number): SelectStep
+
+    build(): Select
+}
+class SelectStep implements ISelectStep {
+    select: Select
+    constructor(variables: SelectVariables, distinct: boolean = true){
+        this.select = new Select(variables, distinct)
+    }
+    where(children: GraphPattern[]): SelectStep{
+        this.select.setWhere(new Where(children))
+        return this
+    }
+    limit(value: number): SelectStep{
+        this.select.setLimit(value)
+        return this
+    }
+    offset(value: number): SelectStep{
+        this.select.setOffset(value)
+        return this
+    }
+
+    build(): Select {
+        return this.select
+    }
+}
+
+
 /**
  * @see SimpleQueryBuilder
  */
-class SparqlQueryBuilder implements SimpleQueryBuilder {
+class SparqlSimpleQueryBuilder implements SimpleQueryBuilder {
     subjectIri: string|null = null
     predicateIris: string[] = []
     langTags: string[] = []
@@ -124,7 +200,7 @@ class SparqlQueryBuilder implements SimpleQueryBuilder {
 
         let langFilter = ""
         if (this.withoutLang || this.langTags.length !== 0){
-            langFilter = `FILTER ( ISIRI(?object) || ISBLANK(?object) `
+            langFilter = `FILTER ( isIRI(?object) || isBLANK(?object) `
             if (this.withoutLang){
                 langFilter += "|| (!(langMatches(lang(?object),\"*\")))"
             }
@@ -162,10 +238,28 @@ class SparqlQueryBuilder implements SimpleQueryBuilder {
         ${offsetString}
         ${limitString}
         `
-        return {str(): string {return query} }
+        return {type: 'select', toSparql(): string {return query} }
     }
 }
 
-export function simpleBuilder(): SimpleQueryBuilder{
+function simpleBuilder(): SimpleQueryBuilder{
+    return new SparqlSimpleQueryBuilder()
+}
+
+function sparqlStepBuilder(): SparqlQueryBuilder{
     return new SparqlQueryBuilder()
+}
+
+export type {
+    QueryBuilder,
+    QueryStepBuilder,
+    SimpleQueryBuilder,
+    Language,
+    Query
+}
+
+export {
+    NO_LANG_SPECIFIED,
+    simpleBuilder,
+    sparqlStepBuilder
 }
