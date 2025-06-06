@@ -1,6 +1,6 @@
 import N3 from 'n3'
 import { Quad } from 'n3'
-import { QueryBuilder, Query, SimpleQueryBuilder, simpleBuilder, sparqlStepBuilder, QueryStepBuilder } from "./query-builder";
+import { QueryBuilder, Query, simpleBuilder, sparqlStepBuilder, QueryStepBuilder } from "./query-builder";
 import { Quadstore } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
@@ -178,7 +178,7 @@ class FileDataSource implements DataSource {
 }
 
 
-
+type BuilderType = 'simple'|'step'
 /**
  * Interface for fetching quads from multiple data sources 
  * 
@@ -197,7 +197,7 @@ interface QuadsFetcher {
     /**
      * @returns a query builder for creating the query
      */
-    builder(): QueryBuilder|QueryStepBuilder
+    builder(type: BuilderType): QueryBuilder|QueryStepBuilder
 }
 
 /**
@@ -217,28 +217,16 @@ class Fetcher implements QuadsFetcher {
         return Promise.all(promises)
     }
     
-    builder() : SimpleQueryBuilder{
-        return simpleBuilder()
+    builder(type: BuilderType = 'simple') : QueryBuilder|QueryStepBuilder {
+        switch (type) {
+            case 'simple':
+                return simpleBuilder()
+            case 'step':
+                return sparqlStepBuilder()
+        }
     }
 }
 
-
-class FetcherWithStepBuilder implements QuadsFetcher {
-    dataSources: Array<DataSource>
-
-    constructor(dataSources: Array<DataSource>){
-        this.dataSources = dataSources
-    }
-
-    async fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]> {
-        const promises = this.dataSources.map(ds => ds.fetchQuads(query))
-        return Promise.all(promises)
-    }
-    
-    builder() {
-        return sparqlStepBuilder()
-    }
-}
 
 
 export type {
@@ -250,6 +238,5 @@ export type {
 export {
     SparqlDataSource,
     FileDataSource,
-    Fetcher,
-    FetcherWithStepBuilder
+    Fetcher
 }
