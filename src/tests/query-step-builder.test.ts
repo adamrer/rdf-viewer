@@ -122,12 +122,12 @@ test('creates simple query builder query', () => {
             [...graphPattern.build()]
         ).build()
     const select = builder.select([
-        DataFactory.variable('graph'),
-        DataFactory.variable('subject'),
-        DataFactory.variable('predicate'),
-        DataFactory.variable('object'),
+        graphVar,
+        subjectVar,
+        predicateVar,
+        objectVar,
     ]).where(wherePattern).limit(100).offset(99).build()
-    expect(select.toSparql()).toBe(`SELECT DISTINCT ${toNT(graphVar)}, ${toNT(subjectVar)}, ${toNT(predicateVar)}, ${toNT(objectVar)}
+    expect(select.toSparql()).toBe(`SELECT DISTINCT ${toNT(graphVar)} ${toNT(subjectVar)} ${toNT(predicateVar)} ${toNT(objectVar)}
 WHERE {
 BIND ( ${toNT(entityIri)} AS ${toNT(subjectVar)} )
 {
