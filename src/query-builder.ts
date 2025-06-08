@@ -1,5 +1,4 @@
-import { Query, GraphPattern, Select, SelectVariables, Where } from "./query"
-import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
+import { Query } from "./query"
 
 /**
  * Represents no language tag specified for a literal

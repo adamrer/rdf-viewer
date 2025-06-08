@@ -54,6 +54,10 @@ function sparqlStepBuilder(): SparqlQueryBuilder{
     return new SparqlQueryBuilder()
 }
 
+export type {
+    QueryStepBuilder
+}
+
 export {
     sparqlStepBuilder
 }

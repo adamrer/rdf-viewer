@@ -1,10 +1,11 @@
 import N3 from 'n3'
 import { Quad } from 'n3'
-import { QueryBuilder, Query, simpleBuilder, sparqlStepBuilder, QueryStepBuilder } from "./query-builder";
+import { QueryBuilder, Query, simpleBuilder } from "./query-builder";
 import { Quadstore } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
 import { Engine } from 'quadstore-comunica'
+import { QueryStepBuilder, sparqlStepBuilder } from './query-step-builder';
 
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
