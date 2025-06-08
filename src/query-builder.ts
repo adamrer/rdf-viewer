@@ -1,5 +1,5 @@
 import { NamedNode, Term, Variable } from "n3"
-import { Query, Bind, Expression, Filter, Graph, GraphPattern, Select, SelectVariables, TriplePattern, Union, Where } from "./query"
+import { Query, Bind, Expression, Filter, Graph, GraphPattern, Select, SelectVariables, TriplePattern, Union, Where, Optional, DataBlockValue, Values } from "./query"
 
 /**
  * Represents no language tag specified for a literal
@@ -72,29 +72,47 @@ interface SimpleQueryBuilder extends QueryBuilder {
     build(): Query
 }
 
+interface GraphPatternBuilder {
+    triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder
+    filter(constraint: Expression): GraphPatternBuilder
+    bind(expression: Expression, variable: Variable): GraphPatternBuilder
+    values(variable: Variable, values: DataBlockValue[]): GraphPatternBuilder
+    optional(children: GraphPattern[]): GraphPatternBuilder
+    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilder
+    graph(graph: Variable | NamedNode, children: GraphPattern[]): GraphPatternBuilder
+    build(): GraphPattern[]
+}
 
-class GraphPatternBuilder {
+class GraphPatternBuilderImpl implements GraphPatternBuilder {
     patterns: GraphPattern[]
     constructor(patterns: GraphPattern[] = []){
         this.patterns = patterns
     }
-    triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder {
+    triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilderImpl {
         this.patterns.push(new TriplePattern(subject, predicate, object))
         return this
     }
-    filter(constraint: Expression): GraphPatternBuilder{
+    filter(constraint: Expression): GraphPatternBuilderImpl{
         this.patterns.push(new Filter(constraint))
         return this
     }
-    bind(expression: Expression, variable: Variable): GraphPatternBuilder {
+    bind(expression: Expression, variable: Variable): GraphPatternBuilderImpl {
         this.patterns.push(new Bind(expression, variable))
         return this
     }
-    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilder {
+    values(variable: Variable, values: DataBlockValue[]): GraphPatternBuilderImpl{
+        this.patterns.push(new Values(variable, values))
+        return this
+    }
+    optional(children: GraphPattern[] = []): GraphPatternBuilderImpl {
+        this.patterns.push(new Optional(children))
+        return this
+    }
+    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilderImpl {
         this.patterns.push(new Union(left, right))
         return this
     }
-    graph(graph: Variable | NamedNode, children: GraphPattern[] = []): GraphPatternBuilder {
+    graph(graph: Variable | NamedNode, children: GraphPattern[] = []): GraphPatternBuilderImpl {
         this.patterns.push(new Graph(graph, children))
         return this
     }
@@ -117,8 +135,8 @@ class SparqlQueryBuilder {
         return new SelectStep(variables, distinct)
     }
 
-    graphPatternBuilder(patterns: GraphPattern[] = []): GraphPatternBuilder {
-        return new GraphPatternBuilder(patterns)
+    graphPatternBuilder(patterns: GraphPattern[] = []): GraphPatternBuilderImpl {
+        return graphPatternBuilder(patterns)
     }
 
 }
@@ -189,10 +207,10 @@ class SparqlSimpleQueryBuilder implements SimpleQueryBuilder {
     }
 
     build(): Query {
-        const subject = this.subjectIri === null ? "?subject" : `<${decodeURIComponent(this.subjectIri)}>`
+        const subjectVar = "?subject"
+        const subject = this.subjectIri === null ? subjectVar : `<${decodeURIComponent(this.subjectIri)}>`
         
         const graphVar = "?graph"
-        const subjectVar = "?subject"
         const predicateVar = "?predicate"
         const objectVar = "?object"
 
@@ -250,9 +268,14 @@ function sparqlStepBuilder(): SparqlQueryBuilder{
     return new SparqlQueryBuilder()
 }
 
+function graphPatternBuilder(patterns: GraphPattern[] = []): GraphPatternBuilderImpl{
+    return new GraphPatternBuilderImpl(patterns)
+}
+
 export type {
     QueryBuilder,
     QueryStepBuilder,
+    GraphPatternBuilder,
     SimpleQueryBuilder,
     Language,
     Query
@@ -261,5 +284,6 @@ export type {
 export {
     NO_LANG_SPECIFIED,
     simpleBuilder,
-    sparqlStepBuilder
+    sparqlStepBuilder,
+    graphPatternBuilder
 }
