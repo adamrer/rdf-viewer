@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import { sparqlStepBuilder } from '../query-builder';
+import { sparqlStepBuilder } from '../query-step-builder';
 import { DataFactory } from 'n3';
 import * as sparql from '../query';
 import toNT from '@rdfjs/to-ntriples'

@@ -1,6 +1,7 @@
-import { BlankNode, DataFactory, Literal, NamedNode, Term, Variable } from "n3"
-import { GraphPatternBuilder, Language, Query, graphPatternBuilder } from "./query-builder"
+import { DataFactory, Literal, NamedNode, Variable } from "n3"
+import { Language, Query } from "./query-builder"
 import { eq, isBlank, isIri, lang, or, Select, Where } from "./query"
+import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
 
 /**
  * Interface for simple query step builder where you can specify
@@ -97,13 +98,41 @@ interface ObjectStep {
  * @see SimpleStepQueryBuilder
  */
 interface FinalStep {
+    /**
+     * Specifies the language tag that the object literals should have
+     * 
+     * @param language - language tag that object literals should have
+     */
     lang(language: Language): FinalStep
     
+    /**
+     * Sets the limit of returned quads
+     * 
+     * @param value - the value for the limit
+     */
     limit(value: number): FinalStep
+    /**
+     * Sets the offset of the returned quads
+     * 
+     * @param value - the value for the offset
+     */
     offset(value: number): FinalStep
+    
     // groupBy(variableName: string): GraphStep
+
+    /**
+     * Returns the Query object
+     * 
+     * @see Query
+     */
     build(): Query
 }
+
+const NO_GRAPH = undefined
+const ALL_GRAPHS: readonly string[] = Object.freeze([])
+const ALL_SUBJECTS: readonly string[] = Object.freeze([])
+const ALL_PREDICATES: readonly string[] = Object.freeze([])
+const ALL_OBJECTS: readonly (string|LiteralCreationHelper)[] = Object.freeze([])
 
 interface SubjectBuildingHelper {
     graphPatternBuilder: GraphPatternBuilder
@@ -136,9 +165,9 @@ class SubjectStepImpl implements SubjectStep {
         this.graphValues = graphs
     }
     
-    subjects(iris: string[] = []): PredicateStep {
+    subjects(iris: readonly string[] = ALL_SUBJECTS): PredicateStep {
         const subjectValues = iris.map(iri => DataFactory.namedNode(iri))
-        if (iris.length !== 0){
+        if (iris !== ALL_SUBJECTS){
             this.graphPatternBuilder.values(this.subjectVar, subjectValues)
         }
         return new PredicateStepImpl(
@@ -156,7 +185,7 @@ class SubjectStepImpl implements SubjectStep {
 }
 class SimpleStepQueryBuilderImpl extends SubjectStepImpl implements GraphStepProvider {
 
-    graphs(iris: string[] = []): SubjectStep {
+    graphs(iris: readonly string[] = ALL_GRAPHS): SubjectStep {
         this.graphValues = iris.map(iri => DataFactory.namedNode(iri))
         return new SubjectStepImpl(this.graphValues)
     }
@@ -169,7 +198,7 @@ class PredicateStepImpl implements PredicateStep {
         this.buildingHelper = buildingHelper
     }
     
-    predicates(iris: string[] = []): ObjectStep {
+    predicates(iris: readonly string[] = ALL_PREDICATES): ObjectStep {
         
         const predicateValues = iris.map(iri => DataFactory.namedNode(iri))
         if (iris.length !== 0){
@@ -186,7 +215,7 @@ class ObjectStepImpl implements ObjectStep {
     constructor(buildingHelper: PredicateBuildingHelper){
         this.buildingHelper = buildingHelper
     }
-    objects(iris: (string|LiteralCreationHelper)[] = []): FinalStep {
+    objects(iris: readonly (string|LiteralCreationHelper)[] = ALL_OBJECTS): FinalStep {
 
         const objectValues = iris.map(item => 
             typeof item === 'string' ? DataFactory.namedNode(item) : 
@@ -236,7 +265,7 @@ class FinalStepImpl implements FinalStep {
         
         this.buildingHelper.graphPatternBuilder.triple(this.buildingHelper.subjectVar, this.buildingHelper.predicateVar, this.buildingHelper.objectVar)
         // default graph
-        if (!this.buildingHelper.graphValues){
+        if (this.buildingHelper.graphValues === NO_GRAPH){
             this.query.setWhere(new Where(this.buildingHelper.graphPatternBuilder.build()))
             return this.query
 
