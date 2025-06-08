@@ -41,7 +41,7 @@ class TriplePattern implements ITriplePattern {
     }
 }
 
-type GraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional
+type GraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional | IValues
 
 interface IGraphPattern extends INode {
     type: string
@@ -123,6 +123,7 @@ interface ISelect extends INode {
     setLimit(value: number): ISelect
     setOffset(value: number): ISelect
     setWhere(where: Where): ISelect
+    addVariables(variables: Variable[]): ISelect
     
 }
 
@@ -134,7 +135,7 @@ class Select implements ISelect, Query {
     limit?: number
     offset?: number
 
-    constructor(variables: SelectVariables, distinct: boolean = false, where?: Where, limit?: number, offset?: number){
+    constructor(variables: SelectVariables, distinct: boolean = true, where?: Where, limit?: number, offset?: number){
         this.where = where ? where : new Where()
         this.distinct = distinct
         this.variables = variables
@@ -149,12 +150,21 @@ class Select implements ISelect, Query {
         this.offset = value
         return this
     }
-    setWhere(where: Where): ISelect {
+    setWhere(where: Where): Select {
         this.where = where
         return this
     }
+    addVariables(variables: Variable[]) : Select {
+        if (variables.length){ // it is not AllSelector, it is an array
+            (this.variables as Variable[]).push(...variables)
+        }
+        else {
+            this.variables = variables
+        }
+        return this
+    }
     toSparql(): string {
-        const header = `SELECT ${this.distinct ? 'DISTINCT ' : ''}${isAllSelector(this.variables) ? this.variables : (this.variables as Variable[]).map(variable => toNT(variable)).join(', ')}`
+        const header = `SELECT ${this.distinct ? 'DISTINCT ' : ''}${isAllSelector(this.variables) ? this.variables : (this.variables as Variable[]).map(variable => toNT(variable)).join(' ')}`
         
         const limit = this.limit ? `LIMIT ${this.limit}` : ''
         const offset = this.offset ? `OFFSET ${this.offset}` : ''
@@ -172,6 +182,25 @@ class Select implements ISelect, Query {
     
 }
 
+type DataBlockValue = NamedNode | Literal | number | 'true' | 'false'
+interface IValues extends INode {
+    type: 'values'
+    values: DataBlockValue[]
+    variable: Variable
+}
+
+class Values implements IValues {
+    type = 'values' as const
+    values: DataBlockValue[]
+    variable: Variable
+    constructor(variable: Variable, values: DataBlockValue[]){
+        this.values = values
+        this.variable = variable
+    }
+    toSparql(): string {
+        return `VALUES ${toNT(this.variable)} { ${this.values.map(value => expressionToString(value)).join(' ')} }`
+    }
+}
 
 interface IBind extends INode {
     type: 'bind'
@@ -410,7 +439,8 @@ export type {
     Query,
     SelectVariables,
     GraphPattern,
-    Expression
+    Expression,
+    DataBlockValue
 }
 
 export {
@@ -419,6 +449,7 @@ export {
     TriplePattern,
     OperatorExpression,
     ExpressionList,
+    Values,
     Bind,
     BuiltInCall,
     Union,
