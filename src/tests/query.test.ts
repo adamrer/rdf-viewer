@@ -5,7 +5,7 @@ import { DataFactory } from 'n3';
 
 test('creates select with empty where', () => {
     const select: Select = new Select([DataFactory.variable("title"), DataFactory.variable("author")], true, new Where())
-    expect(select.toSparql()).toBe(`SELECT DISTINCT ?title, ?author
+    expect(select.toSparql()).toBe(`SELECT DISTINCT ?title ?author
 WHERE {
 
 }`)
