@@ -13,14 +13,14 @@ import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builde
  * 
  * graph -> subject -> predicates -> objects -> build
  */
-interface SimpleStepQueryBuilder extends SubjectStep, GraphStepProvider {
+interface SimpleQueryStepBuilder extends SubjectStep, GraphStepProvider {
 
 }
 
 /**
  * Provides the ability to specify the graph for SimpleStepQueryBuilder
  * 
- * @see SimpleStepQueryBuilder
+ * @see SimpleQueryStepBuilder
  */
 interface GraphStepProvider {
     /**
@@ -39,7 +39,7 @@ interface GraphStepProvider {
 /**
  * Second build step of the SimpleStepQueryBuilder for setting the subject
  * 
- * @see SimpleStepQueryBuilder
+ * @see SimpleQueryStepBuilder
  */
 interface SubjectStep {
     /**
@@ -55,7 +55,7 @@ interface SubjectStep {
 /**
  * Third build step of the SimpleStepQueryBuilder for setting the first predicate
  * 
- * @see SimpleStepQueryBuilder
+ * @see SimpleQueryStepBuilder
  */
 interface PredicateStep {
     /**
@@ -78,7 +78,7 @@ interface LiteralCreationHelper{
  * Fourth build step of the SimpleStepQueryBuilder for setting the first object and 
  * additional predicates
  * 
- * @see SimpleStepQueryBuilder
+ * @see SimpleQueryStepBuilder
  */
 interface ObjectStep {
     /**
@@ -95,7 +95,7 @@ interface ObjectStep {
  * Fifth and final build step of the SimpleStepQueryBuilder for setting solution for
  * the query like limit and offset. Also for building the query.
  * 
- * @see SimpleStepQueryBuilder
+ * @see SimpleQueryStepBuilder
  */
 interface FinalStep {
     /**
@@ -282,13 +282,13 @@ class FinalStepImpl implements FinalStep {
     }
 }
 
-function simpleStepQueryBuilder() : SimpleStepQueryBuilder {
+function simpleQueryStepBuilder() : SimpleQueryStepBuilder {
     return new SimpleStepQueryBuilderImpl()
 }
 
 export type {
-    SimpleStepQueryBuilder
+    SimpleQueryStepBuilder
 }
 export {
-    simpleStepQueryBuilder
+    simpleQueryStepBuilder
 }

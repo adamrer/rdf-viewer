@@ -119,7 +119,7 @@ test('creates simple query builder query', () => {
                 graphVar,
                 graphPattern.build()
             ).build(),
-            [...graphPattern.build()]
+            graphPattern.build()
         ).build()
     const select = builder.select([
         graphVar,

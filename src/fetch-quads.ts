@@ -5,7 +5,7 @@ import { Quadstore } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
 import { Engine } from 'quadstore-comunica'
-import { QueryStepBuilder, sparqlStepBuilder } from './query-step-builder';
+import { SimpleQueryStepBuilder, simpleQueryStepBuilder } from './simple-query-step-builder';
 
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
@@ -198,7 +198,7 @@ interface QuadsFetcher {
     /**
      * @returns a query builder for creating the query
      */
-    builder(type: BuilderType): QueryBuilder|QueryStepBuilder
+    builder(type: BuilderType): QueryBuilder|SimpleQueryStepBuilder
 }
 
 /**
@@ -218,12 +218,12 @@ class Fetcher implements QuadsFetcher {
         return Promise.all(promises)
     }
     
-    builder(type: BuilderType = 'simple') : QueryBuilder|QueryStepBuilder {
+    builder(type: BuilderType = 'simple') : QueryBuilder|SimpleQueryStepBuilder {
         switch (type) {
             case 'simple':
                 return simpleBuilder()
             case 'step':
-                return sparqlStepBuilder()
+                return simpleQueryStepBuilder()
         }
     }
 }

@@ -8,11 +8,13 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl){
     const messageEl = document.createElement('p');
     resultsEl.appendChild(messageEl);
 
-    const builder = fetcher.builder();
+    const builder = fetcher.builder('step');
     const query = builder
-        .subject(entityIri)
-        .lang([language, ""])
-        .build();
+        .subjects([entityIri])
+        .predicates()
+        .objects()
+        .lang(language)
+        .build()
 
     try{
         messageEl.textContent = "Loading data..."
@@ -126,11 +128,14 @@ async function labelQuad(quad, fetcher, language){
 }
 
 async function getTitle(iri, fetcher, language){
-    const builder = fetcher.builder()
-    builder.subject(iri)
+    const builder = fetcher.builder('step')
+    const query = builder
+        .subjects([iri])
         .predicates(titlePredicates)
-        .lang([language, ""])
-    const quadsBySource = await fetcher.fetchQuads(builder.build())
+        .objects()
+        .lang(language)
+        .build()
+    const quadsBySource = await fetcher.fetchQuads(query)
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{
         if (fetchedQuads.quads.length !== 0){
