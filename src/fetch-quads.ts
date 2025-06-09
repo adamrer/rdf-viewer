@@ -1,12 +1,13 @@
 import N3 from 'n3'
 import { Quad } from 'n3'
 import { QueryBuilder, Query, simpleBuilder } from "./query-builder";
-import { Quadstore } from 'quadstore';
+import { Quadstore, VoidResult } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
 import { AbstractLevel } from 'abstract-level'
 import { Engine } from 'quadstore-comunica'
 import { SimpleQueryStepBuilder, simpleQueryStepBuilder } from './simple-query-step-builder';
-
+import { Readable } from 'readable-stream';
+import { rdfParser } from 'rdf-parse';
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
  */
@@ -161,21 +162,41 @@ class FileDataSource implements DataSource {
         }
         await this.store.open()
         if (!this.file){
-            throw Error('File missing')
+            throw Error('File is missing')
         }
-        
         const fileText = await this.file.text()
-        const parser = new N3.Parser()
-        const allQuads = parser.parse(fileText)
-        await this.store.multiPut(allQuads)
-        this.fileLoaded = true
-        
+        const stream = Readable.from([fileText])
+        const putPromises: Promise<VoidResult>[] = []
+        await new Promise<void>((resolve, reject) => {
+            if (!this.file) {
+               throw new Error("File is missing");
+            }
+            rdfParser
+                .parse(stream, { path: this.file.name, baseIRI: 'http://localhost:8080' })
+                .on('data', (quad) => {
+                putPromises.push(this.store.put(quad));
+                })
+                .on('error', (err) => {
+                console.error('Error while parsing file', err);
+                reject(err);
+                })
+                .on('end', async () => {
+                try {
+                    await Promise.all(putPromises);
+                    this.fileLoaded = true;
+                    resolve();
+                } catch (err) {
+                    console.error('Error while storing quads', err);
+                    reject(err);
+                }
+                });
+        });
     }
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> { 
 
         await this.loadFile()
-
+        
         const bindingsStream = await this.engine.queryBindings(query.toSparql())
         return new Promise<DataSourceFetchResult>((resolve, reject) =>{
             const quads: Quad[] = []
