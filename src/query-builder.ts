@@ -1,4 +1,4 @@
-import { Query } from "./query"
+import { Query, QueryNodeFactory } from "./query"
 
 /**
  * Represents no language tag specified for a literal
@@ -159,7 +159,7 @@ class SparqlSimpleQueryBuilder implements SimpleQueryBuilder {
         ${offsetString}
         ${limitString}
         `
-        return {type: 'select', toSparql(): string {return query} }
+        return {type: 'select', where: QueryNodeFactory.where(), toSparql(): string {return query} }
     }
 }
 
