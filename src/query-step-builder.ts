@@ -1,5 +1,5 @@
 import { graphPatternBuilder, GraphPatternBuilder } from "./graph-pattern-builder"
-import { GraphPattern, Select, SelectVariables, Where } from "./query"
+import { GraphPattern, Select, SelectVariables, QueryNodeFactory } from "./query"
 import { QueryBuilder } from "./query-builder"
 
 // Can add interfaces for Ask, Describe and Construct
@@ -30,10 +30,10 @@ interface ISelectStep extends QueryBuilder {
 class SelectStep implements ISelectStep {
     select: Select
     constructor(variables: SelectVariables, distinct: boolean = true){
-        this.select = new Select(variables, distinct)
+        this.select = QueryNodeFactory.select(variables, distinct)
     }
     where(children: GraphPattern[]): SelectStep{
-        this.select.setWhere(new Where(children))
+        this.select.setWhere(QueryNodeFactory.where(children))
         return this
     }
     limit(value: number): SelectStep{

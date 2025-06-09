@@ -1,6 +1,6 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3"
 import { Language, Query } from "./query-builder"
-import { eq, isBlank, isIri, lang, or, Select, Where } from "./query"
+import { eq, isBlank, isIri, lang, or, Select, Where, QueryNodeFactory } from "./query"
 import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
 
 /**
@@ -239,7 +239,7 @@ class FinalStepImpl implements FinalStep {
     
     constructor(buildingHelper: ObjectBuildingHelper){
         this.buildingHelper = buildingHelper
-        this.query  = new Select([this.buildingHelper.subjectVar, this.buildingHelper.predicateVar, this.buildingHelper.objectVar])
+        this.query  = QueryNodeFactory.select([this.buildingHelper.subjectVar, this.buildingHelper.predicateVar, this.buildingHelper.objectVar])
     }
     lang(language: Language): FinalStep {
         this.buildingHelper.graphPatternBuilder.filter(
@@ -266,7 +266,7 @@ class FinalStepImpl implements FinalStep {
         this.buildingHelper.graphPatternBuilder.triple(this.buildingHelper.subjectVar, this.buildingHelper.predicateVar, this.buildingHelper.objectVar)
         // default graph
         if (this.buildingHelper.graphValues === NO_GRAPH){
-            this.query.setWhere(new Where(this.buildingHelper.graphPatternBuilder.build()))
+            this.query.setWhere(QueryNodeFactory.where(this.buildingHelper.graphPatternBuilder.build()))
             return this.query
 
         }
@@ -277,7 +277,7 @@ class FinalStepImpl implements FinalStep {
         }
         this.query.addVariables([this.buildingHelper.graphVar])
         wherePatternBuilder.graph(this.buildingHelper.graphVar, this.buildingHelper.graphPatternBuilder.build())
-        this.query.setWhere(new Where(wherePatternBuilder.build()))
+        this.query.setWhere(QueryNodeFactory.where(wherePatternBuilder.build()))
         return this.query
     }
 }

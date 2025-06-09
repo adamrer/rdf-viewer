@@ -1,5 +1,5 @@
 import { NamedNode, Term, Variable } from "n3"
-import { Bind, DataBlockValue, Expression, Filter, Graph, GraphPattern, Optional, TriplePattern, Union, Values } from "./query"
+import { DataBlockValue, Expression, GraphPattern, QueryNodeFactory } from "./query"
 
 interface GraphPatternBuilder {
     triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder
@@ -18,31 +18,31 @@ class GraphPatternBuilderImpl implements GraphPatternBuilder {
         this.patterns = patterns
     }
     triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilderImpl {
-        this.patterns.push(new TriplePattern(subject, predicate, object))
+        this.patterns.push(QueryNodeFactory.triplePattern(subject, predicate, object))
         return this
     }
     filter(constraint: Expression): GraphPatternBuilderImpl{
-        this.patterns.push(new Filter(constraint))
+        this.patterns.push(QueryNodeFactory.filter(constraint))
         return this
     }
     bind(expression: Expression, variable: Variable): GraphPatternBuilderImpl {
-        this.patterns.push(new Bind(expression, variable))
+        this.patterns.push(QueryNodeFactory.bind(expression, variable))
         return this
     }
     values(variable: Variable, values: DataBlockValue[]): GraphPatternBuilderImpl{
-        this.patterns.push(new Values(variable, values))
+        this.patterns.push(QueryNodeFactory.values(variable, values))
         return this
     }
     optional(children: GraphPattern[] = []): GraphPatternBuilderImpl {
-        this.patterns.push(new Optional(children))
+        this.patterns.push(QueryNodeFactory.optional(children))
         return this
     }
     union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilderImpl {
-        this.patterns.push(new Union(left, right))
+        this.patterns.push(QueryNodeFactory.union(left, right))
         return this
     }
     graph(graph: Variable | NamedNode, children: GraphPattern[] = []): GraphPatternBuilderImpl {
-        this.patterns.push(new Graph(graph, children))
+        this.patterns.push(QueryNodeFactory.graph(graph, children))
         return this
     }
     

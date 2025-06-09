@@ -4,26 +4,41 @@ import toNT from '@rdfjs/to-ntriples'
 // created with sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
 type QueryType = 'select'|'construct'|'ask'|'describe'
+type NodeType = 'select'|
+    'triplePattern'|
+    'operatorExpression'|
+    'expressionList'|
+    'values'|
+    'bind'|
+    'builtInCall'|
+    'union'|
+    'filter'|
+    'expression'|
+    GraphPatternClauseType
+    
+type GraphPatternClauseType = 'where'|
+    'optional'|
+    'graph' 
 
 interface Query {
     type: QueryType
     toSparql(): string
 }
 
-interface INode {
-    type: string
+interface Node {
+    type: NodeType
     toSparql(): string
 }
 
 
-interface ITriplePattern extends INode {
+interface TriplePattern extends Node {
     type: 'triplePattern'
     subject: Term
     predicate: NamedNode | Variable
     object: Term
 }
 
-class TriplePattern implements ITriplePattern {
+class TriplePatternImpl implements TriplePattern {
     type = 'triplePattern' as const
     subject: Term
     predicate: NamedNode | Variable
@@ -41,27 +56,27 @@ class TriplePattern implements ITriplePattern {
     }
 }
 
-type GraphPattern = IGraph | IGraphPattern | ITriplePattern | ISelect | IUnion | IFilter | IBind | IOptional | IValues
+type GraphPattern = Graph | GraphPatternClause | TriplePattern | Select | Union | Filter | Bind | Optional | Values
 
-interface IGraphPattern extends INode {
-    type: string
+interface GraphPatternClause extends Node {
+    type: GraphPatternClauseType
     children: GraphPattern[]
     keyword: string
     
 }
 
-abstract class GraphPatternClause implements IGraphPattern {
-    type: string
+abstract class GraphPatternClauseImpl implements GraphPatternClause {
+    type: GraphPatternClauseType
     children: GraphPattern[]
     keyword: string
 
-    constructor(keyword: string, children: GraphPattern[] = []){
+    constructor(keyword: GraphPatternClauseType, children: GraphPattern[] = []){
         this.keyword = keyword.toLocaleUpperCase()
-        this.type = keyword.toLocaleLowerCase()
+        this.type = keyword
         this.children = children
     }
 
-    add(patterns: GraphPattern[]): GraphPatternClause {
+    add(patterns: GraphPattern[]): GraphPatternClauseImpl {
         if (this.children){
             this.children.push(...patterns)
         }
@@ -80,13 +95,13 @@ abstract class GraphPatternClause implements IGraphPattern {
     }
 }
 
-interface IUnion extends INode {
+interface Union extends Node {
     type: 'union'
     leftChildren: GraphPattern[]
     rightChildren: GraphPattern[]
 }
 
-class Union implements IUnion {
+class UnionImpl implements Union {
     type = 'union' as const
     leftChildren: GraphPattern[]
     rightChildren: GraphPattern[]
@@ -112,7 +127,7 @@ function isAllSelector(value:SelectVariables): boolean{
 
 type SelectVariables = Variable[]|AllSelector
 
-interface ISelect extends INode {
+interface Select extends Node {
     type: 'select'
     where: Where
     distinct: boolean
@@ -120,14 +135,13 @@ interface ISelect extends INode {
     limit?: number
     offset?: number
 
-    setLimit(value: number): ISelect
-    setOffset(value: number): ISelect
-    setWhere(where: Where): ISelect
-    addVariables(variables: Variable[]): ISelect
+    setLimit(value: number): Select
+    setOffset(value: number): Select
+    setWhere(where: Where): Select
+    addVariables(variables: Variable[]): Select
     
 }
-
-class Select implements ISelect, Query {
+class SelectImpl implements Select, Query {
     type = "select" as const
     variables: SelectVariables
     distinct: boolean
@@ -136,25 +150,25 @@ class Select implements ISelect, Query {
     offset?: number
 
     constructor(variables: SelectVariables, distinct: boolean = true, where?: Where, limit?: number, offset?: number){
-        this.where = where ? where : new Where()
+        this.where = where ? where : new WhereImpl()
         this.distinct = distinct
         this.variables = variables
         this.limit = limit
         this.offset = offset
     }
-    setLimit(value: number): Select {
+    setLimit(value: number): SelectImpl {
         this.limit = value
         return this
     }
-    setOffset(value: number): Select {
+    setOffset(value: number): SelectImpl {
         this.offset = value
         return this
     }
-    setWhere(where: Where): Select {
+    setWhere(where: Where): SelectImpl {
         this.where = where
         return this
     }
-    addVariables(variables: Variable[]) : Select {
+    addVariables(variables: Variable[]) : SelectImpl {
         if (variables.length){ // it is not AllSelector, it is an array
             (this.variables as Variable[]).push(...variables)
         }
@@ -183,13 +197,13 @@ class Select implements ISelect, Query {
 }
 
 type DataBlockValue = NamedNode | Literal | number | 'true' | 'false'
-interface IValues extends INode {
+interface Values extends Node {
     type: 'values'
     values: DataBlockValue[]
     variable: Variable
 }
 
-class Values implements IValues {
+class ValuesImpl implements Values {
     type = 'values' as const
     values: DataBlockValue[]
     variable: Variable
@@ -202,13 +216,13 @@ class Values implements IValues {
     }
 }
 
-interface IBind extends INode {
+interface Bind extends Node {
     type: 'bind'
     expression: Expression
     variable: Variable
 }
 
-class Bind implements IBind {
+class BindImpl implements Bind {
     type = "bind" as const
     expression: Expression
     variable: Variable
@@ -223,24 +237,23 @@ class Bind implements IBind {
     }
 }
 
-interface IOptional extends INode {
+interface Optional extends GraphPatternClause {
     type: 'optional'
-    children: GraphPattern[]
 }
 
-class Optional extends GraphPatternClause {
-    
+class OptionalImpl extends GraphPatternClauseImpl implements Optional {
+    type = 'optional' as const
     constructor(children: GraphPattern[] = []){
         super('optional', children)
     }
 }
 
-interface IFilter extends INode {
+interface Filter extends Node {
     type: 'filter'
     constraint: Expression
 }
 
-class Filter implements IFilter {
+class FilterImpl implements Filter {
     type = 'filter' as const
     constraint: Expression
     
@@ -255,13 +268,14 @@ class Filter implements IFilter {
 }
 
 
-interface IGraph extends INode {
+interface Graph extends GraphPatternClause {
     type: 'graph'
     graph: NamedNode | Variable
     children: GraphPattern[]
 }
 
-class Graph extends GraphPatternClause {
+class GraphImpl extends GraphPatternClauseImpl implements Graph {
+    type = 'graph' as const
     graph: Variable | NamedNode
     constructor(graph: Variable | NamedNode, children: GraphPattern[] = []){
         super('graph', children)
@@ -280,7 +294,7 @@ type NumericOperator =  '+' | '-' | '*' | '/'
 type ConditionalOperator = '&&' | '||' 
 type RelationalOperator = '=' | '!=' | '<' | '>' | '<=' | '>=' | 'IN' | 'NOT IN'
 type Operator = NumericOperator | ConditionalOperator | RelationalOperator
-type Expression = IOperatorExpression | Term | number | string | IExpressionList | IBuiltInCall
+type Expression = OperatorExpression | Term | number | string | ExpressionList | BuiltInCall
 
 function expressionToString(arg: Expression): string{
     if (arg instanceof NamedNode || arg instanceof Variable || arg instanceof BlankNode || arg instanceof Literal || arg instanceof DefaultGraph){
@@ -290,17 +304,17 @@ function expressionToString(arg: Expression): string{
     if (argType === 'string' || argType === 'number'){
         return arg.toString()
     }
-    return (arg as IOperatorExpression|IExpressionList|IBuiltInCall).toSparql()
+    return (arg as OperatorExpression|ExpressionList|BuiltInCall).toSparql()
     
 }
 
-interface IOperatorExpression extends INode {
+interface OperatorExpression extends Node {
     type: 'expression'
     operator: Operator
     args: Expression[]
 }
 
-class OperatorExpression implements IOperatorExpression {
+class OperatorExpressionImpl implements OperatorExpression {
     type = 'expression' as const
     operator: Operator
     args: Expression[]
@@ -340,7 +354,7 @@ type BinaryFunc = 'langMatches'
 
 type Func = UnaryFunc | BinaryFunc
 
-interface IBuiltInCall extends INode{
+interface BuiltInCall extends Node{
     type: 'builtInCall'
     func: Func
     firstArg: Expression
@@ -348,7 +362,7 @@ interface IBuiltInCall extends INode{
     thirdArg?: Expression
 }
 
-class BuiltInCall implements IBuiltInCall {
+class BuiltInCallImpl implements BuiltInCall {
     type = 'builtInCall' as const
     func: Func
     firstArg: Expression
@@ -373,12 +387,12 @@ class BuiltInCall implements IBuiltInCall {
 
 
 
-interface IExpressionList extends INode {
+interface ExpressionList extends Node {
     type: 'expressionList'
     expressions: Expression[]
 }
 
-class ExpressionList implements IExpressionList {
+class ExpressionListImpl implements ExpressionList {
     type = 'expressionList' as const
     expressions: Expression[]
 
@@ -391,59 +405,108 @@ class ExpressionList implements IExpressionList {
     }
 }
 
+interface Where extends GraphPatternClause {
+    type: 'where'
+}
 
-class Where extends GraphPatternClause {
+class WhereImpl extends GraphPatternClauseImpl implements Where {
+    type = 'where' as const
     constructor(children: GraphPattern[] = []){
         super('where', children)
     }
 }
 
+interface QueryNodeFactory {
+    select(variables: SelectVariables, distinct?: boolean, where?: Where, limit?: number, offset?: number): Select
+    where(children?: GraphPattern[]): Where 
+    triplePattern(subject: Term, predicate: NamedNode | Variable, object: Term): TriplePattern
+    expressionList(expressions: Expression[]): ExpressionList
+    values(variable: Variable, values: DataBlockValue[]): Values
+    bind(expression: Expression, variable: Variable): Bind 
+    union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union 
+    optional(children?: GraphPattern[]): Optional 
+    filter(constraint: Expression): Filter 
+    graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph 
+}
+class QueryNodeFactoryImpl implements QueryNodeFactory {
+    select(variables: SelectVariables, distinct: boolean = true, where?: Where, limit?: number, offset?: number): Select {
+        return new SelectImpl(variables, distinct, where, limit, offset)
+    }
+    where(children: GraphPattern[] = []): Where {
+        return new WhereImpl(children)
+    }
+    triplePattern(subject: Term, predicate: NamedNode | Variable, object: Term): TriplePattern{
+        return new TriplePatternImpl(subject, predicate, object)
+    }
+    expressionList(expressions: Expression[]): ExpressionList{
+        return new ExpressionListImpl(expressions)
+    }
+    values(variable: Variable, values: DataBlockValue[]): Values{
+        return new ValuesImpl(variable, values)
+    }
+    bind(expression: Expression, variable: Variable): Bind {
+        return new BindImpl(expression, variable)
+    }
+    union(leftChildren: GraphPattern[] = [], rightChildren: GraphPattern[] = []): Union {
+        return new UnionImpl(leftChildren, rightChildren)
+    }
+    optional(children: GraphPattern[] = []): Optional {
+        return new OptionalImpl(children)
+    }
+    filter(constraint: Expression): Filter {
+        return new FilterImpl(constraint)
+    }
+    graph(graph: Variable | NamedNode, children: GraphPattern[] = []): Graph {
+        return new GraphImpl(graph, children)
+    }
+}
+
+
 // Operator expressions
-const lt = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('<', [firstArg, secondArg])
-const le = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('<=', [firstArg, secondArg])
-const gt = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('>', [firstArg, secondArg])
-const ge = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('>=', [firstArg, secondArg])
-const eq = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('=', [firstArg, secondArg])
-const ne = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('!=', [firstArg, secondArg])
+const lt = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('<', [firstArg, secondArg])
+const le = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('<=', [firstArg, secondArg])
+const gt = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('>', [firstArg, secondArg])
+const ge = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('>=', [firstArg, secondArg])
+const eq = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('=', [firstArg, secondArg])
+const ne = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('!=', [firstArg, secondArg])
 
-const and = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('&&', [firstArg, secondArg])
-const or = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('||', [firstArg, secondArg])
+const and = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('&&', [firstArg, secondArg])
+const or = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('||', [firstArg, secondArg])
 
-const mul = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('*', [firstArg, secondArg])
-const add = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('+', [firstArg, secondArg])
-const sub = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('-', [firstArg, secondArg])
-const div = (firstArg: Expression, secondArg: Expression) => new OperatorExpression('/', [firstArg, secondArg])
+const mul = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('*', [firstArg, secondArg])
+const add = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('+', [firstArg, secondArg])
+const sub = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('-', [firstArg, secondArg])
+const div = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('/', [firstArg, secondArg])
 
-const inExpr = (firstArg: Expression, secondArg: ExpressionList) => new OperatorExpression('IN', [firstArg, secondArg])
-const notIn = (firstArg: Expression, secondArg: ExpressionList) => new OperatorExpression('NOT IN', [firstArg, secondArg])
+const inExpr = (firstArg: Expression, secondArg: ExpressionListImpl) => new OperatorExpressionImpl('IN', [firstArg, secondArg])
+const notIn = (firstArg: Expression, secondArg: ExpressionListImpl) => new OperatorExpressionImpl('NOT IN', [firstArg, secondArg])
 
 // Built-in calls
-const isIri = (arg: Expression) => new BuiltInCall('isIRI', arg)
-const isUri = (arg: Expression) => new BuiltInCall('isURI', arg)
-const isBlank = (arg: Expression) => new BuiltInCall('isBLANK', arg)
-const isLiteral = (arg: Expression) => new BuiltInCall('isLITERAL', arg)
-const isNumeric = (arg: Expression) => new BuiltInCall('isNUMERIC', arg)
-const ceil = (arg: Expression) => new BuiltInCall('CEIL', arg)
-const abs = (arg: Expression) => new BuiltInCall('ABS', arg)
-const lang = (arg: Expression) => new BuiltInCall('LANG', arg)
-const datatype = (arg: Expression) => new BuiltInCall('DATATYPE', arg)
-const bound = (arg: Expression) => new BuiltInCall('BOUND', arg)
-const iri = (arg: Expression) => new BuiltInCall('IRI', arg)
-const uri = (arg: Expression) => new BuiltInCall('URI', arg)
-const not = (arg: Expression) => new BuiltInCall('!', arg)
-const langMatches = (firstArg: Expression, secondArg: Expression) => new BuiltInCall('langMatches', firstArg, secondArg)
+const isIri = (arg: Expression) => new BuiltInCallImpl('isIRI', arg)
+const isUri = (arg: Expression) => new BuiltInCallImpl('isURI', arg)
+const isBlank = (arg: Expression) => new BuiltInCallImpl('isBLANK', arg)
+const isLiteral = (arg: Expression) => new BuiltInCallImpl('isLITERAL', arg)
+const isNumeric = (arg: Expression) => new BuiltInCallImpl('isNUMERIC', arg)
+const ceil = (arg: Expression) => new BuiltInCallImpl('CEIL', arg)
+const abs = (arg: Expression) => new BuiltInCallImpl('ABS', arg)
+const lang = (arg: Expression) => new BuiltInCallImpl('LANG', arg)
+const datatype = (arg: Expression) => new BuiltInCallImpl('DATATYPE', arg)
+const bound = (arg: Expression) => new BuiltInCallImpl('BOUND', arg)
+const iri = (arg: Expression) => new BuiltInCallImpl('IRI', arg)
+const uri = (arg: Expression) => new BuiltInCallImpl('URI', arg)
+const not = (arg: Expression) => new BuiltInCallImpl('!', arg)
+const langMatches = (firstArg: Expression, secondArg: Expression) => new BuiltInCallImpl('langMatches', firstArg, secondArg)
 
+
+const QueryNodeFactory: QueryNodeFactory = new QueryNodeFactoryImpl()
 
 export type {
     QueryType,
     Query,
     SelectVariables,
-    GraphPattern,
     Expression,
-    DataBlockValue
-}
-
-export {
+    DataBlockValue,
+    GraphPattern,
     Select,
     Where,
     TriplePattern,
@@ -457,6 +520,10 @@ export {
     Filter,
     Graph,
     GraphPatternClause,
+
+}
+export {
+    QueryNodeFactory,
     lt,
     le,
     gt,
