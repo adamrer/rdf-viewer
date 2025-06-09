@@ -4,11 +4,11 @@ import { DataBlockValue, Expression, GraphPattern, QueryNodeFactory } from "./qu
 interface GraphPatternBuilder {
     triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder
     filter(constraint: Expression): GraphPatternBuilder
-    bind(expression: Expression, variable: Variable): GraphPatternBuilder
     values(variable: Variable, values: DataBlockValue[]): GraphPatternBuilder
-    optional(children: GraphPattern[]): GraphPatternBuilder
-    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilder
     graph(graph: Variable | NamedNode, children: GraphPattern[]): GraphPatternBuilder
+    // optional(children: GraphPattern[]): GraphPatternBuilder
+    // union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilder
+    // bind(expression: Expression, variable: Variable): GraphPatternBuilder
     build(): GraphPattern[]
 }
 
@@ -25,26 +25,26 @@ class GraphPatternBuilderImpl implements GraphPatternBuilder {
         this.patterns.push(QueryNodeFactory.filter(constraint))
         return this
     }
-    bind(expression: Expression, variable: Variable): GraphPatternBuilderImpl {
-        this.patterns.push(QueryNodeFactory.bind(expression, variable))
-        return this
-    }
     values(variable: Variable, values: DataBlockValue[]): GraphPatternBuilderImpl{
         this.patterns.push(QueryNodeFactory.values(variable, values))
-        return this
-    }
-    optional(children: GraphPattern[] = []): GraphPatternBuilderImpl {
-        this.patterns.push(QueryNodeFactory.optional(children))
-        return this
-    }
-    union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilderImpl {
-        this.patterns.push(QueryNodeFactory.union(left, right))
         return this
     }
     graph(graph: Variable | NamedNode, children: GraphPattern[] = []): GraphPatternBuilderImpl {
         this.patterns.push(QueryNodeFactory.graph(graph, children))
         return this
     }
+    // bind(expression: Expression, variable: Variable): GraphPatternBuilderImpl {
+    //     this.patterns.push(QueryNodeFactory.bind(expression, variable))
+    //     return this
+    // }
+    // optional(children: GraphPattern[] = []): GraphPatternBuilderImpl {
+    //     this.patterns.push(QueryNodeFactory.optional(children))
+    //     return this
+    // }
+    // union(left: GraphPattern[], right: GraphPattern[]): GraphPatternBuilderImpl {
+    //     this.patterns.push(QueryNodeFactory.union(left, right))
+    //     return this
+    // }
     
     build(): GraphPattern[] {
         return this.patterns

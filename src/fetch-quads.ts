@@ -126,37 +126,57 @@ class SparqlDataSource implements DataSource {
  * @see DataSource
  */
 class FileDataSource implements DataSource {
-    file: File;
+    file?: File;
+    url?: string
+    store: Quadstore
+    engine: Engine
+    fileLoaded: boolean = false
 
-    constructor(file: File){
-        this.file = file
+    constructor(fileOrUrl: File|string){
+        if (fileOrUrl instanceof File){
+            this.file = fileOrUrl
+        }
+        else {
+            this.url = fileOrUrl
+        }
+            
+        const backend = new MemoryLevel() as AbstractLevel<string, string>
+        const dataFactory = N3.DataFactory
+        this.store = new Quadstore({backend, dataFactory})
+        this.engine = new Engine(this.store)
+    }
+
+    async fetchFile(url: string): Promise<File> {
+        const response = await fetch(url)
+        const blob = await response.blob()
+        return new File([blob], url)
+    }
+
+    async loadFile() {
+        if (this.fileLoaded){
+            return
+        }
+        if (this.url){
+            this.file = await this.fetchFile(this.url)
+        }
+        await this.store.open()
+        if (!this.file){
+            throw Error('File missing')
+        }
+        
+        const fileText = await this.file.text()
+        const parser = new N3.Parser()
+        const allQuads = parser.parse(fileText)
+        await this.store.multiPut(allQuads)
+        this.fileLoaded = true
+        
     }
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> { 
-        
-        const backend = new MemoryLevel() as AbstractLevel<string, string>
-        const dataFactory = N3.DataFactory
-        const store = new Quadstore({backend, dataFactory})
-        const engine = new Engine(store)
 
-        await store.open()
-        const reader = new FileReader();
-        reader.onerror = () => {
-            console.error("Error reading file: ", reader.error);
-            throw reader.error
-        };
-        
-        const parser = new N3.Parser();
-        const fileText = await this.file.text();
-        parser.parse(fileText, (err, quad) => {
-          if (err) {
-            console.error("Error parsing file: ", err);
-            throw err
-        }
-          else if (quad) store.put(quad);
-        });
+        await this.loadFile()
 
-        const bindingsStream = await engine.queryBindings(query.toSparql())
+        const bindingsStream = await this.engine.queryBindings(query.toSparql())
         return new Promise<DataSourceFetchResult>((resolve, reject) =>{
             const quads: Quad[] = []
             bindingsStream.on('data', binding => {
@@ -167,11 +187,11 @@ class FileDataSource implements DataSource {
     
             })
             .on('error', error => {
-                console.error(`Error getting result from ${this.file.name} source: `, error)
+                console.error(`Error getting result from ${this.url ? this.url : this.file!.name } source: `, error)
                 reject(error)
             })
             .on('end', () => {
-                const result = {identifier: this.file.name, quads: quads}
+                const result = {identifier: this.url ? this.url : this.file!.name, quads: quads}
                 resolve(result)
             })
         })
