@@ -8,7 +8,7 @@ import {DisplayPlugin} from './plugin'
  * 
  * @returns Array of parsed data sources defined by the user
  */
-export function getDataSources(): Array<DataSource> {
+export function getDataSources(): Array<DataSource> { // TODO: cache data source instances
     const endpointUrls = getEndpointUrls()
     const dataSources: Array<DataSource> = endpointUrls.map(url => new SparqlDataSource(new URL(url)))
     const dataSourceFiles = getDataSourceFiles()

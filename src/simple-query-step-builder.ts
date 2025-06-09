@@ -118,8 +118,6 @@ interface FinalStep {
      */
     offset(value: number): FinalStep
     
-    // groupBy(variableName: string): GraphStep
-
     /**
      * Returns the Query object
      * 

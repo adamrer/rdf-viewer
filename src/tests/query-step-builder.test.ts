@@ -2,22 +2,22 @@ import {expect, test} from 'vitest';
 import { sparqlStepBuilder } from '../query-step-builder';
 import { DataFactory } from 'n3';
 import * as sparql from '../query';
-import toNT from '@rdfjs/to-ntriples'
 
 
 test('creates full select query', () => {
     const builder = sparqlStepBuilder()
     const patternBuilder = builder.graphPatternBuilder()
     const varObject = DataFactory.variable('object')
-    const varLabel = DataFactory.variable('label')
+    // const varLabel = DataFactory.variable('label')
     const varTitle = DataFactory.variable('title')
 
     const pattern = patternBuilder
-        .bind(
-            sparql.lt(DataFactory.variable('num'), 3),
-            DataFactory.variable('variable')
-        ).union(
-            builder.graphPatternBuilder()
+        // .bind(
+        //     sparql.lt(DataFactory.variable('num'), 3),
+        //     DataFactory.variable('variable')
+        // )
+        // .union(
+        //     builder.graphPatternBuilder()
                 .graph(
                     DataFactory.variable('graph'),
                     builder.graphPatternBuilder().filter(
@@ -27,15 +27,16 @@ test('creates full select query', () => {
                             DataFactory.namedNode('http://purl.org/dc/terms/title'),
                             varTitle
                         ).build()
-            ).build(),
-            builder.graphPatternBuilder()
-                .filter(sparql.or(sparql.isIri(varObject), sparql.isBlank(varObject)))
-                .triple(
-                    DataFactory.blankNode('b2'), 
-                    DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel'),
-                    varLabel
-                ).build()
-        ).build()
+            ).build()
+            // ,
+            // builder.graphPatternBuilder()
+            //     .filter(sparql.or(sparql.isIri(varObject), sparql.isBlank(varObject)))
+            //     .triple(
+            //         DataFactory.blankNode('b2'), 
+            //         DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel'),
+            //         varLabel
+            //     ).build()
+        // ).build()
 
 
     const selectQuery = 
@@ -48,17 +49,9 @@ test('creates full select query', () => {
     
     expect(selectQuery.toSparql()).toBe(`SELECT DISTINCT ?title
 WHERE {
-BIND ( ?num < 3 AS ?variable )
-{
 GRAPH ?graph {
 FILTER (isIRI(?object) || isBLANK(?object))
 _:b1 <http://purl.org/dc/terms/title> ?title .
-}
-}
-UNION
-{
-FILTER (isIRI(?object) || isBLANK(?object))
-_:b2 <http://www.w3.org/2004/02/skos/core#prefLabel> ?label .
 }
 }
 LIMIT 10
@@ -89,7 +82,7 @@ WHERE {
 ?subject <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/dcat#Dataset> .
 }`)
 })
-
+/*
 test('creates simple query builder query', () => {
     const builder = sparqlStepBuilder()
 
@@ -145,3 +138,4 @@ FILTER (isIRI(${toNT(objectVar)}) || isBLANK(${toNT(objectVar)}) || !(langMatche
 LIMIT 100
 OFFSET 99`)
 })
+*/

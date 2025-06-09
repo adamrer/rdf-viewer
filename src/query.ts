@@ -22,6 +22,7 @@ type GraphPatternClauseType = 'where'|
 
 interface Query {
     type: QueryType
+    where: Where
     toSparql(): string
 }
 
@@ -127,7 +128,7 @@ function isAllSelector(value:SelectVariables): boolean{
 
 type SelectVariables = Variable[]|AllSelector
 
-interface Select extends Node {
+interface Select extends Node, Query {
     type: 'select'
     where: Where
     distinct: boolean
@@ -141,7 +142,7 @@ interface Select extends Node {
     addVariables(variables: Variable[]): Select
     
 }
-class SelectImpl implements Select, Query {
+class SelectImpl implements Select {
     type = "select" as const
     variables: SelectVariables
     distinct: boolean
@@ -422,11 +423,11 @@ interface QueryNodeFactory {
     triplePattern(subject: Term, predicate: NamedNode | Variable, object: Term): TriplePattern
     expressionList(expressions: Expression[]): ExpressionList
     values(variable: Variable, values: DataBlockValue[]): Values
-    bind(expression: Expression, variable: Variable): Bind 
-    union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union 
-    optional(children?: GraphPattern[]): Optional 
     filter(constraint: Expression): Filter 
     graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph 
+    // bind(expression: Expression, variable: Variable): Bind 
+    // union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union 
+    // optional(children?: GraphPattern[]): Optional 
 }
 class QueryNodeFactoryImpl implements QueryNodeFactory {
     select(variables: SelectVariables, distinct: boolean = true, where?: Where, limit?: number, offset?: number): Select {
@@ -507,6 +508,7 @@ export type {
     Expression,
     DataBlockValue,
     GraphPattern,
+
     Select,
     Where,
     TriplePattern,
@@ -524,6 +526,7 @@ export type {
 }
 export {
     QueryNodeFactory,
+
     lt,
     le,
     gt,
@@ -538,6 +541,7 @@ export {
     div,
     inExpr as in,
     notIn,
+
     isIri,
     isUri,
     isBlank,
