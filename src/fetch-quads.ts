@@ -1,5 +1,4 @@
-import N3 from 'n3'
-import { Quad } from 'n3'
+import N3, { Quad } from 'n3'
 import { QueryBuilder, Query, simpleBuilder } from "./query-builder";
 import { Quadstore, VoidResult } from 'quadstore';
 import { MemoryLevel } from 'memory-level';
@@ -8,6 +7,7 @@ import { Engine } from 'quadstore-comunica'
 import { SimpleQueryStepBuilder, simpleQueryStepBuilder } from './simple-query-step-builder';
 import { Readable } from 'readable-stream';
 import { rdfParser } from 'rdf-parse';
+import { queryProcessor } from './query-processor';
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
  */
@@ -126,7 +126,7 @@ class SparqlDataSource implements DataSource {
  * 
  * @see DataSource
  */
-class FileDataSource implements DataSource {
+class FileDataSourceSparql implements DataSource {
     file?: File;
     url?: string
     store: Quadstore
@@ -153,7 +153,7 @@ class FileDataSource implements DataSource {
         return new File([blob], url)
     }
 
-    async loadFile() {
+    async loadFile(): Promise<void> {
         if (this.fileLoaded){
             return
         }
@@ -167,28 +167,30 @@ class FileDataSource implements DataSource {
         const fileText = await this.file.text()
         const stream = Readable.from([fileText])
         const putPromises: Promise<VoidResult>[] = []
-        await new Promise<void>((resolve, reject) => {
+
+        return new Promise<void>((resolve, reject) => {
             if (!this.file) {
-               throw new Error("File is missing");
+                reject()
+                throw new Error("File is missing");
             }
             rdfParser
-                .parse(stream, { path: this.file.name, baseIRI: 'http://localhost:8080' })
+                .parse(stream, { path: this.file.name })
                 .on('data', (quad) => {
-                putPromises.push(this.store.put(quad));
+                    putPromises.push(this.store.put(quad));
                 })
                 .on('error', (err) => {
-                console.error('Error while parsing file', err);
-                reject(err);
+                    console.error('Error while parsing file', err);
+                    reject(err);
                 })
                 .on('end', async () => {
-                try {
-                    await Promise.all(putPromises);
-                    this.fileLoaded = true;
-                    resolve();
-                } catch (err) {
-                    console.error('Error while storing quads', err);
-                    reject(err);
-                }
+                    try {
+                        await Promise.all(putPromises);
+                        this.fileLoaded = true;
+                        resolve();
+                    } catch (err) {
+                        console.error('Error while storing quads', err);
+                        reject(err);
+                    }
                 });
         });
     }
@@ -219,6 +221,75 @@ class FileDataSource implements DataSource {
     }
 }
 
+
+
+class FileDataSource implements DataSource {
+    quads?: Quad[]
+    file?: File;
+    url?: string
+    fileLoaded: boolean = false
+    
+    constructor(fileOrUrl: File|string){
+        if (fileOrUrl instanceof File){
+            this.file = fileOrUrl
+        }
+        else {
+            this.url = fileOrUrl
+        }
+    }
+
+    async fetchFile(url: string): Promise<File> {
+        const response = await fetch(url)
+        const blob = await response.blob()
+        return new File([blob], url)
+    }
+
+    async loadQuads(): Promise<void> {
+        if (this.fileLoaded){
+            return
+        }
+        if (this.url){
+            this.file = await this.fetchFile(this.url)
+        }
+        if (!this.file){
+            throw Error('File is missing')
+        }
+        const fileText = await this.file.text()
+        const stream = Readable.from([fileText])
+        this.quads = []
+        return new Promise<void>((resolve, reject) => {
+            if (!this.file) {
+                const err = new Error("File is missing")
+                reject(err)
+                throw err
+            }
+            rdfParser
+                .parse(stream, { path: this.file.name })
+                .on('data', (quad) => {
+                    this.quads?.push(quad)
+                })
+                .on('error', (err) => {
+                    console.error('Error while parsing file', err);
+                    reject(err);
+                })
+                .on('end', async () => {
+                    this.fileLoaded = true
+                    resolve()
+                });
+        });
+    }
+
+
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
+        await this.loadQuads()
+        if (!this.quads){
+            throw new Error('Failed to load quads from file')
+        }
+        const processor = queryProcessor()
+        const filteredQuads:Quad[] = processor.filter(this.quads, query)
+        return {identifier: this.file!.name, quads: filteredQuads}
+    }
+}
 
 type BuilderType = 'simple'|'step'
 /**

@@ -2,6 +2,7 @@ import {expect, test} from 'vitest';
 
 import { simpleQueryStepBuilder } from '../simple-query-step-builder';
 import { Select } from '../query';
+import { NO_LANG_SPECIFIED } from '../query-builder';
 
 
 test('creates basic SPOG query', () => {
@@ -111,7 +112,7 @@ OFFSET 9`)
 
 test('creates query with language specified', () => {
     const builder = simpleQueryStepBuilder()
-    const query = builder.graphs().subjects().predicates().objects().lang('cs').build()
+    const query = builder.graphs().subjects().predicates().objects().langs(['cs']).build()
     expect((query as Select).variables.length).toBe(4)
     expect(query.toSparql()).toBe(`SELECT DISTINCT ?subject ?predicate ?object ?graph
 WHERE {
@@ -122,13 +123,27 @@ FILTER (isIRI(?object) || isBLANK(?object) || LANG(?object) = "cs")
 }`)
 })
 
+test('creates query with more languages specified', () => {
+    const builder = simpleQueryStepBuilder()
+    const query = builder.graphs().subjects().predicates().objects().langs(['cs', 'en', NO_LANG_SPECIFIED]).build()
+    expect((query as Select).variables.length).toBe(4)
+    expect(query.toSparql()).toBe(`SELECT DISTINCT ?subject ?predicate ?object ?graph
+WHERE {
+GRAPH ?graph {
+FILTER (isIRI(?object) || isBLANK(?object) || LANG(?object) = "cs" || LANG(?object) = "en" || LANG(?object) = "")
+?subject ?predicate ?object .
+}
+}`)
+})
+
+
 test('creates query with everything specified', () => {
     const builder = simpleQueryStepBuilder()
     const graph = ['http://www.openlinksw.com/schemas/virtrdf#']
     const subject = ['https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS']
     const predicates = ['http://purl.org/dc/terms/title', 'http://www.w3.org/2004/02/skos/core#prefLabel']
     const objects = [{value: 'Adam'}, 'https://example.com/ns/#adam', {value: '1', languageOrDatatype: 'http://www.w3.org/TR/xmlschema-2/#integer'}, {value: 'číslo', languageOrDatatype: 'cs'}]
-    const query = builder.graphs(graph).subjects(subject).predicates(predicates).objects(objects).limit(10).offset(9).lang('cs').build()
+    const query = builder.graphs(graph).subjects(subject).predicates(predicates).objects(objects).limit(10).offset(9).langs(['cs']).build()
     expect((query as Select).variables.length).toBe(4)
     expect(query.toSparql()).toBe(`SELECT DISTINCT ?subject ?predicate ?object ?graph
 WHERE {
