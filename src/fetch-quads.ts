@@ -1,9 +1,5 @@
 import N3, { Quad } from 'n3'
 import { QueryBuilder, Query, simpleBuilder } from "./query-builder";
-import { Quadstore, VoidResult } from 'quadstore';
-import { MemoryLevel } from 'memory-level';
-import { AbstractLevel } from 'abstract-level'
-import { Engine } from 'quadstore-comunica'
 import { SimpleQueryStepBuilder, simpleQueryStepBuilder } from './simple-query-step-builder';
 import { Readable } from 'readable-stream';
 import { rdfParser } from 'rdf-parse';
@@ -120,107 +116,6 @@ class SparqlDataSource implements DataSource {
         })
     }
 }
-
-/**
- * Class for fetching RDF quads from an RDF file.
- * 
- * @see DataSource
- */
-class FileDataSourceSparql implements DataSource {
-    file?: File;
-    url?: string
-    store: Quadstore
-    engine: Engine
-    fileLoaded: boolean = false
-
-    constructor(fileOrUrl: File|string){
-        if (fileOrUrl instanceof File){
-            this.file = fileOrUrl
-        }
-        else {
-            this.url = fileOrUrl
-        }
-            
-        const backend = new MemoryLevel() as AbstractLevel<string, string>
-        const dataFactory = N3.DataFactory
-        this.store = new Quadstore({backend, dataFactory})
-        this.engine = new Engine(this.store)
-    }
-
-    async fetchFile(url: string): Promise<File> {
-        const response = await fetch(url)
-        const blob = await response.blob()
-        return new File([blob], url)
-    }
-
-    async loadFile(): Promise<void> {
-        if (this.fileLoaded){
-            return
-        }
-        if (this.url){
-            this.file = await this.fetchFile(this.url)
-        }
-        await this.store.open()
-        if (!this.file){
-            throw Error('File is missing')
-        }
-        const fileText = await this.file.text()
-        const stream = Readable.from([fileText])
-        const putPromises: Promise<VoidResult>[] = []
-
-        return new Promise<void>((resolve, reject) => {
-            if (!this.file) {
-                reject()
-                throw new Error("File is missing");
-            }
-            rdfParser
-                .parse(stream, { path: this.file.name })
-                .on('data', (quad) => {
-                    putPromises.push(this.store.put(quad));
-                })
-                .on('error', (err) => {
-                    console.error('Error while parsing file', err);
-                    reject(err);
-                })
-                .on('end', async () => {
-                    try {
-                        await Promise.all(putPromises);
-                        this.fileLoaded = true;
-                        resolve();
-                    } catch (err) {
-                        console.error('Error while storing quads', err);
-                        reject(err);
-                    }
-                });
-        });
-    }
-
-    async fetchQuads(query: Query): Promise<DataSourceFetchResult> { 
-
-        await this.loadFile()
-        
-        const bindingsStream = await this.engine.queryBindings(query.toSparql())
-        return new Promise<DataSourceFetchResult>((resolve, reject) =>{
-            const quads: Quad[] = []
-            bindingsStream.on('data', binding => {
-                const entries = binding.entries
-                const graph = entries.get('graph') !== undefined ? N3.DataFactory.namedNode(entries.get('graph')?.value) : undefined
-                const quad = N3.DataFactory.quad(entries.get('subject'), entries.get('predicate'), entries.get('object'), graph)
-                quads.push(quad)
-    
-            })
-            .on('error', error => {
-                console.error(`Error getting result from ${this.url ? this.url : this.file!.name } source: `, error)
-                reject(error)
-            })
-            .on('end', () => {
-                const result = {identifier: this.url ? this.url : this.file!.name, quads: quads}
-                resolve(result)
-            })
-        })
-    }
-}
-
 
 
 class FileDataSource implements DataSource {
