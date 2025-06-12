@@ -13,7 +13,7 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl){
         .subjects([entityIri])
         .predicates()
         .objects()
-        .lang(language)
+        .langs([language])
         .build()
 
     try{
@@ -133,7 +133,7 @@ async function getTitle(iri, fetcher, language){
         .subjects([iri])
         .predicates(titlePredicates)
         .objects()
-        .lang(language)
+        .langs([language])
         .build()
     const quadsBySource = await fetcher.fetchQuads(query)
     let title = iri
