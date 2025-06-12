@@ -1,19 +1,19 @@
-import { BlankNode, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
+import N3, { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
 import toNT from '@rdfjs/to-ntriples'
+import { Language, NO_LANG_SPECIFIED } from "./query-builder"
 
 // created with sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
-type QueryType = 'select'|'construct'|'ask'|'describe'
+type QueryType = 'select' // |'construct'|'ask'|'describe'
 type NodeType = 'select'|
     'triplePattern'|
     'operatorExpression'|
-    'expressionList'|
     'values'|
-    'bind'|
     'builtInCall'|
-    'union'|
     'filter'|
-    'expression'|
+    'expressionList'|
+    'bind'|
+    'union'|
     GraphPatternClauseType
     
 type GraphPatternClauseType = 'where'|
@@ -197,11 +197,12 @@ class SelectImpl implements Select {
     
 }
 
-type DataBlockValue = NamedNode | Literal | number | 'true' | 'false'
+type DataBlockValue = NamedNode | Literal 
 interface Values extends Node {
     type: 'values'
     values: DataBlockValue[]
     variable: Variable
+    evaluate(value: Term): boolean
 }
 
 class ValuesImpl implements Values {
@@ -212,6 +213,12 @@ class ValuesImpl implements Values {
         this.values = values
         this.variable = variable
     }
+    evaluate(value: Term): boolean {
+        if (value.termType !== 'Literal' && value.termType !== 'NamedNode')
+            return false
+        return this.values.some(item => item.value === value.value)
+    }
+
     toSparql(): string {
         return `VALUES ${toNT(this.variable)} { ${this.values.map(value => expressionToString(value)).join(' ')} }`
     }
@@ -251,14 +258,14 @@ class OptionalImpl extends GraphPatternClauseImpl implements Optional {
 
 interface Filter extends Node {
     type: 'filter'
-    constraint: Expression
+    constraint: BuiltInCall|OperatorExpression
 }
 
 class FilterImpl implements Filter {
     type = 'filter' as const
-    constraint: Expression
+    constraint: BuiltInCall|OperatorExpression
     
-    constructor(constraint: Expression){
+    constructor(constraint: BuiltInCall|OperatorExpression){
         this.constraint = constraint
     }
 
@@ -291,10 +298,10 @@ class GraphImpl extends GraphPatternClauseImpl implements Graph {
     }
 }
 
-type NumericOperator =  '+' | '-' | '*' | '/'
-type ConditionalOperator = '&&' | '||' 
-type RelationalOperator = '=' | '!=' | '<' | '>' | '<=' | '>=' | 'IN' | 'NOT IN'
-type Operator = NumericOperator | ConditionalOperator | RelationalOperator
+
+type ConditionalOperator = '||' 
+type RelationalOperator = '=' | '!=' 
+type Operator = ConditionalOperator | RelationalOperator
 type Expression = OperatorExpression | Term | number | string | ExpressionList | BuiltInCall
 
 function expressionToString(arg: Expression): string{
@@ -310,21 +317,53 @@ function expressionToString(arg: Expression): string{
 }
 
 interface OperatorExpression extends Node {
-    type: 'expression'
+    type: 'operatorExpression'
     operator: Operator
     args: Expression[]
+    variables: Set<Variable>
+    evaluate(variablesSubstitution: {[key: string]: Term}): boolean
+}
+
+function isOperatorExpression(object: any) {
+    return object.type === 'operatorExpression'
 }
 
 class OperatorExpressionImpl implements OperatorExpression {
-    type = 'expression' as const
+    type = 'operatorExpression' as const
     operator: Operator
     args: Expression[]
+    variables: Set<Variable>
+    evaluation: (variablesSubstitution: {[key: string]: Term}) => boolean
 
-    constructor(operator: Operator, args: Expression[]){
+    constructor(operator: Operator, args: Expression[], evaluation: (variablesSubstitution: {[key: string]: Term}) => boolean){
         this.operator = operator
         this.args = args
+        this.evaluation = evaluation
+        this.variables = new Set()
+        // get required variables
+        args.forEach(expression => {
+            if (isBuiltInCall(expression)){
+                this.variables.add((expression as BuiltInCall).variable)
+            }
+            else if (isOperatorExpression(expression)){
+                (expression as OperatorExpression).variables.forEach(variable => {
+                    this.variables.add(variable)
+                })
+            }
+            else if (expression instanceof Variable){
+                this.variables.add(expression)
+            }
+        })
     }
-
+    evaluate(variablesSubstitution: { [key: string]: Term }): boolean {
+        this.variables.forEach(variable => {
+            if (!variablesSubstitution[variable.value]){
+                throw new Error(`Missing substitution for variable '${variable.value}'`)
+            }
+        })
+        
+        return this.evaluation(variablesSubstitution)
+    }
     toSparql(): string {
         if (this.args.length === 1){
             return `${this.operator}(${expressionToString(this.args[0])})`
@@ -355,33 +394,43 @@ type BinaryFunc = 'langMatches'
 
 type Func = UnaryFunc | BinaryFunc
 
-interface BuiltInCall extends Node{
+interface BuiltInCall extends Node {
     type: 'builtInCall'
     func: Func
-    firstArg: Expression
-    secondArg?: Expression
-    thirdArg?: Expression
+    variable: Variable
+
+    evaluate(variablesSubstitution: {[key: string]: Term}): boolean
+}
+
+function isBuiltInCall(object: any): boolean {
+    return object.type === 'builtInCall'
 }
 
 class BuiltInCallImpl implements BuiltInCall {
     type = 'builtInCall' as const
     func: Func
-    firstArg: Expression
-    secondArg?: Expression
-    thirdArg?: Expression
+    variable: Variable
+    option?: string
 
-    constructor(func: Func, firstArg: Expression, secondArg?: Expression, thirdArg?: Expression){
+    evaluation: (variablesSubstitution: {[key: string]: Term}) => boolean
+
+    constructor(func: Func, evaluation:(variablesSubstitution: {[key: string]: Term}) => boolean, variable: Variable, option?: string){
         this.func = func
-        this.firstArg = firstArg
-        this.secondArg = secondArg
-        this.thirdArg = thirdArg
+        this.variable = variable
+        this.evaluation = evaluation
+        this.option = option
     }
-
+    evaluate(variablesSubstitution: { [key: string]: Term }): boolean {
+        if (!variablesSubstitution[this.variable.value]){
+            throw new Error(`Missing substitution for variable '${this.variable.value}'`)
+        }
+        
+        return this.evaluation(variablesSubstitution)
+    }
     toSparql(): string {
 
-        const args = [expressionToString(this.firstArg)]
-        this.secondArg ? args.push(expressionToString(this.secondArg)) : {}
-        this.thirdArg ? args.push(expressionToString(this.thirdArg)) : {}
+        const args = [expressionToString(this.variable)]
+        this.option ? args.push(expressionToString(this.option)) : {}
         return `${this.func}(${args.join(', ')})`
     }
 }
@@ -425,6 +474,7 @@ interface QueryNodeFactory {
     values(variable: Variable, values: DataBlockValue[]): Values
     filter(constraint: Expression): Filter 
     graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph 
+    // TODO: order by (https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#modOffset)
     // bind(expression: Expression, variable: Variable): Bind 
     // union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union 
     // optional(children?: GraphPattern[]): Optional 
@@ -454,7 +504,7 @@ class QueryNodeFactoryImpl implements QueryNodeFactory {
     optional(children: GraphPattern[] = []): Optional {
         return new OptionalImpl(children)
     }
-    filter(constraint: Expression): Filter {
+    filter(constraint: BuiltInCall|OperatorExpression): Filter {
         return new FilterImpl(constraint)
     }
     graph(graph: Variable | NamedNode, children: GraphPattern[] = []): Graph {
@@ -462,48 +512,60 @@ class QueryNodeFactoryImpl implements QueryNodeFactory {
     }
 }
 
-
+type Substitution = {[key: string]: Term}
 // Operator expressions
-const lt = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('<', [firstArg, secondArg])
-const le = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('<=', [firstArg, secondArg])
-const gt = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('>', [firstArg, secondArg])
-const ge = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('>=', [firstArg, secondArg])
-const eq = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('=', [firstArg, secondArg])
-const ne = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('!=', [firstArg, secondArg])
+const or = (firstArg: BuiltInCall|OperatorExpression, secondArg: BuiltInCall|OperatorExpression) => new OperatorExpressionImpl('||', [firstArg, secondArg], (variablesSubstitution: Substitution) => {
+    const firstValue = firstArg.evaluate(variablesSubstitution)
+    const secondValue = secondArg.evaluate(variablesSubstitution)
+    return firstValue || secondValue
+})
 
-const and = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('&&', [firstArg, secondArg])
-const or = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('||', [firstArg, secondArg])
+// return true if 'value' has a language tag
+const lang = (variable: Variable) => new BuiltInCallImpl('LANG', (variablesSubstitution: Substitution) => {
+    const value = variablesSubstitution[variable.value]
+    return N3.Util.isLiteral(value) && (value as Literal).language !== NO_LANG_SPECIFIED
+}, variable)
 
-const mul = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('*', [firstArg, secondArg])
-const add = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('+', [firstArg, secondArg])
-const sub = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('-', [firstArg, secondArg])
-const div = (firstArg: Expression, secondArg: Expression) => new OperatorExpressionImpl('/', [firstArg, secondArg])
+const langEquality = (variable: Variable, language: Language) => new OperatorExpressionImpl('=', [lang(variable), DataFactory.literal(language)], (variablesSubstitution: Substitution) => {
+    const value = variablesSubstitution[variable.value]
+    if (!N3.Util.isLiteral(value) && language !== NO_LANG_SPECIFIED){
+        return false
+    }
+    if (language === NO_LANG_SPECIFIED && !N3.Util.isLiteral(value)){
+        return true
+    }
 
-const inExpr = (firstArg: Expression, secondArg: ExpressionListImpl) => new OperatorExpressionImpl('IN', [firstArg, secondArg])
-const notIn = (firstArg: Expression, secondArg: ExpressionListImpl) => new OperatorExpressionImpl('NOT IN', [firstArg, secondArg])
+    const literal = value as Literal
+    return literal.language.toLowerCase() === language.toLowerCase()
+})
+
 
 // Built-in calls
-const isIri = (arg: Expression) => new BuiltInCallImpl('isIRI', arg)
-const isUri = (arg: Expression) => new BuiltInCallImpl('isURI', arg)
-const isBlank = (arg: Expression) => new BuiltInCallImpl('isBLANK', arg)
-const isLiteral = (arg: Expression) => new BuiltInCallImpl('isLITERAL', arg)
-const isNumeric = (arg: Expression) => new BuiltInCallImpl('isNUMERIC', arg)
-const ceil = (arg: Expression) => new BuiltInCallImpl('CEIL', arg)
-const abs = (arg: Expression) => new BuiltInCallImpl('ABS', arg)
-const lang = (arg: Expression) => new BuiltInCallImpl('LANG', arg)
-const datatype = (arg: Expression) => new BuiltInCallImpl('DATATYPE', arg)
-const bound = (arg: Expression) => new BuiltInCallImpl('BOUND', arg)
-const iri = (arg: Expression) => new BuiltInCallImpl('IRI', arg)
-const uri = (arg: Expression) => new BuiltInCallImpl('URI', arg)
-const not = (arg: Expression) => new BuiltInCallImpl('!', arg)
-const langMatches = (firstArg: Expression, secondArg: Expression) => new BuiltInCallImpl('langMatches', firstArg, secondArg)
+const isIri = (variable: Variable) => new BuiltInCallImpl('isIRI', (variablesSubstitution: Substitution) => N3.Util.isNamedNode(variablesSubstitution[variable.value]), variable)
+const isUri = (variable: Variable) => new BuiltInCallImpl('isURI', (variablesSubstitution: Substitution) => N3.Util.isNamedNode(variablesSubstitution[variable.value]),  variable)
+const isBlank = (variable: Variable) => new BuiltInCallImpl('isBLANK', (variablesSubstitution: Substitution) => N3.Util.isBlankNode(variablesSubstitution[variable.value]), variable)
+const isLiteral = (variable: Variable) => new BuiltInCallImpl('isLITERAL', (variablesSubstitution: Substitution) => N3.Util.isLiteral(variablesSubstitution[variable.value]), variable)
+const isNumeric = (variable: Variable) => new BuiltInCallImpl('isNUMERIC', (variablesSubstitution: Substitution) => {
+    if(typeof variablesSubstitution[variable.value] === 'number')
+        return true
+    return false
+}, variable)
+const langMatches = (variable: Variable, language: string) => new BuiltInCallImpl('langMatches', (variablesSubstitution: Substitution) => {
+    if (!N3.Util.isLiteral(variablesSubstitution[variable.value])){
+        return false
+    }
+    return (variablesSubstitution[variable.value] as Literal).language.toLocaleLowerCase() === language.toLocaleLowerCase()
+}, variable, language)
+
 
 
 const QueryNodeFactory: QueryNodeFactory = new QueryNodeFactoryImpl()
 
 export type {
+    Node,
     QueryType,
     Query,
+    Substitution,
     SelectVariables,
     Expression,
     DataBlockValue,
@@ -527,33 +589,12 @@ export type {
 export {
     QueryNodeFactory,
 
-    lt,
-    le,
-    gt,
-    ge,
-    eq,
-    ne,
-    and,
     or,
-    mul,
-    add,
-    sub,
-    div,
-    inExpr as in,
-    notIn,
-
+    langEquality,
     isIri,
     isUri,
     isBlank,
     isLiteral,
     isNumeric,
-    ceil,
-    abs,
-    lang,
-    datatype,
-    bound,
-    iri,
-    uri,
-    not,
     langMatches
 }

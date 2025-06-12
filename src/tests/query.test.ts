@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
-import { BuiltInCall, Filter, Graph, Select, Where, QueryNodeFactory, or, isIri, isBlank, in as inExpr } from "../query";
+import { BuiltInCall, Filter, Graph, Select, Where, QueryNodeFactory, or, isIri, isBlank, langEquality} from "../query";
 import { DataFactory } from 'n3';
+import { NO_LANG_SPECIFIED } from '../query-builder';
 
 
 test('creates select with empty where', () => {
@@ -63,10 +64,12 @@ test('creates built-in call', () => {
     expect(builtInCall.toSparql()).toBe(`isBLANK(?variable)`)
 })
 
+/*
 test('creates filter with IN', () => {
     const filter: Filter = QueryNodeFactory.filter(inExpr(DataFactory.variable('variable'),QueryNodeFactory.expressionList(['hola', 3, DataFactory.literal('Joe', 'en')])))
     expect(filter.toSparql()).toBe(`FILTER (?variable IN (hola, 3, "Joe"@en))`)
 })
+*/
 
 test('creates filter', () => {
     const filter: Filter = QueryNodeFactory.filter(or(isIri(DataFactory.variable('object')), isBlank(DataFactory.variable('object'))))
@@ -104,4 +107,100 @@ test('creates graph block', () => {
 FILTER (isIRI(?object) || isBLANK(?object))
 _:b1 <http://purl.org/dc/terms/title> ?title .
 }`)
+})
+
+
+test('evaluates isIri on literal', () => {
+    const result = isIri(DataFactory.variable('object')).evaluate({'object': DataFactory.literal('literal')})
+    expect(result).toBe(false)
+    
+})
+
+test('evaluates isIri on named node', () => {
+    const result = isIri(DataFactory.variable('object')).evaluate({'object': DataFactory.namedNode('http://example.org')})
+    expect(result).toBe(true)
+})
+
+test('evaluates truthful langEquality on literal', () => {
+    const literal = DataFactory.literal("číslo", "cs")
+    const result = langEquality(DataFactory.variable("object"), "cs").evaluate({'object': literal})
+    expect(result).toBe(true)
+})
+
+test('evaluates false langEquality on literal', () => {
+    const literal = DataFactory.literal("number", "en")
+    const result = langEquality(DataFactory.variable("object"), "cs").evaluate({'object': literal})
+    expect(result).toBe(false)
+})
+
+test('evaluates tree with ORs (should be true)', () => {
+    const literal = DataFactory.literal('číslo', 'cs')
+    const variable = DataFactory.variable('object')
+    const constraint = or(langEquality(variable, "cs"), or(or(langEquality(variable, "en"), langEquality(variable, "es")), langEquality(variable, NO_LANG_SPECIFIED)))
+    expect(constraint.evaluate({'object': literal})).toBe(true)
+})
+
+test('evaluates tree with ORs (should be false)', () => {
+    const literal = DataFactory.literal('nombre', 'fr')
+    const variable = DataFactory.variable('object')
+    const constraint = or(langEquality(variable, "cs"), or(or(langEquality(variable, "en"), langEquality(variable, "es")), langEquality(variable, NO_LANG_SPECIFIED)))
+    expect(constraint.evaluate({'object': literal})).toBe(false)
+})
+
+test('evaluates tree with ORs with more variables (should be true)', () => {
+    const labelLiteral = DataFactory.literal('štítek', 'cs')
+    const titleLiteral = DataFactory.literal('titre', 'fr')
+    const labelVariable = DataFactory.variable('label')
+    const titleVariable = DataFactory.variable('title')
+    const constraint = or(langEquality(labelVariable, "cs"), or(or(langEquality(titleVariable, "en"), langEquality(labelVariable, "es")), langEquality(labelVariable, NO_LANG_SPECIFIED)))
+    expect(constraint.evaluate({[labelVariable.value]: labelLiteral, [titleVariable.value]: titleLiteral})).toBe(true)
+})
+
+test('evaluates tree with ORs with more variables (should be false)', () => {
+    const labelLiteral = DataFactory.literal('étiquette', 'fr')
+    const titleLiteral = DataFactory.literal('titolo', 'it')
+    const labelVariable = DataFactory.variable('label')
+    const titleVariable = DataFactory.variable('title')
+    const constraint = or(langEquality(labelVariable, "cs"), or(or(langEquality(titleVariable, "en"), langEquality(labelVariable, "es")), langEquality(labelVariable, NO_LANG_SPECIFIED)))
+    expect(constraint.evaluate({[labelVariable.value]: labelLiteral, [titleVariable.value]: titleLiteral})).toBe(false)
+})
+
+test('tries to evaluate OR tree with missing variable substitution', () => {
+    const labelLiteral = DataFactory.literal('étiquette', 'fr')
+    const labelVariable = DataFactory.variable('label')
+    const titleVariable = DataFactory.variable('title')
+    const constraint = or(langEquality(labelVariable, "cs"), or(or(langEquality(titleVariable, "en"), langEquality(labelVariable, "es")), langEquality(labelVariable, NO_LANG_SPECIFIED)))
+    // expect(constraint.variables).toStrictEqual(new Set([labelVariable, titleVariable]))
+    const result = () => constraint.evaluate({[labelVariable.value]: labelLiteral})
+    expect(result).toThrow(Error)
+})
+
+test('evaluates the langEquality with NO_LANG_SPECIFIED', () => {
+    const literal = DataFactory.literal('nombre', 'fr')
+    const variable = DataFactory.variable('object')
+    const result = langEquality(variable, NO_LANG_SPECIFIED).evaluate({'object': literal})
+    expect(result).toBe(false)
+})
+
+
+test('evaluates values for value that is part of the values', () => {
+    const variable = DataFactory.variable('subject')
+    const values = QueryNodeFactory.values(variable, [
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#example'), 
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#hiddenLabel'), 
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel')])
+
+    const prefLabel = DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel')
+    expect(values.evaluate(prefLabel)).toBe(true)
+})
+
+test('evaluates values for value that is NOT part of the values', () => {
+    const variable = DataFactory.variable('subject')
+    const values = QueryNodeFactory.values(variable, [
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#example'), 
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#hiddenLabel'), 
+        DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#prefLabel')])
+
+    const prefLabel = DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#related')
+    expect(values.evaluate(prefLabel)).toBe(false)
 })

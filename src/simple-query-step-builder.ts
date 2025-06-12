@@ -1,6 +1,6 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3"
-import { Language, Query } from "./query-builder"
-import { eq, isBlank, isIri, lang, or, Select, QueryNodeFactory } from "./query"
+import { Language, NO_LANG_SPECIFIED, Query } from "./query-builder"
+import { isBlank, isIri, or, Select, QueryNodeFactory, langEquality } from "./query"
 import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
 
 /**
@@ -103,7 +103,7 @@ interface FinalStep {
      * 
      * @param language - language tag that object literals should have
      */
-    lang(language: Language): FinalStep
+    langs(languages: Language[]): FinalStep
     
     /**
      * Sets the limit of returned quads
@@ -239,15 +239,21 @@ class FinalStepImpl implements FinalStep {
         this.buildingHelper = buildingHelper
         this.query  = QueryNodeFactory.select([this.buildingHelper.subjectVar, this.buildingHelper.predicateVar, this.buildingHelper.objectVar])
     }
-    lang(language: Language): FinalStep {
+    langs(languages: Language[] = []): FinalStep {
+        let languageConstraint = languages.length !== 0 ? langEquality(this.buildingHelper.objectVar, languages[0]) : langEquality(this.buildingHelper.objectVar, NO_LANG_SPECIFIED)
+        if (languages.length > 1) {
+            let i = 1
+            while (i < languages.length){
+                languageConstraint = or(languageConstraint, langEquality(this.buildingHelper.objectVar, languages[i]))
+                i++
+            }
+        }
         this.buildingHelper.graphPatternBuilder.filter(
             or(
                 isIri(this.buildingHelper.objectVar), // also show IRIs (they don't have language tags)
                 or(
                     isBlank(this.buildingHelper.objectVar), // same for blank nodes
-                    eq(
-                        lang(this.buildingHelper.objectVar), // matching language tags on literals
-                        DataFactory.literal(language))
+                    languageConstraint
                 )))
         return this
     }
