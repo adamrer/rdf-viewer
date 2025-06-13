@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { FileDataSource } from "../fetch-quads";
-import { simpleQueryStepBuilder } from "../simple-query-step-builder";
+import { FileDataSource } from "../src/fetch-quads";
+import { simpleQueryStepBuilder } from "../src/simple-query-step-builder";
 
 test('fetch label for skos:prefLabel', async () => {
     const fds = new FileDataSource('https://www.w3.org/2009/08/skos-reference/skos.rdf')

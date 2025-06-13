@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
-import { sparqlStepBuilder } from '../query-step-builder';
+import { sparqlStepBuilder } from '../src/query-step-builder';
 import { DataFactory } from 'n3';
-import * as sparql from '../query';
+import * as sparql from '../src/query';
 
 
 test('creates full select query', () => {

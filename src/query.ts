@@ -2,7 +2,7 @@ import N3, { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode, Quad, Ter
 import toNT from '@rdfjs/to-ntriples'
 import { Language, NO_LANG_SPECIFIED } from "./query-builder"
 
-// created with sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
+// inspired by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
 type QueryType = 'select' // |'construct'|'ask'|'describe'
 type NodeType = 'select'|

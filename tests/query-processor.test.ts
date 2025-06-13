@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { queryProcessor } from "../query-processor";
-import { simpleQueryStepBuilder } from "../simple-query-step-builder";
+import { queryProcessor } from "../src/query-processor";
+import { simpleQueryStepBuilder } from "../src/simple-query-step-builder";
 import { DataFactory, Quad } from "n3";
 
 
