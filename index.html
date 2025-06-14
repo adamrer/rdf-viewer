@@ -1,60 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <link rel="stylesheet" href="src/styles.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>prototype</title>
-  </head>
-  <body>
-    <div id="app">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RDF Viewer</title>
+  <link rel="stylesheet" href="./src/styles.css"/>
+</head>
+<body>
+  <div id="app">
+    <h1>RDF Viewer</h1>
 
-      <div class="header">
-        <div>
-            <input id="add-data-source-text" placeholder="Enter SPARQL Endpoint URL" type="text" />
+    <label for="iri">Entity IRI</label>
+    <input type="text" id="iri" placeholder="Enter entity IRI" />
 
-            <button id="add-data-source-btn" >Add data source</button>
-            
-            <input type="file" id="source-input" accept=".ttl,.trig,.nt,.n3,.nq" multiple>
+    <label for="languages">Languages</label>
+    <input type="text" id="languages" placeholder="en, cs, fr, ..."/>
 
+    <fieldset>
+      <legend>Data Sources</legend>
 
-            <h4>SPARQL endpoint data sources:</h4>
-            <ul id="data-sources">
-            </ul>
+      <form id="add-source-form">
+        <div class="source-option">
+          <input type="radio" id="sparql-source-radio" value="sparql" name="source" checked/>
+          <label for="sparql-source-text">SPARQL endpoint</label>
+          <input type="text" id="sparql-source-text" name="sparql-source-text" placeholder="URL" required />
         </div>
-
-        <div>
-            <label for="target-resource">
-                Target source: 
-                <input id="target-resource" type="text" placeholder="Enter Resource URL" value="https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS">
-            </label>
-            
-            
+  
+        <div class="source-option">
+          <input type="radio" id="file-source-radio" value="file" name="source" />
+          <label for="file-source-files">File</label>
+          <input type="file" id="file-source-files" name="file-source-files" multiple disabled />
         </div>
-        
-        <div>
-            <label for="language">
-              Language:
-              <input type="text" name="language" id="language" placeholder="Enter language" value="cs" class="language">
-            </label>
-            <button id='fetch-btn' >Fetch Triples</button>
+  
+        <div class="source-option">
+          <input type="radio" id="remote-file-source-radio" value="remote-file" name="source" />
+          <label for="remote-file-source-text">Remote file</label>
+          <input type="text" id="remote-file-source-text" name="remote-file-source-text" placeholder="URL" disabled />
         </div>
-        
-      </div>
-
-      <h4>Choose a display plugin:</h4>
-      <div id="plugins">
+        <button type="submit">+ Add Data Source</button>
+      </form>
       
+      <hr />
+
+      <div id="source-list">
       </div>
+    </fieldset>
+    <fieldset>
+      <legend>Plugins</legend>
+          <form  id="add-plugin-form">
+            <label for="label-plugin">Label</label>
+            <input type="text" name="label-plugin" id="label-plugin" required>
+            <div class="plugin-option">
+              <input type="radio" id="url-plugin-radio" value="url" name="plugin" checked />
+              <label for="url-plugin">Remote file</label>
+              <input type="text" placeholder="URL" id="url-plugin" name="url-plugin" required />
+            </div>
+  
+            <button type="submit" class="add-plugin" disabled>+ Add Plugin</button>
+          </form>
+          
+          <hr />
 
-      <hr>
-      <div id="results">
+          <div>
+            <label for="choose-plugin">Choose Plugin</label>
+            <select id="choose-plugin">
+              
+            </select>
+          </div>
+      
+    </fieldset>
 
+    <button id="display-btn">Display</button>
+  </div>
+  <div id="results">
 
-      </div>
-
-    </div>
-    <script type="module" src="./src/main.ts"></script>
-  </body>
+  </div>
+  <script type="module" src="./src/ui-binding.ts"></script>
+</body>
 </html>
