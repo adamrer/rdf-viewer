@@ -1,26 +1,26 @@
 const titlePredicates = [ 
     'http://purl.org/dc/terms/title', 
-    'https://www.w3.org/2000/01/rdf-schema#label', 
+    'http://www.w3.org/2000/01/rdf-schema#label', 
     'http://www.w3.org/2004/02/skos/core#prefLabel',
     'http://schema.org/givenName'
 ]
-
-export async function displayQuads(entityIri, fetcher, language, resultsEl){
+// TODO: fetch labels in one query for all predicates/objects
+export async function displayQuads(entityIri, fetcher, languages, resultsEl){
     const messageEl = document.createElement('p');
     resultsEl.appendChild(messageEl);
-
+    languages = [...languages, '']
     const builder = fetcher.builder('step');
     const query = builder
         .subjects([entityIri])
         .predicates()
         .objects()
-        .langs([language])
+        .langs(languages)
         .build()
 
     try{
         messageEl.textContent = "Loading data..."
         const quadsBySource = await fetcher.fetchQuads(query)
-        let entityLabel = getLabelFromQuads(quadsBySource);
+        let entityLabel = getLabelFromQuads(entityIri, quadsBySource);
         if (!entityLabel) {
             entityLabel = entityIri;
         }
@@ -35,7 +35,7 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl){
         await Promise.all(
             quadsBySource.map(async (source) => {
                 source.quads = await Promise.all(
-                source.quads.map(quad => labelQuad(quad, fetcher, language))
+                source.quads.map(quad => labelQuad(quad, fetcher, languages))
                 )
             })
         )
@@ -122,19 +122,18 @@ async function getObjectDisplay(object, fetcher, language){
 }
 async function labelQuad(quad, fetcher, language){
     const predicate = await getTitle(quad.predicate.value, fetcher, language)
-
     let object = await getObjectDisplay(quad.object, fetcher, language)
     return { predicate: { value: predicate }, object: { value: object } }
 
 }
 
-async function getTitle(iri, fetcher, language){
+async function getTitle(iri, fetcher, languages){
     const builder = fetcher.builder('step')
     const query = builder
         .subjects([iri])
         .predicates(titlePredicates)
         .objects()
-        .langs([language])
+        .langs(languages)
         .build()
     const quadsBySource = await fetcher.fetchQuads(query)
     let title = iri
@@ -147,12 +146,12 @@ async function getTitle(iri, fetcher, language){
     return title
 }
 
-function getLabelFromQuads(fetchedQuads){
+function getLabelFromQuads(entityIri, fetchedQuads){
     if (fetchedQuads.length!==0){
         let title = null
         fetchedQuads.forEach(fetchedQuad => {
             fetchedQuad.quads.forEach(quad => {
-                if (titlePredicates.includes(quad.predicate.value))
+                if (quad.subject.value === entityIri && titlePredicates.includes(quad.predicate.value))
                     title = quad.object.value
                     return
             })

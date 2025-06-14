@@ -5,7 +5,7 @@ const titlePredicates = [
 ]
 
 
-export async function displayQuads(entityIri, fetcher, language, resultsEl) {
+export async function displayQuads(entityIri, fetcher, languages, resultsEl) {
     const messageEl = document.createElement('p');
     resultsEl.appendChild(messageEl);
   
@@ -17,14 +17,14 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
     const builder = fetcher.builder();
     const query = builder
         .subject(entityIri)
-        .lang([language, ""])
+        .lang([...languages, ""])
         .build();
         
     try {
 
         const quadsBySource = await fetcher.fetchQuads(query);
 
-        let entityLabel = getLabelFromQuads(quadsBySource);
+        let entityLabel = getLabelFromQuads(entityIri, quadsBySource);
         if (!entityLabel) {
             entityLabel = entityIri;
         }
@@ -33,7 +33,7 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
         const preparedRowsBySource = await prepareRows(
             quadsBySource,
             fetcher,
-            language
+            languages
         );
 
         messageEl.textContent = 'Data successfully loaded!';
@@ -45,11 +45,11 @@ export async function displayQuads(entityIri, fetcher, language, resultsEl) {
             console.error(error);
         }
 }
-function prepareRows(quadsBySource, fetcher, language){
+function prepareRows(quadsBySource, fetcher, languages){
     return Promise.all(
         quadsBySource.map(async (fetched) => {
           const rows = await Promise.all(
-            fetched.quads.map((quad) => prepareRow(quad, fetcher, language))
+            fetched.quads.map((quad) => prepareRow(quad, fetcher, languages))
           );
           return {
             dataSourceTitle: fetched.dataSourceTitle,
@@ -96,25 +96,25 @@ function addRowToTableBody(preparedRow, tableBodyEl){
     row.appendChild(value)
     tableBodyEl.appendChild(row)
 }
-async function getObjectTitle(object, fetcher, language){
+async function getObjectTitle(object, fetcher, languages){
     if (object.termType === 'Literal') {
         return object.value;
       }
-      const title = await getTitle(object.value, fetcher, language);
+      const title = await getTitle(object.value, fetcher, languages);
       return `<a href="${object.value}">${title}</a>`;
 }
-async function prepareRow(quad, fetcher, language){
-    const predicate = await getTitle(quad.predicate.value, fetcher, language)
-    const object = await getObjectTitle(quad.object, fetcher, language)
+async function prepareRow(quad, fetcher, languages){
+    const predicate = await getTitle(quad.predicate.value, fetcher, languages)
+    const object = await getObjectTitle(quad.object, fetcher, languages)
     return { predicate, object }
 
 }
 
-async function getTitle(iri, fetcher, language){
+async function getTitle(iri, fetcher, languages){
     const builder = fetcher.builder()
     builder.subject(iri)
         .predicates(titlePredicates)
-        .lang([language, ""])
+        .lang([...languages, ""])
     const quadsBySource = await fetcher.fetchQuads(builder.build())
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{
@@ -147,12 +147,12 @@ function createAttributeTable(){
 }
 
 
-function getLabelFromQuads(fetchedQuads){
+function getLabelFromQuads(subject, fetchedQuads){
     if (fetchedQuads.length!==0){
         let title = null
         fetchedQuads.forEach(fetchedQuad => {
             fetchedQuad.quads.forEach(quad => {
-                if (titlePredicates.includes(quad.predicate.value))
+                if (quad.subject.value === subject && titlePredicates.includes(quad.predicate.value))
                     title = quad.object.value
                     return
             })
