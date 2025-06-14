@@ -1,6 +1,6 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3"
-import { Language, NO_LANG_SPECIFIED, Query } from "./query-builder"
-import { isBlank, isIri, or, Select, QueryNodeFactory, langEquality } from "./query"
+import { Query } from "./query"
+import { isBlank, isIri, or, Select, QueryNodeFactory, langEquality, Language, NO_LANG_SPECIFIED } from "./query"
 import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
 
 /**
@@ -291,8 +291,11 @@ function simpleQueryStepBuilder() : SimpleQueryStepBuilder {
 }
 
 export type {
+    Query,
+    Language,
     SimpleQueryStepBuilder
 }
 export {
+    NO_LANG_SPECIFIED,
     simpleQueryStepBuilder
 }

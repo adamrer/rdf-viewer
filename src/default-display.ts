@@ -1,15 +1,17 @@
 import { Fetcher } from "./fetch-quads";
-import { NO_LANG_SPECIFIED, SimpleQueryBuilder } from "./query-builder";
+import { Language, NO_LANG_SPECIFIED, SimpleQueryStepBuilder } from "./simple-query-step-builder";
 
 const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/2000/01/rdf-schema#label', 'http://www.w3.org/2004/02/skos/core#prefLabel' ] 
 
 
-export async function displayQuads(entityIri: string, fetcher: Fetcher, language: string, resultsEl: HTMLElement) {
+export async function displayQuads(entityIri: string, fetcher: Fetcher, languages: Language[], resultsEl: HTMLElement) {
     
 
-    const builder = (fetcher.builder() as SimpleQueryBuilder)
-    const query = builder.subject(entityIri)
-                        .lang([language, ""])
+    const builder = (fetcher.builder('step') as SimpleQueryStepBuilder)
+    const query = builder.subjects([entityIri])
+                        .predicates()
+                        .objects()
+                        .langs([...languages, NO_LANG_SPECIFIED])
                         .build()
     const quadsBySource = await fetcher.fetchQuads(query)
 
@@ -22,14 +24,14 @@ export async function displayQuads(entityIri: string, fetcher: Fetcher, language
         
         const list = document.createElement("ul");
         fetchedQuads?.quads.forEach(async (quad) => {
-            const predicateTitle = await getTitle(quad.predicate.value, fetcher, language)
+            const predicateTitle = await getTitle(quad.predicate.value, fetcher, languages)
             
             const object = quad.object.value;
             let objectTitle = object
             
             let objectHTML = object
             if (quad.object.termType !== 'Literal'){
-                objectTitle = await getTitle(object, fetcher, language)
+                objectTitle = await getTitle(object, fetcher, languages)
                 objectHTML = `<a href=${object}>${objectTitle}</a>`
             }
 
@@ -40,12 +42,14 @@ export async function displayQuads(entityIri: string, fetcher: Fetcher, language
     });
 }
 
-async function getTitle(iri: string, fetcher: Fetcher, language: string){
-    const builder = fetcher.builder() as SimpleQueryBuilder
-    builder.subject(iri)
+async function getTitle(iri: string, fetcher: Fetcher, languages: Language[]){
+    const builder = fetcher.builder('step') as SimpleQueryStepBuilder
+    const query = builder.subjects([iri])
         .predicates(titlePredicates)
-        .lang([language, NO_LANG_SPECIFIED])
-    const quadsBySource = await fetcher.fetchQuads(builder.build())
+        .objects()
+        .langs([...languages, NO_LANG_SPECIFIED])
+        .build()
+    const quadsBySource = await fetcher.fetchQuads(query)
     let title = iri
     quadsBySource.forEach(fetchedQuads =>{
         if (fetchedQuads.quads.length !== 0){

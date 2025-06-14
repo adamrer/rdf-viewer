@@ -1,8 +1,19 @@
 import N3, { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
 import toNT from '@rdfjs/to-ntriples'
-import { Language, NO_LANG_SPECIFIED } from "./query-builder"
 
 // inspired by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
+
+
+/**
+ * Represents no language tag specified for a literal
+ */
+const NO_LANG_SPECIFIED = ""
+
+/**
+ * Type representing a language tag of a literal
+ */
+type Language = typeof NO_LANG_SPECIFIED | string
+
 
 type QueryType = 'select' // |'construct'|'ask'|'describe'
 type NodeType = 'select'|
@@ -562,6 +573,7 @@ const langMatches = (variable: Variable, language: string) => new BuiltInCallImp
 const QueryNodeFactory: QueryNodeFactory = new QueryNodeFactoryImpl()
 
 export type {
+    Language,
     Node,
     QueryType,
     Query,
@@ -587,6 +599,7 @@ export type {
 
 }
 export {
+    NO_LANG_SPECIFIED,
     QueryNodeFactory,
 
     or,

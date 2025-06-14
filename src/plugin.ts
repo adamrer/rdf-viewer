@@ -27,7 +27,7 @@ export interface DisplayPluginModule {
      * @param language - The preferred language to display the quads
      * @param resultsEl - HTML element where to display the quads
      */
-    displayQuads(entityIri: string, fetcher: QuadsFetcher, language: Language, resultsEl: HTMLElement): Promise<void>
+    displayQuads(entityIri: string, fetcher: QuadsFetcher, languages: Language[], resultsEl: HTMLElement): Promise<void>
 }
 
 function getPluginUrl(pluginName: string): string {
