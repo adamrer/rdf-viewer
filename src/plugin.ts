@@ -1,5 +1,5 @@
 import { QuadsFetcher } from "./fetch-quads"
-import { Language } from "./query-builder"
+import { Language } from "./query"
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 
