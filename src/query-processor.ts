@@ -1,8 +1,8 @@
-import { Quad, Term } from "n3";
+import { Quad } from "n3";
 import { Filter, Graph, Query, TriplePattern, Values, Node, Substitution, Select } from "./query";
 
 
-type ConstraintFunction = (variablesSubstitution: {[key: string]: Term}) => boolean 
+type ConstraintFunction = (variablesSubstitution: Substitution) => boolean 
 
 
 interface QuadsConstraints {
@@ -79,11 +79,11 @@ class QueryProcessorImpl implements QueryProcessor {
     }
     filter(quads: Quad[], query: Query): Quad[] {
         const constraints = this.processQuery(query)
-        const quadMeetsQueryPredicate = this.predicateForQuads(constraints)
-        const filteredQuads: Quad[] = quads.filter(quad => quadMeetsQueryPredicate(quad))
+        const quadMeetsQueryConstraints = this.predicateForQuads(constraints)
+        const filteredQuads: Quad[] = quads.filter(quad => quadMeetsQueryConstraints(quad))
         if (query.type === 'select'){
             const select = query as Select
-            const limit = select.limit ? select.offset ? select.offset + select.limit : select.limit : undefined
+            const limit = select.limit ? (select.offset ? select.offset + select.limit : select.limit) : undefined
             return filteredQuads.slice(select.offset, limit)
         }
 

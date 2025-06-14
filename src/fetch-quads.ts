@@ -1,13 +1,17 @@
 import N3, { Quad } from 'n3'
-import { QueryBuilder, Query, simpleBuilder } from "./query-builder";
-import { SimpleQueryStepBuilder, simpleQueryStepBuilder } from './simple-query-step-builder';
+import { SimpleQueryStepBuilder, simpleQueryStepBuilder, Query } from './simple-query-step-builder';
 import { Readable } from 'readable-stream';
 import { rdfParser } from 'rdf-parse';
 import { queryProcessor } from './query-processor';
+
+type FileDataSourceType = "file"|"remote-file"
+type DataSourceType = "sparql"|FileDataSourceType
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
  */
 interface DataSource {
+    type: DataSourceType
+    identifier: string
     /**
      * Fetches RDF quads from data source corresponding to the query. 
      * 
@@ -68,10 +72,13 @@ interface ResultQuad {
  * @see DataSource
  */
 class SparqlDataSource implements DataSource {
-    endpointUrl: URL;
+    type = 'sparql' as const
+    endpointUrl: string;
+    identifier: string
 
-    constructor(endpointUrl: URL){
+    constructor(endpointUrl: string){
         this.endpointUrl = endpointUrl
+        this.identifier = endpointUrl
     }
 
     /**
@@ -109,9 +116,8 @@ class SparqlDataSource implements DataSource {
                 resolve(result)
             })
             .catch((error) => {
-                console.error('Error fetching data:', error);
-                document.getElementById('results')!.innerHTML = `<div>Error fetching data: ${error!.message}</div>`;
                 reject(error);
+                throw new Error(`Error fetching data from ${this.identifier}`)
             })
         })
     }
@@ -119,17 +125,23 @@ class SparqlDataSource implements DataSource {
 
 
 class FileDataSource implements DataSource {
+    type: FileDataSourceType
     quads?: Quad[]
     file?: File;
     url?: string
     fileLoaded: boolean = false
+    identifier: string
     
     constructor(fileOrUrl: File|string){
         if (fileOrUrl instanceof File){
             this.file = fileOrUrl
+            this.identifier = fileOrUrl.name
+            this.type = 'file'
         }
         else {
             this.url = fileOrUrl
+            this.identifier = fileOrUrl
+            this.type = 'remote-file'
         }
     }
 
@@ -186,7 +198,7 @@ class FileDataSource implements DataSource {
     }
 }
 
-type BuilderType = 'simple'|'step'
+type BuilderType = 'step'
 /**
  * Interface for fetching quads from multiple data sources 
  * 
@@ -205,7 +217,7 @@ interface QuadsFetcher {
     /**
      * @returns a query builder for creating the query
      */
-    builder(type: BuilderType): QueryBuilder|SimpleQueryStepBuilder
+    builder(type: BuilderType): SimpleQueryStepBuilder
 }
 
 /**
@@ -220,15 +232,13 @@ class Fetcher implements QuadsFetcher {
         this.dataSources = dataSources
     }
 
-    async fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]> {
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
         const promises = this.dataSources.map(ds => ds.fetchQuads(query))
         return Promise.all(promises)
     }
     
-    builder(type: BuilderType = 'simple') : QueryBuilder|SimpleQueryStepBuilder {
+    builder(type: BuilderType = 'step') : SimpleQueryStepBuilder {
         switch (type) {
-            case 'simple':
-                return simpleBuilder()
             case 'step':
                 return simpleQueryStepBuilder()
         }
@@ -239,6 +249,7 @@ class Fetcher implements QuadsFetcher {
 
 export type {
     DataSource,
+    DataSourceType,
     DataSourceFetchResult,
     QuadsFetcher
 }
