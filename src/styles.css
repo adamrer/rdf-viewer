@@ -1,20 +1,26 @@
 body{
-    width: 65%;
-    margin: 0 auto;
-  }
-#content{
+  background-color: #f9f9f9;
+}
+#app {
+  font-family: consolas;
+  font-size: 1.1em;
   display: flex;
   flex-direction: column;
-}
-.header{
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-around;
-}
-.header > div{
-  padding: 0.5em;
+  justify-content: center;
+  padding-top: 50px;
+  max-width: fit-content;
+  margin: 0 auto;
 }
 
-.language {
-  max-width: 4em;
+#app button, input, select {
+  font-family: inherit;
+  font-size: inherit;
 }
+
+#app fieldset {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+
+
