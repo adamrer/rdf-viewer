@@ -2,7 +2,7 @@ import {expect, test} from 'vitest';
 
 import { simpleQueryStepBuilder } from '../src/simple-query-step-builder';
 import { Select } from '../src/query';
-import { NO_LANG_SPECIFIED } from '../src/query-builder';
+import { NO_LANG_SPECIFIED } from '../src/query';
 
 
 test('creates basic SPOG query', () => {
