@@ -9,11 +9,10 @@ type Listener = () => void
 class AppState {
     private static _instance: AppState
 
-    entityIri: string = ""
-    languages: Language[] = []
+    entityIri: string = "https://data.gov.cz/zdroj/datov%C3%A9-sady/00064459/c34f5a6baaa387d2e10695fb46e4bb48"
+    languages: Language[] = ["cs", "en"]
     dataSources: DataSource[] = [
         new SparqlDataSource('https://data.gov.cz/sparql'),
-        new SparqlDataSource('https://data.mf.gov.cz/lod/sparql'),
         new FileDataSource('https://www.w3.org/2009/08/skos-reference/skos.rdf'),
         new FileDataSource('https://www.w3.org/ns/dcat3.ttl'),
         new FileDataSource('https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl')
@@ -50,7 +49,7 @@ class AppState {
     }
 
     setEntityIRI(iri: string) {
-        this.entityIri = decodeURIComponent(iri);
+        this.entityIri = iri;
         this.notify();
     }
 

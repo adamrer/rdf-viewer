@@ -1,8 +1,6 @@
 import { QuadsFetcher } from "./fetch-quads"
 import { Language } from "./query"
 
-const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
-
 /**
  * Interface representing a recorded plugin in the memory.
  */
@@ -30,22 +28,7 @@ export interface DisplayPluginModule {
     displayQuads(entityIri: string, fetcher: QuadsFetcher, languages: Language[], resultsEl: HTMLElement): Promise<void>
 }
 
-function getPluginUrl(pluginName: string): string {
-    return pluginBaseUrl+pluginName
-} 
-
-/**
- * Loads default display plugins.
- */
-export function loadDefaultPlugins(): void {
-    const plugins: Array<DisplayPlugin> = [
-        { url: getPluginUrl('default-merge-plugin.js'), label: 'Default Merge Plugin', classes: [] },
-        { url: getPluginUrl('default-table-plugin.js'), label: 'Default Table Plugin', classes: [] },
-        { url: getPluginUrl('dataset-plugin.js'), label: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
-    ]
-    const selectedPluginUrl = plugins[0].url
-
-    localStorage.setItem("plugins", JSON.stringify(plugins))
-    localStorage.setItem("selectedPlugin", selectedPluginUrl.toString())
+export async function fetchPlugin(plugin: DisplayPlugin): Promise<DisplayPluginModule> {
+    return import(plugin.url)
 }
 
