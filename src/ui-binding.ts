@@ -28,8 +28,8 @@ function initialize(){
 }
 
 function loadAppState(){
-    iriEl.textContent = app.entityIri
-    languagesEl.textContent = app.languages.join(', ')
+    iriEl.value = app.entityIri
+    languagesEl.value = app.languages.join(', ')
     app.dataSources.forEach(ds => createSourceEntry(ds.type, ds.identifier, dataSourcesContainer))
     app.plugins.forEach(plugin => addPluginOption(plugin.label, plugin.url, pluginSelectEl))
 }
@@ -60,7 +60,7 @@ function addEventListeners(){
 
     languagesEl?.addEventListener('change', () => {
         const languagesText = languagesEl.value
-        const whitespacesRE: RegExp = /(\s+|(\s*,\s*))/
+        const whitespacesRE: RegExp = /[\s,]+\s*/g
         const languages = languagesText.split(whitespacesRE)
         app.setLanguages(languages)
     })
