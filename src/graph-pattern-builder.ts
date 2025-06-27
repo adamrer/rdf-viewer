@@ -1,5 +1,6 @@
 import { NamedNode, Term, Variable } from "n3"
-import { DataBlockValue, Expression, GraphPattern, QueryNodeFactory } from "./query"
+import { DataBlockValue, Expression, GraphPattern } from "./query/query-interfaces"
+import QueryNodeFactory from "./query/query-implementations"
 
 interface GraphPatternBuilder {
     triple(subject: Term, predicate: NamedNode | Variable, object: Term): GraphPatternBuilder

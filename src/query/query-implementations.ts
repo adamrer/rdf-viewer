@@ -1,56 +1,6 @@
 import N3, { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
-import toNT from '@rdfjs/to-ntriples'
-
-// inspired by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
-
-
-/**
- * Represents no language tag specified for a literal
- */
-const NO_LANG_SPECIFIED = ""
-
-const ANY_LANGUAGE = "*"
-
-/**
- * Type representing a language tag of a literal
- */
-type Language = typeof NO_LANG_SPECIFIED | string
-
-
-type QueryType = 'select' // |'construct'|'ask'|'describe'
-type NodeType = 'select'|
-    'triplePattern'|
-    'operatorExpression'|
-    'values'|
-    'builtInCall'|
-    'filter'|
-    'expressionList'|
-    'bind'|
-    'union'|
-    GraphPatternClauseType
-    
-type GraphPatternClauseType = 'where'|
-    'optional'|
-    'graph' 
-
-interface Query {
-    type: QueryType
-    where: Where
-    toSparql(): string
-}
-
-interface Node {
-    type: NodeType
-    toSparql(): string
-}
-
-
-interface TriplePattern extends Node {
-    type: 'triplePattern'
-    subject: Term
-    predicate: NamedNode | Variable
-    object: Term
-}
+import { ANY_LANGUAGE, Bind, BuiltInCall, DataBlockValue, Expression, ExpressionList, Filter, Func, Graph, GraphPattern, GraphPatternClause, GraphPatternClauseType, Language, NO_LANG_SPECIFIED, Operator, OperatorExpression, Optional, Select, SelectVariables, Substitution, TriplePattern, Union, Values, Where } from "./query-interfaces"
+import toNT from "@rdfjs/to-ntriples"
 
 class TriplePatternImpl implements TriplePattern {
     type = 'triplePattern' as const
@@ -70,14 +20,7 @@ class TriplePatternImpl implements TriplePattern {
     }
 }
 
-type GraphPattern = Graph | GraphPatternClause | TriplePattern | Select | Union | Filter | Bind | Optional | Values
 
-interface GraphPatternClause extends Node {
-    type: GraphPatternClauseType
-    children: GraphPattern[]
-    keyword: string
-    
-}
 
 abstract class GraphPatternClauseImpl implements GraphPatternClause {
     type: GraphPatternClauseType
@@ -109,11 +52,6 @@ abstract class GraphPatternClauseImpl implements GraphPatternClause {
     }
 }
 
-interface Union extends Node {
-    type: 'union'
-    leftChildren: GraphPattern[]
-    rightChildren: GraphPattern[]
-}
 
 class UnionImpl implements Union {
     type = 'union' as const
@@ -133,28 +71,12 @@ ${this.rightChildren.map(pattern => pattern.toSparql()).join('\n')}
         return [left, 'UNION', right].join('\n')
     }
 }
-type AllSelector = '*'
 
 function isAllSelector(value:SelectVariables): boolean{
     return value === '*'
 }
 
-type SelectVariables = Variable[]|AllSelector
 
-interface Select extends Node, Query {
-    type: 'select'
-    where: Where
-    distinct: boolean
-    variables: SelectVariables
-    limit?: number
-    offset?: number
-
-    setLimit(value: number): Select
-    setOffset(value: number): Select
-    setWhere(where: Where): Select
-    addVariables(variables: Variable[]): Select
-    
-}
 class SelectImpl implements Select {
     type = "select" as const
     variables: SelectVariables
@@ -210,13 +132,6 @@ class SelectImpl implements Select {
     
 }
 
-type DataBlockValue = NamedNode | Literal 
-interface Values extends Node {
-    type: 'values'
-    values: DataBlockValue[]
-    variable: Variable
-    evaluate(value: Term): boolean
-}
 
 class ValuesImpl implements Values {
     type = 'values' as const
@@ -237,12 +152,6 @@ class ValuesImpl implements Values {
     }
 }
 
-interface Bind extends Node {
-    type: 'bind'
-    expression: Expression
-    variable: Variable
-}
-
 class BindImpl implements Bind {
     type = "bind" as const
     expression: Expression
@@ -258,9 +167,6 @@ class BindImpl implements Bind {
     }
 }
 
-interface Optional extends GraphPatternClause {
-    type: 'optional'
-}
 
 class OptionalImpl extends GraphPatternClauseImpl implements Optional {
     type = 'optional' as const
@@ -269,10 +175,6 @@ class OptionalImpl extends GraphPatternClauseImpl implements Optional {
     }
 }
 
-interface Filter extends Node {
-    type: 'filter'
-    constraint: BuiltInCall|OperatorExpression
-}
 
 class FilterImpl implements Filter {
     type = 'filter' as const
@@ -289,11 +191,6 @@ class FilterImpl implements Filter {
 }
 
 
-interface Graph extends GraphPatternClause {
-    type: 'graph'
-    graph: NamedNode | Variable
-    children: GraphPattern[]
-}
 
 class GraphImpl extends GraphPatternClauseImpl implements Graph {
     type = 'graph' as const
@@ -312,10 +209,7 @@ class GraphImpl extends GraphPatternClauseImpl implements Graph {
 }
 
 
-type ConditionalOperator = '||' 
-type RelationalOperator = '=' | '!=' 
-type Operator = ConditionalOperator | RelationalOperator
-type Expression = OperatorExpression | Term | number | string | ExpressionList | BuiltInCall
+
 
 function expressionToString(arg: Expression): string{
     if (arg instanceof NamedNode || arg instanceof Variable || arg instanceof BlankNode || arg instanceof Literal || arg instanceof DefaultGraph){
@@ -329,13 +223,6 @@ function expressionToString(arg: Expression): string{
     
 }
 
-interface OperatorExpression extends Node {
-    type: 'operatorExpression'
-    operator: Operator
-    args: Expression[]
-    variables: Set<Variable>
-    evaluate(variablesSubstitution: {[key: string]: Term}): boolean
-}
 
 function isOperatorExpression(object: any) {
     return object.type === 'operatorExpression'
@@ -390,30 +277,7 @@ class OperatorExpressionImpl implements OperatorExpression {
 }
 
 
-type UnaryFunc = 'STR' | 'LANG' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI'
-| 'BNODE'
-| 'ABS'
-| 'CEIL'
-| 'FLOOR'
-| 'ROUND'
-| 'isIRI'
-| 'isURI'
-| 'isBLANK'
-| 'isLITERAL'
-| 'isNUMERIC'
-| '!'
 
-type BinaryFunc = 'langMatches'
-
-type Func = UnaryFunc | BinaryFunc
-
-interface BuiltInCall extends Node {
-    type: 'builtInCall'
-    func: Func
-    variable: Variable
-
-    evaluate(variablesSubstitution: {[key: string]: Term}): boolean
-}
 
 function isBuiltInCall(object: any): boolean {
     return object.type === 'builtInCall'
@@ -450,9 +314,11 @@ class BuiltInCallImpl implements BuiltInCall {
 
 
 
-interface ExpressionList extends Node {
-    type: 'expressionList'
-    expressions: Expression[]
+class WhereImpl extends GraphPatternClauseImpl implements Where {
+    type = 'where' as const
+    constructor(children: GraphPattern[] = []){
+        super('where', children)
+    }
 }
 
 class ExpressionListImpl implements ExpressionList {
@@ -465,17 +331,6 @@ class ExpressionListImpl implements ExpressionList {
 
     toSparql(): string {
         return `(${this.expressions.map(expr => expressionToString(expr)).join(', ')})`
-    }
-}
-
-interface Where extends GraphPatternClause {
-    type: 'where'
-}
-
-class WhereImpl extends GraphPatternClauseImpl implements Where {
-    type = 'where' as const
-    constructor(children: GraphPattern[] = []){
-        super('where', children)
     }
 }
 
@@ -492,6 +347,7 @@ interface QueryNodeFactory {
     // union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union 
     // optional(children?: GraphPattern[]): Optional 
 }
+
 class QueryNodeFactoryImpl implements QueryNodeFactory {
     select(variables: SelectVariables, distinct: boolean = true, where?: Where, limit?: number, offset?: number): Select {
         return new SelectImpl(variables, distinct, where, limit, offset)
@@ -553,7 +409,6 @@ const langMatches = (variable: Variable, language: Language|typeof ANY_LANGUAGE)
     return (variablesSubstitution[variable.value] as Literal).language.toLocaleLowerCase() === language.toLocaleLowerCase()
 }, variable, language)
 
-type Substitution = {[key: string]: Term}
 // Operator expressions
 const or = (firstArg: BuiltInCall|OperatorExpression, secondArg: BuiltInCall|OperatorExpression) => new OperatorExpressionImpl('||', [firstArg, secondArg], (variablesSubstitution: Substitution) => {
     const firstValue = firstArg.evaluate(variablesSubstitution)
@@ -571,46 +426,14 @@ const langEquality = (variable: Variable, language: Language) => new OperatorExp
 
     const literal = value as Literal
     return literal.language.toLowerCase() === language.toLowerCase()
-
-
-
-
 })
 
 
 
 const QueryNodeFactory: QueryNodeFactory = new QueryNodeFactoryImpl()
 
-export type {
-    Language,
-    Node,
-    QueryType,
-    Query,
-    Substitution,
-    SelectVariables,
-    Expression,
-    DataBlockValue,
-    GraphPattern,
-
-    Select,
-    Where,
-    TriplePattern,
-    OperatorExpression,
-    ExpressionList,
-    Values,
-    Bind,
-    BuiltInCall,
-    Union,
-    Optional,
-    Filter,
-    Graph,
-    GraphPatternClause,
-
-}
+export default QueryNodeFactory
 export {
-    NO_LANG_SPECIFIED,
-    QueryNodeFactory,
-
     or,
     langEquality,
     isIri,

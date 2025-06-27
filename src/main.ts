@@ -2,7 +2,7 @@ import { Fetcher } from './fetch-quads'
 import { DisplayPluginModule, fetchPlugin } from './plugin'
 import { displayQuads } from './default-display'
 import { AppState } from './app-state';
-import { Language } from './query';
+import { Language } from './query/query-interfaces';
 
 
 async function display(): Promise<void> {

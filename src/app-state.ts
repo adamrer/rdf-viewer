@@ -1,6 +1,6 @@
 import { DataSource, FileDataSource, SparqlDataSource } from "./fetch-quads"
 import { DisplayPlugin } from "./plugin"
-import { Language } from "./query"
+import { Language } from "./query/query-interfaces"
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 

@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest';
-import { BuiltInCall, Filter, Graph, Select, Where, QueryNodeFactory, or, isIri, isBlank, langEquality} from "../src/query";
+import { BuiltInCall, Filter, Graph, Select, Where, } from "../src/query/query-interfaces";
+import QueryNodeFactory, { or, isIri, isBlank, langEquality } from "../src/query/query-implementations"
 import { DataFactory } from 'n3';
-import { NO_LANG_SPECIFIED } from '../src/query';
+import { NO_LANG_SPECIFIED } from '../src/query/query-interfaces';
 
 
 test('creates select with empty where', () => {

@@ -1,5 +1,5 @@
 import { Quad } from "n3";
-import { Filter, Graph, Query, TriplePattern, Values, Node, Substitution, Select } from "./query";
+import { Filter, Graph, Query, TriplePattern, Values, Node, Substitution, Select } from "./query/query-interfaces";
 
 
 type ConstraintFunction = (variablesSubstitution: Substitution) => boolean 

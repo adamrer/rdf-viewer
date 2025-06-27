@@ -311,7 +311,8 @@ interface StructuredQuads {
 export type {
     DataSource,
     DataSourceFetchResult,
-    QuadsFetcher
+    QuadsFetcher,
+    StructuredQuads
 }
 
 export {
