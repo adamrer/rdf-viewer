@@ -7,8 +7,8 @@ const port = 3000;
 app.use(cors());
 
 // Nastaví složku "plugins" jako veřejnou
-app.use('/plugins', express.static('plugins'));
+app.use('/plugins', express.static('../plugins'));
 
 app.listen(port, () => {
-    console.log(`Server běží na http://localhost:${port}`);
+    console.log(`Server listening on http://localhost:${port}`);
 });
