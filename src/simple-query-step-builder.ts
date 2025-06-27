@@ -1,6 +1,7 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3"
 import { Query } from "./query/query-interfaces"
-import { isBlank, isIri, or, Select, QueryNodeFactory, langEquality, Language, NO_LANG_SPECIFIED } from "./query/query-interfaces"
+import {  Select, Language, NO_LANG_SPECIFIED } from "./query/query-interfaces"
+import QueryNodeFactory, { isBlank, isIri, or, langEquality } from "./query/query-implementations"
 import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builder"
 
 /**
