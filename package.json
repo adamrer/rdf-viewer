@@ -7,19 +7,18 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest --watch"
   },
   "devDependencies": {
     "@types/rdfjs__to-ntriples": "^3.0.0",
     "typescript": "^5.2.2",
     "vite": "^6.2.2",
     "vite-plugin-static-copy": "^2.3.1",
-    "vitest": "^3.2.1"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@rdfjs/to-ntriples": "^3.0.1",
     "@types/n3": "^1.24.1",
-    "express": "^4.21.2",
     "n3": "^1.24.0",
     "rdf-parse": "^4.0.0",
     "readable-stream": "^4.7.0"

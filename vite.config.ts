@@ -8,7 +8,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'plugin-server/plugins/*',
+          src: 'plugins/*',
           dest: 'plugins'
         }
       ]
