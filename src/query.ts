@@ -542,7 +542,7 @@ const isNumeric = (variable: Variable) => new BuiltInCallImpl('isNUMERIC', (vari
         return true
     return false
 }, variable)
-// TODO: langMatches
+// TODO: langMatches to match all languages
 const langMatches = (variable: Variable, language: Language|typeof ANY_LANGUAGE) => new BuiltInCallImpl('langMatches', (variablesSubstitution: Substitution) => {
     if (!N3.Util.isLiteral(variablesSubstitution[variable.value])){
         return false

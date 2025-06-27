@@ -33,7 +33,7 @@ test('fetch label for dcterms:title', async () => {
 
     const fds = new FileDataSource('https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl')
     const fetcher = new Fetcher([fds])
-    const builder = fetcher.builder('step') as SimpleQueryStepBuilder
+    const builder = fetcher.builder() as SimpleQueryStepBuilder
     const query = builder
     .subjects(['http://purl.org/dc/terms/title'])
     .predicates(['http://www.w3.org/2000/01/rdf-schema#label', 'http://purl.org/dc/terms/title'])
@@ -45,4 +45,23 @@ test('fetch label for dcterms:title', async () => {
     expect(result.length).toBeGreaterThan(0)
     expect(result[0].quads.length).toBeGreaterThan(0)
     expect(result[0].quads[0].object.value).toBe('Title')
+})
+
+
+test('fetch label for dcat:theme', async () => {
+
+    const fds = new FileDataSource('https://www.w3.org/ns/dcat3.ttl')
+    const fetcher = new Fetcher([fds])
+    const builder = fetcher.builder() as SimpleQueryStepBuilder
+    const query = builder
+    .subjects(['http://www.w3.org/ns/dcat#theme'])
+    .predicates(['http://www.w3.org/2000/01/rdf-schema#label', 'http://purl.org/dc/terms/title'])
+    .objects()
+    .langs(['en'])
+    .build()
+    const result = await fetcher.fetchQuads(query)
+    
+    expect(result.length).toBeGreaterThan(0)
+    expect(result[0].quads.length).toBeGreaterThan(0)
+    expect(result[0].quads[0].object.value).toBe('theme')
 })

@@ -16,7 +16,13 @@ const quads: Quad[] = [
     DataFactory.quad(
         DataFactory.namedNode('http://www.w3.org/2004/02/skos/core#hiddenLabel'), 
         DataFactory.namedNode('http://www.w3.org/2000/01/rdf-schema#label'), 
-        DataFactory.literal('schovaný štítek', 'cs'))]
+        DataFactory.literal('schovaný štítek', 'cs')),
+    DataFactory.quad(
+        DataFactory.namedNode('http://www.w3.org/ns/dcat#theme'),
+        DataFactory.namedNode('http://www.w3.org/2000/01/rdf-schema#label'),
+        DataFactory.literal('téma', 'cs')
+    )
+    ]
 
 test('processes query with values that has the value', () => {
     const builder = simpleQueryStepBuilder()
@@ -25,6 +31,15 @@ test('processes query with values that has the value', () => {
     const resultQuads = processor.filter(quads, query)
     expect(resultQuads.length === 1).toBe(true)
     expect(resultQuads[0].subject.value).toBe('http://www.w3.org/2004/02/skos/core#prefLabel')
+})
+
+test('processes query with more subjects specified', () => {
+    const builder = simpleQueryStepBuilder()
+    const query = builder.subjects(['http://www.w3.org/2004/02/skos/core#prefLabel', 'http://www.w3.org/2004/02/skos/core#hiddenLabel']).predicates(['http://www.w3.org/2000/01/rdf-schema#label']).objects().build()
+    const processor = queryProcessor()
+    const resultQuads = processor.filter(quads, query)
+    expect(resultQuads.length).toBe(3)
+    expect(resultQuads.every(quad => quad.subject.value !== 'http://www.w3.org/ns/dcat#theme')).toBe(true)
 })
 
 test('processes query with values that does not have the value', () => {
@@ -68,7 +83,7 @@ test('processes query with offset', () => {
     const query = builder.subjects().predicates(['http://www.w3.org/2000/01/rdf-schema#label']).objects().offset(1).build()
     const processor = queryProcessor()
     const resultQuads = processor.filter(quads, query)
-    expect(resultQuads.length).toBe(2)
+    expect(resultQuads.length).toBe(3)
     expect(resultQuads[0].object.value).toBe('hidden label')
 })
 
