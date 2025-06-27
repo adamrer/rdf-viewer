@@ -7,7 +7,7 @@ const titlePredicates = [ 'http://purl.org/dc/terms/title', 'https://www.w3.org/
 export async function displayQuads(entityIri: string, fetcher: Fetcher, languages: Language[], resultsEl: HTMLElement) {
     
 
-    const builder = (fetcher.builder('step') as SimpleQueryStepBuilder)
+    const builder = (fetcher.builder() as SimpleQueryStepBuilder)
     const query = builder.subjects([entityIri])
                         .predicates()
                         .objects()
@@ -43,7 +43,7 @@ export async function displayQuads(entityIri: string, fetcher: Fetcher, language
 }
 
 async function getTitle(iri: string, fetcher: Fetcher, languages: Language[]){
-    const builder = fetcher.builder('step') as SimpleQueryStepBuilder
+    const builder = fetcher.builder() as SimpleQueryStepBuilder
     const query = builder.subjects([iri])
         .predicates(titlePredicates)
         .objects()

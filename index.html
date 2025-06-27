@@ -21,19 +21,19 @@
 
       <form id="add-source-form">
         <div class="source-option">
-          <input type="radio" id="sparql-source-radio" value="sparql" name="source" checked/>
+          <input type="radio" id="sparql-source-radio" value="SPARQL" name="source" checked/>
           <label for="sparql-source-text">SPARQL endpoint</label>
           <input type="text" id="sparql-source-text" name="sparql-source-text" placeholder="URL" required />
         </div>
   
         <div class="source-option">
-          <input type="radio" id="file-source-radio" value="file" name="source" />
+          <input type="radio" id="file-source-radio" value="LOCAL_FILE" name="source" />
           <label for="file-source-files">File</label>
           <input type="file" id="file-source-files" name="file-source-files" multiple disabled />
         </div>
   
         <div class="source-option">
-          <input type="radio" id="remote-file-source-radio" value="remote-file" name="source" />
+          <input type="radio" id="remote-file-source-radio" value="REMOTE_FILE" name="source" />
           <label for="remote-file-source-text">Remote file</label>
           <input type="text" id="remote-file-source-text" name="remote-file-source-text" placeholder="URL" disabled />
         </div>

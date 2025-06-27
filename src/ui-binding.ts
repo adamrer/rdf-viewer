@@ -8,13 +8,13 @@ const app = AppState.getInstance()
 
 type PluginType = "url"
 
-const addSourceFormEl = document.getElementById('add-source-form') as HTMLFormElement
-const addPluginFormEl = document.getElementById('add-plugin-form') as HTMLFormElement
-const iriEl = document.getElementById('iri') as HTMLInputElement
-const languagesEl = document.getElementById('languages') as HTMLInputElement
-const pluginSelectEl = document.getElementById('choose-plugin') as HTMLSelectElement
-const dataSourcesContainer = document.getElementById('source-list') as HTMLElement
-const displayBtn = document.getElementById('display-btn') as HTMLButtonElement
+const addSourceFormEl = document.getElementById('add-source-form')! as HTMLFormElement
+const addPluginFormEl = document.getElementById('add-plugin-form')! as HTMLFormElement
+const iriEl = document.getElementById('iri')! as HTMLInputElement
+const languagesEl = document.getElementById('languages')! as HTMLInputElement
+const pluginSelectEl = document.getElementById('choose-plugin')! as HTMLSelectElement
+const dataSourcesContainer = document.getElementById('source-list')! as HTMLElement
+const displayBtn = document.getElementById('display-btn')! as HTMLButtonElement
 
 window.onload = () => {
     initialize()
@@ -35,7 +35,7 @@ function loadAppState(){
 }
 
 function addEventListeners(){
-    addSourceFormEl?.addEventListener('submit', (event: SubmitEvent) => {
+    addSourceFormEl.addEventListener('submit', (event: SubmitEvent) => {
         event.preventDefault()
         const formData = new FormData(addSourceFormEl)
         addDataSourceFromFormData(formData)
@@ -44,7 +44,7 @@ function addEventListeners(){
         return false
     })
     
-    addPluginFormEl?.addEventListener('submit', (event: SubmitEvent) => {
+    addPluginFormEl.addEventListener('submit', (event: SubmitEvent) => {
         event.preventDefault()
         const formData = new FormData(addPluginFormEl)
         addPluginFromFormData(formData)
@@ -53,26 +53,26 @@ function addEventListeners(){
         return false
     })
 
-    iriEl?.addEventListener('change', () => {
+    iriEl.addEventListener('change', () => {
         const iriText = iriEl.value
         app.setEntityIRI(iriText)
     })
 
-    languagesEl?.addEventListener('change', () => {
+    languagesEl.addEventListener('change', () => {
         const languagesText = languagesEl.value
         const whitespacesRE: RegExp = /[\s,]+\s*/g
         const languages = languagesText.split(whitespacesRE)
         app.setLanguages(languages)
     })
 
-    pluginSelectEl?.addEventListener('change', () => {
+    pluginSelectEl.addEventListener('change', () => {
         const selectedValue = pluginSelectEl.value
         app.setSelectedPlugin(selectedValue)
     })
 
 
 
-    displayBtn?.addEventListener('click', () => {
+    displayBtn.addEventListener('click', () => {
         display()
     })
 
@@ -98,26 +98,26 @@ function addPluginFromFormData(formData: FormData){
 function addDataSourceFromFormData(formData: FormData){
     const dsType: DataSourceType = formData.get('source') as DataSourceType
     switch (dsType) {
-        case "sparql":
+        case DataSourceType.Sparql:
             const sparqlUrl = formData.get('sparql-source-text') as string | null
             if (!sparqlUrl)
                 throw new Error('Missing url for sparql endpoint in form data')
             app.addSparqlDataSource(sparqlUrl)
-            createSourceEntry("sparql", sparqlUrl, dataSourcesContainer)
+            createSourceEntry(DataSourceType.Sparql, sparqlUrl, dataSourcesContainer)
             break;
-        case "file":
+        case DataSourceType.LocalFile:
             const files = formData.getAll('file-source-files') as File[]
             files.forEach(file => {
                 app.addFileDataSource(file)
-                createSourceEntry("file", file.name, dataSourcesContainer)
+                createSourceEntry(DataSourceType.LocalFile, file.name, dataSourcesContainer)
             })
             break;
-        case "remote-file":
+        case DataSourceType.RemoteFile:
             const fileUrl = formData.get('remote-file-source-text') as string | null
             if (!fileUrl)
                 throw new Error('Missing url for remote file in form data')
             app.addFileDataSource(fileUrl)
-            createSourceEntry("remote-file", fileUrl, dataSourcesContainer)
+            createSourceEntry(DataSourceType.RemoteFile, fileUrl, dataSourcesContainer)
             break;
     
         default:
@@ -159,13 +159,13 @@ function createSourceEntry(type: DataSourceType, identifier: string, containerEl
     entryEl.className = 'source-entry'
     let typeLabel
     switch (type) {
-        case 'file':
+        case DataSourceType.LocalFile:
             typeLabel = 'File'
             break;
-        case 'remote-file':
+        case DataSourceType.RemoteFile:
             typeLabel = 'Remote File'
             break;
-        case 'sparql':
+        case DataSourceType.Sparql:
             typeLabel = 'SPARQL Endpoint'
             break;
         default:
@@ -190,6 +190,3 @@ function addPluginOption(label: string, url: string, selectEl: HTMLSelectElement
     selectEl.appendChild(option)
 }
 
-app.subscribe(() => {
-    console.log(app)
-})

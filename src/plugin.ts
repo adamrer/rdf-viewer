@@ -29,6 +29,6 @@ export interface DisplayPluginModule {
 }
 
 export async function fetchPlugin(plugin: DisplayPlugin): Promise<DisplayPluginModule> {
-    return import(plugin.url)
+    return import(/* @vite-ignore */ plugin.url)
 }
 

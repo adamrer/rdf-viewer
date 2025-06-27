@@ -1,11 +1,14 @@
-import N3, { Quad } from 'n3'
+import N3, { Quad, Quad_Object } from 'n3'
 import { SimpleQueryStepBuilder, simpleQueryStepBuilder, Query } from './simple-query-step-builder';
 import { Readable } from 'readable-stream';
 import { rdfParser } from 'rdf-parse';
 import { queryProcessor } from './query-processor';
 
-type FileDataSourceType = "file"|"remote-file"
-type DataSourceType = "sparql"|FileDataSourceType
+enum DataSourceType {
+    Sparql = 'SPARQL',
+    LocalFile = 'LOCAL_FILE',
+    RemoteFile = 'REMOTE_FILE'
+}
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
  */
@@ -72,7 +75,7 @@ interface ResultQuad {
  * @see DataSource
  */
 class SparqlDataSource implements DataSource {
-    type = 'sparql' as const
+    type = DataSourceType.Sparql
     endpointUrl: string;
     identifier: string
 
@@ -125,7 +128,7 @@ class SparqlDataSource implements DataSource {
 
 
 class FileDataSource implements DataSource {
-    type: FileDataSourceType
+    type: DataSourceType.LocalFile|DataSourceType.RemoteFile
     quads?: Quad[]
     file?: File;
     url?: string
@@ -136,12 +139,12 @@ class FileDataSource implements DataSource {
         if (fileOrUrl instanceof File){
             this.file = fileOrUrl
             this.identifier = fileOrUrl.name
-            this.type = 'file'
+            this.type = DataSourceType.LocalFile
         }
         else {
             this.url = fileOrUrl
             this.identifier = fileOrUrl
-            this.type = 'remote-file'
+            this.type = DataSourceType.RemoteFile
         }
     }
 
@@ -198,7 +201,6 @@ class FileDataSource implements DataSource {
     }
 }
 
-type BuilderType = 'step'
 /**
  * Interface for fetching quads from multiple data sources 
  * 
@@ -213,13 +215,16 @@ interface QuadsFetcher {
      * @param query - Query which specifies the desired quads to fetch.
      */
     fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]>
+    
+    fetchStructuredQuads(query: Query): Promise<StructuredQuads>
 
     /**
      * @returns a query builder for creating the query
      */
-    builder(type: BuilderType): SimpleQueryStepBuilder
+    builder(): SimpleQueryStepBuilder
 }
 
+const DEFAULT_GRAPH = 'default'
 /**
  * Class implementing the QuadsFetcher interface.
  * 
@@ -237,24 +242,80 @@ class Fetcher implements QuadsFetcher {
         return Promise.all(promises)
     }
     
-    builder(type: BuilderType = 'step') : SimpleQueryStepBuilder {
-        switch (type) {
-            case 'step':
-                return simpleQueryStepBuilder()
+    async fetchStructuredQuads(query: Query): Promise<StructuredQuads> {
+        const fetchResult = await this.fetchQuads(query)
+        return this.structureQuads(fetchResult)
+    }
+
+    structureQuads(fetchResult: DataSourceFetchResult[]): StructuredQuads{
+        const result: StructuredQuads = {}
+        
+        for (const {identifier: sourceId, quads} of fetchResult){
+            for (const quad of quads) {
+                const subjectIri = quad.subject.value
+                const predicateIri = quad.predicate.value
+                const object = quad.object
+                const graph = quad.graph.value || DEFAULT_GRAPH
+
+                if (!result[subjectIri]){
+                    result[subjectIri] = {}
+                }
+                if (!result[subjectIri][predicateIri]){
+                    result[subjectIri][predicateIri] = {}
+                }
+                const existing = result[subjectIri][predicateIri][object.value]
+                if (existing){
+                    if (!existing.sourceIds.includes(sourceId)){
+                        existing.sourceIds.push(sourceId)
+                    }
+                    if (!existing.graphs.includes(graph)){
+                        existing.graphs.push(graph)
+                    }
+                }
+                else{
+                    const newObject: SourcedObject = {
+                        term: object,
+                        sourceIds: [sourceId],
+                        graphs: [graph]
+                    }
+                    result[subjectIri][predicateIri][object.value] = newObject
+                }
+
+            }
+        }
+        
+        return result
+    }
+
+
+
+    builder() : SimpleQueryStepBuilder {
+        return simpleQueryStepBuilder()
+    }
+}
+
+interface SourcedObject {
+    term: Quad_Object
+    sourceIds: string[]
+    graphs: string[]
+}
+
+interface StructuredQuads {
+    [subjectIri: string]: {
+        [predicateIri: string]: {
+            [objectValue: string]: SourcedObject
         }
     }
 }
 
-
-
 export type {
     DataSource,
-    DataSourceType,
     DataSourceFetchResult,
     QuadsFetcher
 }
 
 export {
+    DataSourceType,
     SparqlDataSource,
     FileDataSource,
     Fetcher

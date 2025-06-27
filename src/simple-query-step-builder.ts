@@ -11,7 +11,7 @@ import { GraphPatternBuilder, graphPatternBuilder } from "./graph-pattern-builde
  * graph at the beginning
  * Also it's the first step of the builder.
  * 
- * graph -> subject -> predicates -> objects -> build
+ * graphs -> subjects -> predicates -> objects -> build
  */
 interface SimpleQueryStepBuilder extends SubjectStep, GraphStepProvider {
 
@@ -164,7 +164,7 @@ class SubjectStepImpl implements SubjectStep {
     }
     
     subjects(iris: readonly string[] = ALL_SUBJECTS): PredicateStep {
-        const subjectValues = iris.map(iri => DataFactory.namedNode(decodeURIComponent(iri)))
+        const subjectValues = iris.map(iri => DataFactory.namedNode(iri))
         if (iris !== ALL_SUBJECTS){
             this.graphPatternBuilder.values(this.subjectVar, subjectValues)
         }

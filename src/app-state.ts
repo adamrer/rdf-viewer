@@ -9,7 +9,7 @@ type Listener = () => void
 class AppState {
     private static _instance: AppState
 
-    entityIri: string = "https://data.gov.cz/zdroj/datov%C3%A9-sady/00064459/c34f5a6baaa387d2e10695fb46e4bb48"
+    entityIri: string = "https://data.gov.cz/zdroj/datové-sady/00064459/c34f5a6baaa387d2e10695fb46e4bb48"
     languages: Language[] = ["cs", "en"]
     dataSources: DataSource[] = [
         new SparqlDataSource('https://data.gov.cz/sparql'),
@@ -18,10 +18,9 @@ class AppState {
         new FileDataSource('https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl')
     ]
     plugins: DisplayPlugin[] = [
-        
+        { url: getPluginUrl('dataset-plugin.js'), label: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] },
         { url: getPluginUrl('default-merge-plugin.js'), label: 'Default Merge Plugin', classes: [] },
-        { url: getPluginUrl('default-table-plugin.js'), label: 'Default Table Plugin', classes: [] },
-        { url: getPluginUrl('dataset-plugin.js'), label: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] }
+        { url: getPluginUrl('default-table-plugin.js'), label: 'Default Table Plugin', classes: [] }
     ]
     selectedPluginIndex: number = 0
     
@@ -49,7 +48,7 @@ class AppState {
     }
 
     setEntityIRI(iri: string) {
-        this.entityIri = iri;
+        this.entityIri = decodeURIComponent(iri);
         this.notify();
     }
 
