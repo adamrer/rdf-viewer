@@ -39,8 +39,7 @@ function createDistributionsHtml(context){
     const distrLabel = context.getLabel(dcat+'distribution')
     if (distrLabel)
         heading.appendChild(createLabelHtml(dcat+'distribution', distrLabel))
-    else
-        heading.textContent = 'Distributions'
+    
     const distributions = context.getObjects(dcat+'distribution')
     const distributionsElement = document.createElement('div')
     for (const distr of distributions){
@@ -119,7 +118,7 @@ function createHeading(context){
     return titleElement
 }
 function createSubHeading(context){
-    const descriptionElement = document.createElement('h2')
+    const descriptionElement = document.createElement('p')
     const description = context.getObjects(dcterms+'description')
     if (description.length > 0)
         descriptionElement.appendChild(createLabelHtml(description[0].term.value, description[0]))
@@ -186,6 +185,16 @@ function createLabelHtml(iri, sourcedObjectLabel){
     // const sourcesSmall = document.createElement('small')
     // sourcesSmall.textContent = `[${Array.from({ length: sourcedObjectLiteral.sourceIds.length }, (_, i) => i).join(",")}]`
     
+
+    bold.appendChild(valueElement)
+    bold.appendChild(small)
+    addCopyRedirectButtons(bold, iri)
+
+    // bold.appendChild(sourcesSmall)
+
+    return bold
+}
+function addCopyRedirectButtons(element, iri){
     const copyButton = document.createElement('span')
     copyButton.textContent = '📋'
     copyButton.onclick = () => {
@@ -197,18 +206,21 @@ function createLabelHtml(iri, sourcedObjectLabel){
     linkElement.href = iri
     linkElement.textContent = '🔗'
     linkElement.style.textDecoration = 'none'
-
-
-
-    bold.appendChild(valueElement)
-    bold.appendChild(small)
-    // bold.appendChild(linkElement)
-    // bold.appendChild(copyButton)
-    // bold.appendChild(sourcesSmall)
-
-    return bold
+    copyButton.style.opacity = '0'
+    linkElement.style.opacity = '0'
+    copyButton.style.transition = 'opacity 0.3s ease'
+    linkElement.style.transition = 'opacity 0.3s ease'
+    element.addEventListener('mouseenter', () => {
+        copyButton.style.opacity = '1'
+        linkElement.style.opacity = '1'
+    })
+    element.addEventListener('mouseleave', () => {
+        copyButton.style.opacity = '0'
+        linkElement.style.opacity = '0'
+    })
+    element.appendChild(linkElement)
+    element.appendChild(copyButton)
 }
-
 /**
  * Adds a sourcedObject to dl HTML element
  * 
