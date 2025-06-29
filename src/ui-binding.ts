@@ -72,8 +72,17 @@ function addEventListeners(){
 
 
 
-    displayBtn.addEventListener('click', () => {
-        display()
+    displayBtn.addEventListener('click', async () => {
+        displayBtn.disabled = true
+        try {
+            await display()
+        }
+        catch (err){
+            console.error('Error while displaying', err)
+        }
+        finally {
+            displayBtn.disabled = false
+        }
     })
 
 }

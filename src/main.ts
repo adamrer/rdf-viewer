@@ -22,7 +22,7 @@ async function display(): Promise<void> {
             throw new Error('Plugin not selected')
         const displayModule: DisplayPluginModule = await fetchPlugin(app.getSelectedPlugin())
         const context = renderingContext(entityIri, fetcher, langs, resultsEl)
-        displayModule.displayQuads(context)
+        return displayModule.displayQuads(context)
     }
     catch (error){
         const messageParagraph = document.createElement('p')
