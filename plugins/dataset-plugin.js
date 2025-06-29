@@ -9,15 +9,30 @@ const labelPredicates = [ dcterms+'title', rdfs+'label', skos+'prefLabel', vcard
 
 export async function displayQuads(context){
     await context.loadData(labelPredicates)
-    await loadDistributionData(context)
-    console.log(context.data)
+    await loadAdditionalData(context, dcat+'distribution', labelPredicates)
+    await loadAdditionalData(context, dcterms+'temporal', labelPredicates)
     context.mount(createDatasetHtml(context))
 }
-async function loadDistributionData(context){
-    const distributionIris = context.getObjects(dcat+'distribution')
-    const promises = distributionIris.map(sourcedObject => context.loadData(labelPredicates, sourcedObject.term.value))
+
+/**
+ * Loads additional data to Rendering context of objects from given predicate
+ * 
+ * @param {*} context - Rendering context
+ * @param {string} predicateIri - IRI of a predicate of the main subject to take objects as sources of additional data
+ * @param {string[]} labelPredicates - Predicates to label the new additional data
+ * @returns {Promise<void[]>}
+ */
+async function loadAdditionalData(context, predicateIri, labelPredicates){
+    const AdditionalSubjectIris = context.getObjects(predicateIri)
+    const promises = AdditionalSubjectIris.map(sourcedObject => context.loadData(labelPredicates, sourcedObject.term.value))
     return Promise.all(promises)
 }
+/**
+ * Creates html for list of distributions from context
+ * 
+ * @param {*} context - Rendering context
+ * @returns {HTMLElement}
+ */
 function createDistributionsHtml(context){
     const wrapper = document.createElement('div')
     const heading = document.createElement('h2')
@@ -35,8 +50,16 @@ function createDistributionsHtml(context){
     wrapper.appendChild(distributionsElement)
     return wrapper
 }
+/**
+ * Creates HTML fieldset element for a distribution specified by it's IRI
+ * 
+ * @param {string} distributionIri - IRI of a distribution
+ * @param {*} context - Rendering context
+ * @returns {HTMLElement}
+ */
 function createDistributionFieldSet(distributionIri, context){
     const fieldSet = document.createElement('fieldset')
+    fieldSet.style.borderRadius = '25px'
     const legend = document.createElement('legend')
     const label = context.getLabel(distributionIri)
     if (label){
@@ -48,20 +71,43 @@ function createDistributionFieldSet(distributionIri, context){
     else
         legend.textContent = distributionIri
 
-    const distributionPredicates = [dcterms+'title', dcterms+'format', dcat+'downloadURL']
+    const distributionPredicates = [dcterms+'title', dcterms+'format', dcat+'downloadURL', dcat+'accessURL']
     fieldSet.appendChild(legend)
     fieldSet.appendChild(createDl(context, distributionPredicates, distributionIri))
     return fieldSet
 }
+/**
+ * Creates HTML for a dataset specified by user in context
+ * 
+ * @param {*} context - Rendering context
+ * @returns {HTMLElement} 
+ */
 function createDatasetHtml(context){
     const resultElement = document.createElement('div')
     resultElement.appendChild(createHeading(context))
     resultElement.appendChild(createSubHeading(context))
+
+    resultElement.appendChild(createTimeIntervalHtml(context))
     const datasetPredicates = [dcterms+'spatial', dcterms+'publisher', dcat+'keyword', dcat+'theme', dcterms+'temporal', dcterms+'accrualPeriodicity', foaf+'page', dcat+'contactPoint']
     resultElement.appendChild(createDl(context, datasetPredicates, context.subjectIri))
     resultElement.appendChild(createDistributionsHtml(context))
     return resultElement
 }
+function createTimeIntervalHtml(context){
+    const timeIntervals = context.getObjects(dcterms+'temporal')
+    if (timeIntervals.length > 0){
+        const timeIntervalPredicates = [dcat+'startDate', dcat+'endDate']
+        return createDl(context, timeIntervalPredicates, timeIntervals[0].term.value)
+    }
+    return document.createElement('div')
+
+}
+/**
+ * Creates H1 heading for the main subject of a context
+ * 
+ * @param {*} context - Rendering context
+ * @returns {HTMLElement}
+ */
 function createHeading(context){
 
     const titleElement = document.createElement('h1')
@@ -81,16 +127,30 @@ function createSubHeading(context){
     return descriptionElement
 
 }
+/**
+ * Creates HTML dl element based on specified predicates for a subject
+ * 
+ * @param {*} context - Rendering context
+ * @param {string[]} predicateIris - Predicates to have in dl
+ * @param {string} subjectIri - Subject that has the predicates
+ * @returns {HTMLDListElement}
+ */
 function createDl(context, predicateIris, subjectIri){
     const dlElement = document.createElement("dl")
-    
     for (const predicateIri of predicateIris){
         if (context.getObjects(predicateIri, subjectIri).length > 0)
             addPredicateToDl(context, predicateIri, subjectIri, dlElement)
     }
     return dlElement
 }
-
+/**
+ * Adds a predicate of a subject to given dl HTML element
+ * 
+ * @param {*} context - Rendering context
+ * @param {string} predicateIri 
+ * @param {string} subjectIri 
+ * @param {HTMLDListElement} dlElement 
+ */
 function addPredicateToDl(context, predicateIri, subjectIri, dlElement){
     const dtElement = document.createElement('dt')
     const termElement = document.createElement('b')
@@ -109,6 +169,13 @@ function addPredicateToDl(context, predicateIri, subjectIri, dlElement){
     }
     
 }
+/**
+ * Creates HTML for a subject with a label
+ * 
+ * @param {string} iri - IRI of the labeled subject
+ * @param {*} sourcedObjectLabel - Label returned by context
+ * @returns {HTMLElement}
+ */
 function createLabelHtml(iri, sourcedObjectLabel){
     const literal = sourcedObjectLabel.term
     const bold = document.createElement('div')
@@ -119,14 +186,17 @@ function createLabelHtml(iri, sourcedObjectLabel){
     // const sourcesSmall = document.createElement('small')
     // sourcesSmall.textContent = `[${Array.from({ length: sourcedObjectLiteral.sourceIds.length }, (_, i) => i).join(",")}]`
     
-    const copyButton = document.createElement('button')
+    const copyButton = document.createElement('span')
     copyButton.textContent = '📋'
     copyButton.onclick = () => {
         navigator.clipboard.writeText(iri)
     }
+    copyButton.style.cursor = 'pointer'
+    copyButton.title = 'Copy IRI to clipboard'
     const linkElement = document.createElement('a')
     linkElement.href = iri
     linkElement.textContent = '🔗'
+    linkElement.style.textDecoration = 'none'
 
 
 
@@ -138,13 +208,14 @@ function createLabelHtml(iri, sourcedObjectLabel){
 
     return bold
 }
-async function getTimeInterval(iri, fetcher){
-    const query = fetcher.builder().subjects([iri]).predicates([dcat+'startDate', dcat+'endDate']).objects().build()
-    const structuredQuads = await fetcher.fetchStructuredQuads(query)
-    const startDate = Object.values(structuredQuads[iri][dcat+'startDate'])[0].term.value
-    const endDate = Object.values(structuredQuads[iri][dcat+'endDate'])[0].term.value
-    return `${startDate} - ${endDate}`
-}
+
+/**
+ * Adds a sourcedObject to dl HTML element
+ * 
+ * @param {*} context - Rendering context
+ * @param {SourcedObject} sourcedObject 
+ * @param {HTMLDListElement} dlElement 
+ */
 function addSourcedObjectToDl(context, sourcedObject, dlElement){
     const ddElement = document.createElement('dd')
     const object = sourcedObject.term
