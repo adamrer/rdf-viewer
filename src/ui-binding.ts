@@ -15,12 +15,15 @@ const languagesEl = document.getElementById('languages')! as HTMLInputElement
 const pluginSelectEl = document.getElementById('choose-plugin')! as HTMLSelectElement
 const dataSourcesContainer = document.getElementById('source-list')! as HTMLElement
 const displayBtn = document.getElementById('display-btn')! as HTMLButtonElement
+const configBtn = document.getElementById('show-config-btn')! as HTMLButtonElement
+const configModal = document.getElementById('config-modal')! as HTMLDivElement
+const configBckg = document.getElementById('config-background')! as HTMLDivElement
 
 window.onload = () => {
-    initialize()
+    bind()
 }
 
-function initialize(){
+function bind(){
     addEventListeners()
     setupRadioTextToggle('source-option')
     setupRadioTextToggle('plugin-option')
@@ -83,6 +86,15 @@ function addEventListeners(){
         finally {
             displayBtn.disabled = false
         }
+    })
+
+    configBtn.addEventListener('click', () => {
+        configModal.style.opacity = '1'
+        configBckg.style.visibility = 'visible'
+    })
+    configBckg.addEventListener('click', () => {
+        configModal.style.opacity = '0'
+        configBckg.style.visibility = 'hidden'
     })
 
 }
