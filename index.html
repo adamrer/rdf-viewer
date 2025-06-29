@@ -16,61 +16,68 @@
     <label for="languages">Languages</label>
     <input type="text" id="languages" placeholder="en, cs, fr, ..."/>
 
-    <fieldset>
-      <legend>Data Sources</legend>
 
-      <form id="add-source-form">
-        <div class="source-option">
-          <input type="radio" id="sparql-source-radio" value="SPARQL" name="source" checked/>
-          <label for="sparql-source-text">SPARQL endpoint</label>
-          <input type="text" id="sparql-source-text" name="sparql-source-text" placeholder="URL" required />
-        </div>
-  
-        <div class="source-option">
-          <input type="radio" id="file-source-radio" value="LOCAL_FILE" name="source" />
-          <label for="file-source-files">File</label>
-          <input type="file" id="file-source-files" name="file-source-files" multiple disabled />
-        </div>
-  
-        <div class="source-option">
-          <input type="radio" id="remote-file-source-radio" value="REMOTE_FILE" name="source" />
-          <label for="remote-file-source-text">Remote file</label>
-          <input type="text" id="remote-file-source-text" name="remote-file-source-text" placeholder="URL" disabled />
-        </div>
-        <button type="submit">+ Add Data Source</button>
-      </form>
-      
-      <hr />
 
-      <div id="source-list">
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Plugins</legend>
-          <form  id="add-plugin-form">
-            <label for="label-plugin">Label</label>
-            <input type="text" name="label-plugin" id="label-plugin" required>
-            <div class="plugin-option">
-              <input type="radio" id="url-plugin-radio" value="url" name="plugin" checked />
-              <label for="url-plugin">Remote file</label>
-              <input type="text" placeholder="URL" id="url-plugin" name="url-plugin" required />
-            </div>
-  
-            <button type="submit" class="add-plugin" disabled>+ Add Plugin</button>
-          </form>
-          
-          <hr />
+    <label for="choose-plugin">Plugin:</label>
+    <select id="choose-plugin">
+        
+      </select>
+    <div id="buttons">
+      <button id="display-btn">Display</button>
+      <button id="show-config-btn">⚙️</button>
+    </div>
+  </div>
+  <div id="config-modal" >
+    <div id="config-background">
+    </div>
+    <div id="config-content">
 
-          <div>
-            <label for="choose-plugin">Choose Plugin</label>
-            <select id="choose-plugin">
-              
-            </select>
+      <h2>Configuration</h2>
+      <fieldset id="sources-fieldset">
+        <legend>Data Sources</legend>
+  
+        <form id="add-source-form">
+          <div class="source-option">
+            <input type="radio" id="sparql-source-radio" value="SPARQL" name="source" checked/>
+            <label for="sparql-source-text">SPARQL endpoint</label>
+            <input type="text" id="sparql-source-text" name="sparql-source-text" placeholder="URL" required />
           </div>
-      
-    </fieldset>
-
-    <button id="display-btn">Display</button>
+  
+          <div class="source-option">
+            <input type="radio" id="file-source-radio" value="LOCAL_FILE" name="source" />
+            <label for="file-source-files">File</label>
+            <input type="file" id="file-source-files" name="file-source-files" multiple disabled />
+          </div>
+  
+          <div class="source-option">
+            <input type="radio" id="remote-file-source-radio" value="REMOTE_FILE" name="source" />
+            <label for="remote-file-source-text">Remote file</label>
+            <input type="text" id="remote-file-source-text" name="remote-file-source-text" placeholder="URL" disabled />
+          </div>
+          <button type="submit">+ Add Data Source</button>
+        </form>
+        
+        <hr />
+  
+        <div id="source-list">
+        </div>
+      </fieldset>
+  
+      <fieldset id="plugins-fieldset">
+        <legend>Plugins</legend>
+        <form  id="add-plugin-form">
+          <label for="label-plugin">Label</label>
+          <input type="text" name="label-plugin" id="label-plugin" required>
+          <div class="plugin-option">
+            <input type="radio" id="url-plugin-radio" value="url" name="plugin" checked />
+            <label for="url-plugin">Remote file</label>
+            <input type="text" placeholder="URL" id="url-plugin" name="url-plugin" required />
+          </div>
+  
+          <button type="submit" class="add-plugin" disabled>+ Add Plugin</button>
+        </form>
+      </fieldset>
+    </div>
   </div>
   <div id="results">
 
