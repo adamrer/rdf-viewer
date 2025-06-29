@@ -1,8 +1,8 @@
 import { Fetcher } from './fetch-quads'
-import { DisplayPluginModule, fetchPlugin } from './plugin'
+import { DisplayPluginModule, fetchPlugin, renderingContext } from './plugin'
 import { displayQuads } from './default-display'
 import { AppState } from './app-state';
-import { Language } from './query/query-interfaces';
+import { Language, NO_LANG_SPECIFIED } from './query/query-interfaces';
 
 
 async function display(): Promise<void> {
@@ -10,6 +10,7 @@ async function display(): Promise<void> {
     const entityIri = app.entityIri
     const fetcher: Fetcher = new Fetcher(app.dataSources)
     const langs: Language[] = app.languages
+    langs.push(NO_LANG_SPECIFIED)
     const selectedPlugin = app.getSelectedPlugin()
     const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
     // Clear previous results
@@ -20,7 +21,8 @@ async function display(): Promise<void> {
         if (!selectedPlugin)
             throw new Error('Plugin not selected')
         const displayModule: DisplayPluginModule = await fetchPlugin(app.getSelectedPlugin())
-        displayModule.displayQuads(entityIri, fetcher, langs, resultsEl)
+        const context = renderingContext(entityIri, fetcher, langs, resultsEl)
+        displayModule.displayQuads(context)
     }
     catch (error){
         const messageParagraph = document.createElement('p')
