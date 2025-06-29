@@ -4,134 +4,158 @@ const skos = "http://www.w3.org/2004/02/skos/core#"
 const vcard = "http://www.w3.org/2006/vcard/ns#"
 const rdfs = "http://www.w3.org/2000/01/rdf-schema#"
 const foaf = "http://xmlns.com/foaf/0.1/"
-const labelPredicates = [ dcterms+'title', rdfs+'label', skos+'prefLabel', vcard+"fn" ] 
+const labelPredicates = [ dcterms+'title', rdfs+'label', skos+'prefLabel', vcard+"fn", 'https://slovník.gov.cz/legislativní/sbírka/111/2009/pojem/má-název-orgánu-veřejné-moci' ] 
 
-class RenderingContext{
 
-    constructor(subjectIri, fetcher, preferredLanguages){
-        this.subjectIri = subjectIri
-        this.fetcher = fetcher
-        this.preferredLanguages = preferredLanguages
-    }
-
-    async initialize(){
-        const query = this.fetcher.builder()
-            .subjects([this.subjectIri]).predicates().objects().langs(this.preferredLanguages).build()
-
-        this.data = await this.fetcher.fetchStructuredQuads(query)
-
-        const iris = this.collectIris(this.data)
-        const labelQuery = this.fetcher.builder()
-            .subjects(iris)
-            .predicates(labelPredicates)
-            .objects()
-            .langs(this.preferredLanguages)
-            .build()
-        this.labels = await this.fetcher.fetchStructuredQuads(labelQuery)
-    }
-    getLabel(iri) {
-        const labelPredicates = this.labels[iri];
-        if (!labelPredicates) return undefined;
-
-        for (const predicate in labelPredicates) {
-        const labelObjects = Object.values(labelPredicates[predicate]);
-        const literals = labelObjects.filter(o => o.term.termType === 'Literal');
-
-        literals.sort((a, b) => {
-            const langA = a.term.language || '';
-            const langB = b.term.language || '';
-            return this.getLangPriority(langA) - this.getLangPriority(langB);
-        });
-
-        if (literals.length > 0) return literals[0].term;
-        }
-
-        return undefined;
-    }
-
-    getLangPriority(lang) {
-        const index = this.preferredLanguages.indexOf(lang || '');
-        return index === -1 ? this.preferredLanguages.length : index;
-    }
-    collectIris(structuredQuads){
-        const iris = []
-        for (const subjectIri in structuredQuads){
-            iris.push(subjectIri)
-            const predicates = structuredQuads[subjectIri]
-            for (const predicateIri in predicates){
-                iris.push(predicateIri)
-                const objectKeys = predicates[predicateIri]
-                for (const objectKey in objectKeys){
-                    const object = objectKeys[objectKey].term
-                    if (object.termType !== 'Literal'){
-                        iris.push(object.value)
-                    }
-                }
-            }
-        }
-        return iris
-
-    }
-
+export async function displayQuads(context){
+    await context.loadData(labelPredicates)
+    await loadDistributionData(context)
+    console.log(context.data)
+    context.mount(createDatasetHtml(context))
 }
-export async function displayQuads(entityIri, fetcher, languages, resultsEl){
-    const ctx = new RenderingContext(entityIri, fetcher, languages)
-    await ctx.initialize()
-    console.log(ctx.labels)
-    const dl = createDl(ctx)
-    resultsEl.appendChild(dl)
+async function loadDistributionData(context){
+    const distributionIris = context.getObjects(dcat+'distribution')
+    const promises = distributionIris.map(sourcedObject => context.loadData(labelPredicates, sourcedObject.term.value))
+    return Promise.all(promises)
 }
+function createDistributionsHtml(context){
+    const wrapper = document.createElement('div')
+    const heading = document.createElement('h2')
+    const distrLabel = context.getLabel(dcat+'distribution')
+    if (distrLabel)
+        heading.appendChild(createLabelHtml(dcat+'distribution', distrLabel))
+    else
+        heading.textContent = 'Distributions'
+    const distributions = context.getObjects(dcat+'distribution')
+    const distributionsElement = document.createElement('div')
+    for (const distr of distributions){
+        distributionsElement.appendChild(createDistributionFieldSet(distr.term.value, context))
+    }
+    wrapper.appendChild(heading)
+    wrapper.appendChild(distributionsElement)
+    return wrapper
+}
+function createDistributionFieldSet(distributionIri, context){
+    const fieldSet = document.createElement('fieldset')
+    const legend = document.createElement('legend')
+    const label = context.getLabel(distributionIri)
+    if (label){
+        const bold = document.createElement('b')
+        const labelHtml = createLabelHtml(distributionIri, label)
+        bold.appendChild(labelHtml)
+        legend.appendChild(bold)
+    }
+    else
+        legend.textContent = distributionIri
 
-function createDl(ctx){
-    const dlElement = document.createElement("dl")
-    const predicates = [dcterms+'spatial', dcterms+'publisher', dcat+'keyword', dcat+'theme', dcterms+'temporal', dcterms+'accrualPeriodicity', foaf+'page', dcat+'contactPoint']
+    const distributionPredicates = [dcterms+'title', dcterms+'format', dcat+'downloadURL']
+    fieldSet.appendChild(legend)
+    fieldSet.appendChild(createDl(context, distributionPredicates, distributionIri))
+    return fieldSet
+}
+function createDatasetHtml(context){
+    const resultElement = document.createElement('div')
+    resultElement.appendChild(createHeading(context))
+    resultElement.appendChild(createSubHeading(context))
+    const datasetPredicates = [dcterms+'spatial', dcterms+'publisher', dcat+'keyword', dcat+'theme', dcterms+'temporal', dcterms+'accrualPeriodicity', foaf+'page', dcat+'contactPoint']
+    resultElement.appendChild(createDl(context, datasetPredicates, context.subjectIri))
+    resultElement.appendChild(createDistributionsHtml(context))
+    return resultElement
+}
+function createHeading(context){
+
+    const titleElement = document.createElement('h1')
+    const label = context.getLabel()
+    if (label)
+        titleElement.appendChild(createLabelHtml(context.subjectIri, label))
+    else
+        titleElement.textContent = context.subjectIri
+    return titleElement
+}
+function createSubHeading(context){
+    const descriptionElement = document.createElement('h2')
+    const description = context.getObjects(dcterms+'description')
+    if (description.length > 0)
+        descriptionElement.appendChild(createLabelHtml(description[0].term.value, description[0]))
     
-    for (const predicateIri of predicates){
-        addPredicateToDl(ctx, predicateIri, dlElement)
+    return descriptionElement
+
+}
+function createDl(context, predicateIris, subjectIri){
+    const dlElement = document.createElement("dl")
+    
+    for (const predicateIri of predicateIris){
+        if (context.getObjects(predicateIri, subjectIri).length > 0)
+            addPredicateToDl(context, predicateIri, subjectIri, dlElement)
     }
-
-
     return dlElement
 }
-function addPredicateToDl(ctx, predicateIri, dlElement){
+
+function addPredicateToDl(context, predicateIri, subjectIri, dlElement){
     const dtElement = document.createElement('dt')
     const termElement = document.createElement('b')
-    const label = ctx.getLabel(predicateIri)
-    if (label !== undefined){
-        dtElement.appendChild(createLiteralHtml(label)) 
+    const label = context.getLabel(predicateIri)
+    if (label){
+        dtElement.appendChild(createLabelHtml(predicateIri, label)) 
     }
     else{
         dtElement.textContent = predicateIri
     }
     termElement.appendChild(dtElement)
     dlElement.appendChild(termElement)
-    const objects = ctx.data[ctx.subjectIri][predicateIri]
-    for (const objectKey in objects){
-        addObjectToDl(ctx, objects[objectKey].term, dlElement)
+    const objects = context.getObjects(predicateIri, subjectIri)
+    for (const object of objects){
+        addSourcedObjectToDl(context, object, dlElement)
     }
     
 }
-function createLiteralHtml(literal){
+function createLabelHtml(iri, sourcedObjectLabel){
+    const literal = sourcedObjectLabel.term
     const bold = document.createElement('div')
     const valueElement = document.createElement('span')
-    valueElement.textContent = literal.value + '\t\t'
+    valueElement.textContent = literal.value + ' '
     const small = document.createElement('small')
-    small.textContent = `(${literal.language || literal.datatype})`
+    small.textContent = `(${literal.language || literal.datatype.value}) `
+    // const sourcesSmall = document.createElement('small')
+    // sourcesSmall.textContent = `[${Array.from({ length: sourcedObjectLiteral.sourceIds.length }, (_, i) => i).join(",")}]`
+    
+    const copyButton = document.createElement('button')
+    copyButton.textContent = '📋'
+    copyButton.onclick = () => {
+        navigator.clipboard.writeText(iri)
+    }
+    const linkElement = document.createElement('a')
+    linkElement.href = iri
+    linkElement.textContent = '🔗'
+
+
 
     bold.appendChild(valueElement)
     bold.appendChild(small)
+    // bold.appendChild(linkElement)
+    // bold.appendChild(copyButton)
+    // bold.appendChild(sourcesSmall)
 
     return bold
 }
-function addObjectToDl(ctx, object, dlElement){
+async function getTimeInterval(iri, fetcher){
+    const query = fetcher.builder().subjects([iri]).predicates([dcat+'startDate', dcat+'endDate']).objects().build()
+    const structuredQuads = await fetcher.fetchStructuredQuads(query)
+    const startDate = Object.values(structuredQuads[iri][dcat+'startDate'])[0].term.value
+    const endDate = Object.values(structuredQuads[iri][dcat+'endDate'])[0].term.value
+    return `${startDate} - ${endDate}`
+}
+function addSourcedObjectToDl(context, sourcedObject, dlElement){
     const ddElement = document.createElement('dd')
+    const object = sourcedObject.term
     if (object.termType === 'Literal'){
-        ddElement.appendChild(createLiteralHtml(object))
+        const literalHtml = createLabelHtml(sourcedObject.value, sourcedObject)
+        ddElement.appendChild(literalHtml)
     }
     else{
-        const label = ctx.getLabel(object.value)
-        if (label !== undefined){
-            ddElement.appendChild(createLiteralHtml(label))
+        const label = context.getLabel(object.value)
+        if (label){
+            ddElement.appendChild(createLabelHtml(object.value, label))
         }
         else{
             ddElement.textContent = object.value
