@@ -94,8 +94,9 @@ class SparqlDataSource implements DataSource {
                 const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
                 const predicate = N3.DataFactory.namedNode(quad.predicate.value)
                 
-                const object = quad.object.type === 'literal' ? N3.DataFactory.literal(quad.object.value, (quad.object as ResultTerm)["xml:lang"]) : 
-                quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : N3.DataFactory.namedNode(quad.object.value)
+                const object = quad.object.type === 'uri' ? N3.DataFactory.namedNode(quad.object.value) : 
+                    quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : 
+                    N3.DataFactory.literal(quad.object.value, (quad.object as ResultTerm)["xml:lang"]||(quad.object as ResultTerm).datatype)
                 
                 return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
             })
@@ -307,17 +308,58 @@ interface StructuredQuads {
         }
     }
 }
+function mergeStructuredQuads(a: StructuredQuads, b: StructuredQuads) {
+  const result: StructuredQuads = JSON.parse(JSON.stringify(a)); // deep clone a
 
+  for (const subject in b) {
+    if (!result[subject]) {
+      result[subject] = {};
+    }
+
+    const predicatesB = b[subject];
+    const predicatesResult = result[subject];
+
+    for (const predicate in predicatesB) {
+      if (!predicatesResult[predicate]) {
+        predicatesResult[predicate] = {};
+      }
+
+      const objectsB = predicatesB[predicate];
+      const objectsResult = predicatesResult[predicate];
+
+      for (const objectKey in objectsB) {
+        const objB = objectsB[objectKey];
+
+        if (objectsResult[objectKey]) {
+          const objA = objectsResult[objectKey];
+
+          // Merge sourceIds
+          objA.sourceIds = Array.from(new Set([...objA.sourceIds, ...objB.sourceIds]));
+
+          // Merge graphs
+          objA.graphs = Array.from(new Set([...objA.graphs, ...objB.graphs]));
+
+        } else {
+          objectsResult[objectKey] = objB;
+        }
+      }
+    }
+  }
+
+  return result;
+}
 export type {
     DataSource,
     DataSourceFetchResult,
     QuadsFetcher,
-    StructuredQuads
+    StructuredQuads,
+    SourcedObject
 }
 
 export {
     DataSourceType,
     SparqlDataSource,
     FileDataSource,
-    Fetcher
+    Fetcher,
+    mergeStructuredQuads
 }
