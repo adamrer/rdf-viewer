@@ -12,12 +12,12 @@ body{
   margin: 0 auto;
 }
 #config-modal{
+  visibility: hidden;
   display: flex;
   flex-direction: column;
   font-family: consolas;
   position: fixed;
   width: 100vw;
-  height: 100vh;
   transition: opacity 0.3s ease;
   
 }
@@ -30,7 +30,7 @@ body{
   opacity: 0.4;
 }
 #config-content {
-    margin: 0 10%;
+    margin: 0 auto;
     padding: 2em;
     background-color: aliceblue;
     border: 2px solid black;

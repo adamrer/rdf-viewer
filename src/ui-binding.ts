@@ -89,12 +89,11 @@ function addEventListeners(){
     })
 
     configBtn.addEventListener('click', () => {
-        configModal.style.opacity = '1'
-        configBckg.style.visibility = 'visible'
+        configModal.style.visibility = 'visible'
+        
     })
     configBckg.addEventListener('click', () => {
-        configModal.style.opacity = '0'
-        configBckg.style.visibility = 'hidden'
+        configModal.style.visibility = 'hidden'
     })
 
 }
