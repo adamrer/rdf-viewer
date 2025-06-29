@@ -94,9 +94,11 @@ class SparqlDataSource implements DataSource {
                 const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
                 const predicate = N3.DataFactory.namedNode(quad.predicate.value)
                 
+                
                 const object = quad.object.type === 'uri' ? N3.DataFactory.namedNode(quad.object.value) : 
                     quad.object.type === 'bnode' ? N3.DataFactory.blankNode(quad.object.value) : 
-                    N3.DataFactory.literal(quad.object.value, (quad.object as ResultTerm)["xml:lang"]||(quad.object as ResultTerm).datatype)
+                    N3.DataFactory.literal(quad.object.value, (quad.object as ResultTerm)["xml:lang"] ||
+                        (quad.object.datatype !== undefined ? N3.DataFactory.namedNode((quad.object).datatype) : undefined))
                 
                 return N3.DataFactory.quad(N3.DataFactory.namedNode(quad.subject.value), predicate, object, graph)
             })
