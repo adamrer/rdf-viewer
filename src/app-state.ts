@@ -9,7 +9,7 @@ type Listener = () => void
 class AppState {
     private static _instance: AppState
 
-    entityIri: string = "https://data.gov.cz/zdroj/datové-sady/00064459/c34f5a6baaa387d2e10695fb46e4bb48"
+    entityIri: string = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010"
     languages: Language[] = ["cs", "en"]
     dataSources: DataSource[] = [
         new SparqlDataSource('https://data.gov.cz/sparql'),
