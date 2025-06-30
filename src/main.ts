@@ -3,7 +3,11 @@ import { DisplayPluginModule, fetchPlugin, renderingContext } from './plugin'
 import { displayQuads } from './default-display'
 import { AppState } from './app-state';
 import { Language, NO_LANG_SPECIFIED } from './query/query-interfaces';
+import { bind } from './ui-binding';
 
+window.onload = () => {
+    bind()
+}
 
 async function display(): Promise<void> {
     const app = AppState.getInstance()

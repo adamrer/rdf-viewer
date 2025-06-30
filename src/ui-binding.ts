@@ -19,9 +19,7 @@ const configBtn = document.getElementById('show-config-btn')! as HTMLButtonEleme
 const configModal = document.getElementById('config-modal')! as HTMLDivElement
 const configBckg = document.getElementById('config-background')! as HTMLDivElement
 
-window.onload = () => {
-    bind()
-}
+
 
 function bind(){
     addEventListeners()
@@ -210,3 +208,6 @@ function addPluginOption(label: string, url: string, selectEl: HTMLSelectElement
     selectEl.appendChild(option)
 }
 
+export {
+    bind
+}
