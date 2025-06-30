@@ -41,6 +41,7 @@ interface RenderingContext {
     loadData(labelPredicates: string[], subjectIri: string): Promise<void>
     getLabel(iri: string): SourcedObject|undefined
     getObjects(subjectIri: string, predicateIri: string): SourcedObject[]
+    getPredicates(subjectIri: string): string[]
     fetcher(): QuadsFetcher
     preferredLanguages(): Language[]
     mount(html: HTMLElement): void
@@ -112,6 +113,9 @@ class RenderingContextImpl implements RenderingContext{
         }
                 
         return []
+    }
+    getPredicates(subjectIri: string = this.subjectIri): string[] {
+        return Object.keys(this.data[subjectIri])
     }
     fetcher(): QuadsFetcher {
         return this.fetcherInstance

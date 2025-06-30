@@ -19,7 +19,7 @@ class AppState {
     ]
     plugins: DisplayPlugin[] = [
         { url: getPluginUrl('dataset-plugin.js'), label: 'Dataset Plugin', classes: ["https://www.w3.org/ns/dcat#Dataset"] },
-        { url: getPluginUrl('default-merge-plugin.js'), label: 'Default Merge Plugin', classes: [] },
+        { url: getPluginUrl('default-plugin.js'), label: 'Default Plugin', classes: [] },
         { url: getPluginUrl('default-table-plugin.js'), label: 'Default Table Plugin', classes: [] }
     ]
     selectedPluginIndex: number = 0
