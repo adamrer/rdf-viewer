@@ -16,7 +16,7 @@ const pluginSelectEl = document.getElementById('choose-plugin')! as HTMLSelectEl
 const dataSourcesContainer = document.getElementById('source-list')! as HTMLElement
 const displayBtn = document.getElementById('display-btn')! as HTMLButtonElement
 const configBtn = document.getElementById('show-config-btn')! as HTMLButtonElement
-const configModal = document.getElementById('config-modal')! as HTMLDivElement
+const configModal = document.getElementById('config-modal')! as HTMLDialogElement
 const configBckg = document.getElementById('config-background')! as HTMLDivElement
 
 
@@ -34,7 +34,6 @@ function loadAppState(){
     app.dataSources.forEach(ds => createSourceEntry(ds.type, ds.identifier, dataSourcesContainer))
     app.plugins.forEach(plugin => addPluginOption(plugin.label, plugin.url, pluginSelectEl))
 }
-
 function addEventListeners(){
     addSourceFormEl.addEventListener('submit', (event: SubmitEvent) => {
         event.preventDefault()
@@ -43,6 +42,16 @@ function addEventListeners(){
         addSourceFormEl.reset()
         // prevent refresh
         return false
+    })
+
+    addSourceFormEl.addEventListener('reset', () => {
+        // will run after resetting the form
+        setTimeout(() => {
+            const radios = addSourceFormEl.querySelectorAll('input[type="radio"]')
+            radios.forEach(radio => {
+                radio.dispatchEvent(new Event('change', {bubbles: true}))
+            })
+        })
     })
     
     addPluginFormEl.addEventListener('submit', (event: SubmitEvent) => {
@@ -87,12 +96,22 @@ function addEventListeners(){
     })
 
     configBtn.addEventListener('click', () => {
-        configModal.style.visibility = 'visible'
+        configModal.showModal()
         
     })
-    configBckg.addEventListener('click', () => {
-        configModal.style.visibility = 'hidden'
-    })
+    configModal.addEventListener('click', (event) => {
+            const rect = configModal.querySelector('#config-content')!.getBoundingClientRect();
+            const isInDialog = (
+            event.clientX >= rect.left &&
+            event.clientX <= rect.right &&
+            event.clientY >= rect.top &&
+            event.clientY <= rect.bottom
+        );
+
+        if (!isInDialog) {
+            configModal.close();
+        }
+    });
 
 }
 function addPluginFromFormData(formData: FormData){
@@ -157,9 +176,7 @@ function setupRadioTextToggle(containerClass: string) {
   function sync() {
     for (const container of containers) {
       const radio = container.querySelector<HTMLInputElement>('input[type="radio"]')!;
-      const input = container.querySelector<
-        HTMLInputElement
-      >('input[type="text"], input[type="file"]')!;
+      const input = container.querySelector<HTMLInputElement>('input[type="text"], input[type="file"]')!;
       input.disabled = !radio.checked;
     }
   }
@@ -189,7 +206,8 @@ function createSourceEntry(type: DataSourceType, identifier: string, containerEl
         default:
             break;
     }
-    entryEl.textContent = `${typeLabel}: ${identifier}`
+    entryEl.innerHTML = `<b>${typeLabel}</b>: <span>${identifier}</span>`
+    // add remove button for data source
     const removeButton = document.createElement('button')
     removeButton.className = 'remove-btn'
     removeButton.textContent = '×'

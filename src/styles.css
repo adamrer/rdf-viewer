@@ -11,32 +11,14 @@ body{
   max-width: fit-content;
   margin: 0 auto;
 }
-#config-modal{
-  visibility: hidden;
+.source-option, .plugin-option {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+}
+#config-modal{
   font-family: consolas;
-  position: fixed;
-  width: 100vw;
-  transition: opacity 0.3s ease;
-  
 }
-#config-background{
-  position: fixed;
-  top: 0;
-  background-color: gainsboro;
-  width: 100vw;
-  height: 100vh;
-  opacity: 0.4;
-}
-#config-content {
-    margin: 0 auto;
-    padding: 2em;
-    background-color: aliceblue;
-    border: 2px solid black;
-    z-index: 100;
-    max-width: 780px;
-}
+
 
 #app button, input, select {
   font-family: inherit;
