@@ -240,10 +240,23 @@ class Fetcher implements QuadsFetcher {
         this.dataSources = dataSources
     }
 
-    async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
-        const promises = this.dataSources.map(ds => ds.fetchQuads(query))
-        return Promise.all(promises)
-    }
+async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
+    const results = await Promise.allSettled(
+        this.dataSources.map(ds => ds.fetchQuads(query))
+    );
+
+    const successfulResults: DataSourceFetchResult[] = [];
+
+    results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+            successfulResults.push(result.value);
+        } else {
+            console.error(`DataSource ${index} failed:`, result.reason);
+        }
+    });
+
+    return successfulResults;
+}
     
     async fetchStructuredQuads(query: Query): Promise<StructuredQuads> {
         const fetchResult = await this.fetchQuads(query)
