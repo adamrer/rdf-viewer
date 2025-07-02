@@ -37,5 +37,37 @@ body{
   align-items: flex-end;
 }
 
+.notification {
+  position: fixed;
+  top: 0;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+}
 
+.notification.info {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.notification.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.notification.warning {
+  background-color: #fef9c3;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.notification.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
 

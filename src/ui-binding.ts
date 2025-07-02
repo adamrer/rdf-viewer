@@ -1,6 +1,7 @@
 import { AppState } from "./app-state";
 import { DataSourceType } from "./fetch-quads";
 import { display } from "./main";
+import { notify } from "./notify";
 
 
 const app = AppState.getInstance()
@@ -17,8 +18,6 @@ const dataSourcesContainer = document.getElementById('source-list')! as HTMLElem
 const displayBtn = document.getElementById('display-btn')! as HTMLButtonElement
 const configBtn = document.getElementById('show-config-btn')! as HTMLButtonElement
 const configModal = document.getElementById('config-modal')! as HTMLDialogElement
-const configBckg = document.getElementById('config-background')! as HTMLDivElement
-
 
 
 function bind(){

@@ -1,6 +1,7 @@
 import { Literal } from "n3"
 import { mergeStructuredQuads, QuadsFetcher, SourcedObject, StructuredQuads } from "./fetch-quads"
 import { Language } from "./query/query-interfaces"
+import { NotificationType, notify } from "./notify"
 
 /**
  * Interface representing a recorded plugin in the memory.
@@ -44,6 +45,7 @@ interface RenderingContext {
     getPredicates(subjectIri: string): string[]
     fetcher(): QuadsFetcher
     preferredLanguages(): Language[]
+    notifyUser(message: string, type: NotificationType): void
     mount(html: HTMLElement): void
 
 }
@@ -122,6 +124,9 @@ class RenderingContextImpl implements RenderingContext{
     }
     preferredLanguages(): Language[]{
         return this.prefLangs
+    }
+    notifyUser(message: string, type: NotificationType){
+        notify(message, type)
     }
     mount(html: HTMLElement): void {
         this.resultElement.appendChild(html)

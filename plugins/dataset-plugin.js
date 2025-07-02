@@ -8,9 +8,11 @@ const labelPredicates = [ dcterms+'title', rdfs+'label', skos+'prefLabel', vcard
 
 
 export async function displayQuads(context){
+    context.notifyUser("Loading data...", "info")
     await context.loadData(labelPredicates)
     await loadAdditionalData(context, dcat+'distribution', labelPredicates)
     await loadAdditionalData(context, dcterms+'temporal', labelPredicates)
+    context.notifyUser("Data loaded!", "success")
     context.mount(createDatasetHtml(context))
 }
 
@@ -87,7 +89,7 @@ function createDatasetHtml(context){
     resultElement.appendChild(createSubHeading(context))
 
     resultElement.appendChild(createTimeIntervalHtml(context))
-    const datasetPredicates = [dcterms+'spatial', dcterms+'publisher', dcat+'keyword', dcat+'theme', dcterms+'temporal', dcterms+'accrualPeriodicity', foaf+'page', dcat+'contactPoint']
+    const datasetPredicates = [dcterms+'spatial', dcterms+'publisher', dcat+'keyword', dcat+'theme', dcterms+'accessRights', dcterms+'accrualPeriodicity', foaf+'page', dcat+'contactPoint']
     resultElement.appendChild(createDl(context, datasetPredicates, context.subjectIri))
     resultElement.appendChild(createDistributionsHtml(context))
     return resultElement
