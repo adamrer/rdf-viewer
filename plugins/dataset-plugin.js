@@ -183,7 +183,11 @@ function createLabelHtml(iri, sourcedObjectLabel){
     const valueElement = document.createElement('span')
     valueElement.textContent = literal.value + ' '
     const small = document.createElement('small')
-    small.textContent = `(${literal.language || literal.datatype.value}) `
+    let langOrDatatype = literal.language
+    if (!langOrDatatype){
+        langOrDatatype = literal.datatype.value.split("#")[1]
+    }
+    small.textContent = `(${langOrDatatype}) `
     // const sourcesSmall = document.createElement('small')
     // sourcesSmall.textContent = `[${Array.from({ length: sourcedObjectLiteral.sourceIds.length }, (_, i) => i).join(",")}]`
     

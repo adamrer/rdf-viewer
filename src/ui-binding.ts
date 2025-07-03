@@ -1,7 +1,6 @@
 import { AppState } from "./app-state";
 import { DataSourceType } from "./fetch-quads";
 import { display } from "./main";
-import { notify } from "./notify";
 
 
 const app = AppState.getInstance()
