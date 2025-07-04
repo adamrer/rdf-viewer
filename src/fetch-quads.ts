@@ -4,6 +4,9 @@ import { Readable } from 'readable-stream';
 import { rdfParser } from 'rdf-parse';
 import { queryProcessor } from './query-processor';
 
+/**
+ * Types of DataSource
+ */
 enum DataSourceType {
     Sparql = 'SPARQL',
     LocalFile = 'LOCAL_FILE',
@@ -89,6 +92,7 @@ class SparqlDataSource implements DataSource {
      * @param jsonQuads - Result JSON of the queried quads
      * @returns Array of parsed quads
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parseJsonQuads(jsonQuads: any): Quad[]{
         return jsonQuads.map((quad: ResultQuad) => {
                 const graph = quad.graph !== undefined ? N3.DataFactory.namedNode(quad.graph?.value) : undefined
@@ -151,13 +155,24 @@ class FileDataSource implements DataSource {
         }
     }
 
+    /**
+     * Fetches file from given URL
+     * 
+     * @param url 
+     * @returns 
+     */
     async fetchFile(url: string): Promise<File> {
         const response = await fetch(url)
         const blob = await response.blob()
         return new File([blob], url)
     }
 
-    async loadQuads(): Promise<void> {
+    /**
+     * Parses quads from file to array
+     * 
+     * @returns 
+     */
+    async parseQuads(): Promise<void> {
         if (this.fileLoaded){
             return
         }
@@ -194,7 +209,7 @@ class FileDataSource implements DataSource {
 
 
     async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
-        await this.loadQuads()
+        await this.parseQuads()
         if (!this.quads){
             throw new Error('Failed to load quads from file')
         }
@@ -219,6 +234,12 @@ interface QuadsFetcher {
      */
     fetchQuads(query: Query): Promise<(DataSourceFetchResult)[]>
     
+    /**
+     * Fetches RDF quads from all of the specified data sources and returns them as StructuredQuads
+     * 
+     * @param query - Query which specifies the desired quads to fetch.
+     * @see StructuredQuads
+     */
     fetchStructuredQuads(query: Query): Promise<StructuredQuads>
 
     /**
@@ -240,23 +261,23 @@ class Fetcher implements QuadsFetcher {
         this.dataSources = dataSources
     }
 
-async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
-    const results = await Promise.allSettled(
-        this.dataSources.map(ds => ds.fetchQuads(query))
-    );
+    async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
+        const results = await Promise.allSettled(
+            this.dataSources.map(ds => ds.fetchQuads(query))
+        );
 
-    const successfulResults: DataSourceFetchResult[] = [];
+        const successfulResults: DataSourceFetchResult[] = [];
 
-    results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-            successfulResults.push(result.value);
-        } else {
-            console.error(`DataSource ${index} failed:`, result.reason);
-        }
-    });
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                successfulResults.push(result.value);
+            } else {
+                console.error(`DataSource ${index} failed:`, result.reason);
+            }
+        });
 
-    return successfulResults;
-}
+        return successfulResults;
+    }
     
     async fetchStructuredQuads(query: Query): Promise<StructuredQuads> {
         const fetchResult = await this.fetchQuads(query)
@@ -310,12 +331,19 @@ async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
     }
 }
 
+/**
+ * Interface to hold the information from where the term was fetched and from which graph it is
+ */
 interface SourcedObject {
     term: Quad_Object
     sourceIds: string[]
     graphs: string[]
 }
 
+/**
+ * Interface for quads fetched from data sources.
+ * Hierarchical structure, deduplicated quads.
+ */
 interface StructuredQuads {
     [subjectIri: string]: {
         [predicateIri: string]: {
@@ -323,7 +351,14 @@ interface StructuredQuads {
         }
     }
 }
-function mergeStructuredQuads(a: StructuredQuads, b: StructuredQuads) {
+/**
+ * Merges two implementations of StructuredQuads into one
+ * 
+ * @param a - StructuredQuads to merge into
+ * @param b - StructuredQuads that will be merged to a
+ * @returns merged StructuredQuads
+ */
+function mergeStructuredQuads(a: StructuredQuads, b: StructuredQuads): StructuredQuads {
   const result: StructuredQuads = JSON.parse(JSON.stringify(a)); // deep clone a
 
   for (const subject in b) {

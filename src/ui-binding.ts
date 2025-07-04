@@ -1,6 +1,7 @@
 import { AppState } from "./app-state";
 import { DataSourceType } from "./fetch-quads";
 import { display } from "./main";
+import { fetchPlugin } from "./plugin";
 
 
 const app = AppState.getInstance()
@@ -18,20 +19,27 @@ const displayBtn = document.getElementById('display-btn')! as HTMLButtonElement
 const configBtn = document.getElementById('show-config-btn')! as HTMLButtonElement
 const configModal = document.getElementById('config-modal')! as HTMLDialogElement
 
-
+/**
+ * Binds UI to AppState
+ */
 function bind(){
     addEventListeners()
     setupRadioTextToggle('source-option')
     setupRadioTextToggle('plugin-option')
     loadAppState()
 }
-
+/**
+ * Loads values from AppState to UI
+ */
 function loadAppState(){
     iriEl.value = app.entityIri
     languagesEl.value = app.languages.join(', ')
     app.dataSources.forEach(ds => createSourceEntry(ds.type, ds.identifier, dataSourcesContainer))
     app.plugins.forEach(plugin => addPluginOption(plugin.label, plugin.url, pluginSelectEl))
 }
+/**
+ * Adds all event listeners to UI elements
+ */
 function addEventListeners(){
     addSourceFormEl.addEventListener('submit', (event: SubmitEvent) => {
         event.preventDefault()
@@ -78,12 +86,14 @@ function addEventListeners(){
         app.setSelectedPlugin(selectedValue)
     })
 
-
-
     displayBtn.addEventListener('click', async () => {
         displayBtn.disabled = true
+        const selectedPlugin = app.getSelectedPlugin()
         try {
-            await display()
+            if (selectedPlugin){
+                const pluginModule = await fetchPlugin(selectedPlugin)
+                await display(pluginModule)
+            }
         }
         catch (err){
             console.error('Error while displaying', err)
@@ -112,11 +122,16 @@ function addEventListeners(){
     });
 
 }
+/**
+ * Adds plugin defined in formData to AppState and UI
+ * 
+ * @param formData - FormData with information about new plugin
+ */
 function addPluginFromFormData(formData: FormData){
     const pluginType: PluginType = formData.get('plugin') as PluginType
     switch (pluginType) {
         case "url":
-            const url = formData.get('url-plugin') as string|null
+            { const url = formData.get('url-plugin') as string|null
             if (!url)
                 throw new Error('Missing url for plugin in form data')
             const label = formData.get('label-plugin') as string|null
@@ -124,36 +139,41 @@ function addPluginFromFormData(formData: FormData){
                 throw new Error('Missing label for plugin in form data')
             app.addPlugin(label, url)
             addPluginOption(label, url, pluginSelectEl)
-            break;
+            break; }
     
         default:
             throw new Error('Unknown plugin type')
     }
 }
+/**
+ * Adds DataSource defined in formData to AppState and UI
+ * 
+ * @param formData - FormData with information about new DataSource 
+ */
 function addDataSourceFromFormData(formData: FormData){
     const dsType: DataSourceType = formData.get('source') as DataSourceType
     switch (dsType) {
         case DataSourceType.Sparql:
-            const sparqlUrl = formData.get('sparql-source-text') as string | null
+            { const sparqlUrl = formData.get('sparql-source-text') as string | null
             if (!sparqlUrl)
                 throw new Error('Missing url for sparql endpoint in form data')
             app.addSparqlDataSource(sparqlUrl)
             createSourceEntry(DataSourceType.Sparql, sparqlUrl, dataSourcesContainer)
-            break;
+            break; }
         case DataSourceType.LocalFile:
-            const files = formData.getAll('file-source-files') as File[]
+            { const files = formData.getAll('file-source-files') as File[]
             files.forEach(file => {
                 app.addFileDataSource(file)
                 createSourceEntry(DataSourceType.LocalFile, file.name, dataSourcesContainer)
             })
-            break;
+            break; }
         case DataSourceType.RemoteFile:
-            const fileUrl = formData.get('remote-file-source-text') as string | null
+            { const fileUrl = formData.get('remote-file-source-text') as string | null
             if (!fileUrl)
                 throw new Error('Missing url for remote file in form data')
             app.addFileDataSource(fileUrl)
             createSourceEntry(DataSourceType.RemoteFile, fileUrl, dataSourcesContainer)
-            break;
+            break; }
     
         default:
             throw new Error('Unknown data source type')
@@ -187,6 +207,13 @@ function setupRadioTextToggle(containerClass: string) {
 
   sync();
 }
+/**
+ * Adds DataSource to the list of defined DataSources
+ * 
+ * @param type - type of the DataSource
+ * @param identifier - Identifier of the DataSource (URL or filename)
+ * @param containerEl - Element containing the list of DataSources
+ */
 function createSourceEntry(type: DataSourceType, identifier: string, containerEl: HTMLElement){
     const entryEl = document.createElement('div')
     entryEl.className = 'source-entry'
@@ -216,7 +243,13 @@ function createSourceEntry(type: DataSourceType, identifier: string, containerEl
     entryEl.appendChild(removeButton)
     containerEl.appendChild(entryEl)
 }
-
+/**
+ * Adds new plugin option to HTML Select element
+ * 
+ * @param label - label for the plugin
+ * @param url - URL of the plugin
+ * @param selectEl - HTML Select element for plugin selection
+ */
 function addPluginOption(label: string, url: string, selectEl: HTMLSelectElement){
     const option = document.createElement('option')
     option.value = url

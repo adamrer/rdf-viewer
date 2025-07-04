@@ -133,6 +133,9 @@ const ALL_SUBJECTS: readonly string[] = Object.freeze([])
 const ALL_PREDICATES: readonly string[] = Object.freeze([])
 const ALL_OBJECTS: readonly (string|LiteralCreationHelper)[] = Object.freeze([])
 
+/**
+ * Interface for passing data from SubjectStep to PredicateStep
+ */
 interface SubjectBuildingHelper {
     graphPatternBuilder: GraphPatternBuilder
     graphValues?: NamedNode[] // undefined -> no graph clause, empty list -> all graphs, non-empty list -> only specified graphs
@@ -142,15 +145,24 @@ interface SubjectBuildingHelper {
     readonly predicateVar: Variable
     readonly objectVar: Variable
 }
+/**
+ * Interface for passing data from PredicateStep to ObjectStep
+ */
 interface PredicateBuildingHelper extends SubjectBuildingHelper {
     predicateValues: NamedNode[]
 }
+/**
+ * Interface for passing data from ObjectStep to FinalStep
+ */
 interface ObjectBuildingHelper extends PredicateBuildingHelper {
     objectValues: (NamedNode|Literal)[]
 }
 
 
-
+/**
+ * Implementation of the SubjectStep
+ * @see SubjectStep
+ */
 class SubjectStepImpl implements SubjectStep {
     graphPatternBuilder: GraphPatternBuilder
     graphValues?: NamedNode[]

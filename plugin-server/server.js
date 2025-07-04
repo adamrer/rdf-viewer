@@ -6,7 +6,7 @@ const port = 3000;
 
 app.use(cors());
 
-// Nastaví složku "plugins" jako veřejnou
+// Sets folder "plugins" as public
 app.use('/plugins', express.static('../plugins'));
 
 app.listen(port, () => {

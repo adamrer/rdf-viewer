@@ -30,26 +30,80 @@ interface DisplayPluginModule {
     displayQuads(context: RenderingContext): Promise<void>
 }
 
+/**
+ * Fetches the given plugin
+ * 
+ * @param plugin - plugin to be fetched
+ * @returns the plugin module
+ */
 async function fetchPlugin(plugin: DisplayPlugin): Promise<DisplayPluginModule> {
     return import(/* @vite-ignore */ plugin.url)
 }
 
-
+/**
+ * Interface for the plugin to use for rendering and fetching the data
+ */
 interface RenderingContext {
-    
+    /**
+     * The main subject of the display
+     */
     subjectIri: string
-
+    /**
+     * Fetches data about given subject. Adds them to the already loaded data.
+     * 
+     * @param labelPredicates - Predicate IRIs which objects can be used as labels of any fetched IRI 
+     * @param subjectIri - Subject IRI of the quads that will be fetched
+     */
     loadData(labelPredicates: string[], subjectIri: string): Promise<void>
+    /**
+     * Returns label for the given IRI, undefined if it has no label from labelPredicates parameter in loadData.
+     * The label that is the most preferred by the user is picked.
+     * 
+     * @param iri - IRI to get label of
+     * @see loadData
+     */
     getLabel(iri: string): SourcedObject|undefined
+    /**
+     * Returns the objects of the quads with the given subject and predicate
+     * 
+     * @param subjectIri - the subject IRI
+     * @param predicateIri - the predicate IRI
+     */
     getObjects(subjectIri: string, predicateIri: string): SourcedObject[]
+    /**
+     * Returns a list of predicates of the specified subject
+     * 
+     * @param subjectIri - the subject IRI
+     */
     getPredicates(subjectIri: string): string[]
+    /**
+     * Returns an instance of QuadsFetcher
+     */
     fetcher(): QuadsFetcher
+    /**
+     * Returns list of languages specified by user in UI sorted by priority
+     */
     preferredLanguages(): Language[]
+    /**
+     * Notifies the users that something happened
+     * 
+     * @param message - content of the notification
+     * @param type - type of the notification
+     */
     notifyUser(message: string, type: NotificationType): void
+    /**
+     * Mounts the given HTML element to the result element
+     * 
+     * @param html - the HTML to show to the user
+     */
     mount(html: HTMLElement): void
 
 }
 
+/**
+ * Implementation of the RenderingContext interface
+ * @see RenderingContext
+ */
 class RenderingContextImpl implements RenderingContext{
 
     subjectIri: string
@@ -158,6 +212,15 @@ class RenderingContextImpl implements RenderingContext{
 
 }
 
+/**
+ * Creates an implementation of a RenderingContext
+ * @param subjectIri 
+ * @param fetcher 
+ * @param preferredLanguages 
+ * @param resultElement 
+ * @returns 
+ * @see RenderingContext
+ */
 function renderingContext(subjectIri: string, fetcher: QuadsFetcher, preferredLanguages: Language[], resultElement: HTMLElement){
     return new RenderingContextImpl(subjectIri, fetcher, preferredLanguages, resultElement)
 }

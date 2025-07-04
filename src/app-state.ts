@@ -6,6 +6,9 @@ const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL
 
 type Listener = () => void
 
+/**
+ * Holds data set by user in the UI. Is Observable
+ */
 class AppState {
     private static _instance: AppState
 

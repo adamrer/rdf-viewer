@@ -1,39 +1,52 @@
 import { Fetcher } from './fetch-quads'
-import { DisplayPluginModule, fetchPlugin, renderingContext } from './plugin'
+import { DisplayPluginModule, renderingContext, RenderingContext } from './plugin'
 import { displayQuads } from './default-display'
 import { AppState } from './app-state';
 import { Language, NO_LANG_SPECIFIED } from './query/query-interfaces';
 import { bind } from './ui-binding';
+import { notify } from './notify';
 
 window.onload = () => {
     bind()
 }
-
-async function display(): Promise<void> {
-    const app = AppState.getInstance()
+/**
+ * Creates RenderingContext for plugin
+ * 
+ * @param app - AppState instance from which the RenderingContext will be created
+ * @param resultElement - HTML element where the plugin will be mounted
+ * @returns RenderingContext from AppState instance
+ * @see RenderingContext
+ */
+function createContextFromAppState(app: AppState, resultElement: HTMLElement): RenderingContext {
     const entityIri = app.entityIri
     const fetcher: Fetcher = new Fetcher(app.dataSources)
     const langs: Language[] = app.languages
     langs.push(NO_LANG_SPECIFIED)
-    const selectedPlugin = app.getSelectedPlugin()
-    const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
-    // Clear previous results
-    resultsEl.innerHTML = ``;
+    return renderingContext(entityIri, fetcher, langs, resultElement)
+}
 
-    // get display plugin
+/**
+ * Calls the display function of plugin module
+ * 
+ * @returns a promise to show the plugins result
+ */
+async function display(pluginModule: DisplayPluginModule): Promise<void> {
+    const app = AppState.getInstance()
+    const resultsEl : HTMLDivElement = document.getElementById('results') as HTMLDivElement;
+    
+    const context = createContextFromAppState(app, resultsEl)
+    // Clear previous results
+    resultsEl.innerHTML = '';
+    
     try{
-        if (!selectedPlugin)
-            throw new Error('Plugin not selected')
-        const displayModule: DisplayPluginModule = await fetchPlugin(app.getSelectedPlugin())
-        const context = renderingContext(entityIri, fetcher, langs, resultsEl)
-        return displayModule.displayQuads(context)
+        return pluginModule.displayQuads(context)
     }
     catch (error){
         const messageParagraph = document.createElement('p')
-        messageParagraph.innerText = "Failed to load plugin. Using default display."
+        notify("Failed to load plugin. Using default display.", "error")
         resultsEl.appendChild(messageParagraph)
-        displayQuads(entityIri, fetcher, langs, resultsEl)
         console.error(error)
+        return displayQuads(context)
     }
 
 }

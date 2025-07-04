@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import N3, { BlankNode, DataFactory, DefaultGraph, Literal, NamedNode, Quad, Term, Variable } from "n3"
 import { ANY_LANGUAGE, Bind, BuiltInCall, DataBlockValue, Expression, ExpressionList, Filter, Func, Graph, GraphPattern, GraphPatternClause, GraphPatternClauseType, Language, NO_LANG_SPECIFIED, Operator, OperatorExpression, Optional, Select, SelectVariables, Substitution, TriplePattern, Union, Values, Where } from "./query-interfaces"
 import toNT from "@rdfjs/to-ntriples"
@@ -119,13 +120,21 @@ class SelectImpl implements Select {
         const limit = this.limit ? `LIMIT ${this.limit}` : ''
         const offset = this.offset ? `OFFSET ${this.offset}` : ''
         const footerArray: string[] | null = []
-        this.limit ? footerArray.push(limit) : {}
-        this.offset ? footerArray.push(offset) : {}
+        if (this.limit){
+            footerArray.push(limit)
+        }
+        if (this.offset){
+            footerArray.push(offset)
+        }
         const footerString = footerArray.length==0 ? null : footerArray.join('\n');
         
         const result = [header]
-        this.where ? result.push(this.where.toSparql()) : {}
-        footerString ? result.push(footerString) : {}
+        if (this.where){
+            result.push(this.where.toSparql())
+        }
+        if (footerString){
+            result.push(footerString)
+        }
 
         return result.join('\n')
     }
@@ -307,7 +316,9 @@ class BuiltInCallImpl implements BuiltInCall {
     toSparql(): string {
 
         const args = [expressionToString(this.variable)]
-        this.option ? args.push(expressionToString(this.option)) : {}
+        if (this.option){
+            args.push(expressionToString(this.option))
+        }
         return `${this.func}(${args.join(', ')})`
     }
 }
@@ -334,13 +345,61 @@ class ExpressionListImpl implements ExpressionList {
     }
 }
 
+/**
+ * Factory for creating node of Query
+ * @see Query
+ */
 interface QueryNodeFactory {
+    /**
+     * Returns Select clause
+     * 
+     * @param variables - select variables
+     * @param distinct - if the results should be distinct from each other
+     * @param where - the where clause of the select clause
+     * @param limit - limit the number of retrieved quads
+     * @param offset - retrieve quads with offset from the beginning
+     */
     select(variables: SelectVariables, distinct?: boolean, where?: Where, limit?: number, offset?: number): Select
+    /**
+     * Returns Where clause
+     * 
+     * @param children - child GraphPattern nodes
+     * @see GraphPatternBuilder
+     */
     where(children?: GraphPattern[]): Where 
+    /**
+     * Returns TriplePattern
+     * 
+     * @param subject - subject term
+     * @param predicate - predicate term
+     * @param object - object term
+     */
     triplePattern(subject: Term, predicate: NamedNode | Variable, object: Term): TriplePattern
+    /**
+     * Returns an ExpressionList with given expressions
+     * 
+     * @param expressions 
+     */
     expressionList(expressions: Expression[]): ExpressionList
+    /**
+     * Returns a Values clause
+     * 
+     * @param variable - variable that will be constraint by values that it can acquire
+     * @param values - values that the variable can acquire
+     */
     values(variable: Variable, values: DataBlockValue[]): Values
+    /**
+     * Returns a Filter clause
+     * 
+     * @param constraint - constraint that the filter will have
+     */
     filter(constraint: Expression): Filter 
+    /**
+     * Returns a Graph clause
+     * 
+     * @param graph - IRI or a variable of the graph
+     * @param children - children GraphPattern nodes of the clause
+     */
     graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph 
     // TODO: order by (https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#modOffset)
     // bind(expression: Expression, variable: Variable): Bind 

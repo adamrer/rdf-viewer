@@ -2,9 +2,14 @@ import { Quad } from "n3";
 import { Filter, Graph, Query, TriplePattern, Values, Node, Substitution, Select } from "./query/query-interfaces";
 
 
+/**
+ * Type of a function that evaluates a constraint with given variable substitution
+ */
 type ConstraintFunction = (variablesSubstitution: Substitution) => boolean 
 
-
+/**
+ * Gathered constraints from query for a quad to satisfy  
+ */
 interface QuadsConstraints {
     valuesConstraints: ConstraintFunction[] 
     filtersConstraints: ConstraintFunction[]
@@ -13,7 +18,10 @@ interface QuadsConstraints {
     objectVar: string
     graphVar: string
 }
-
+/**
+ * Helper interface for building the QuadsConstraints
+ * @see QuadsConstraints
+ */
 interface QuadsConstraintsHelper {
     valuesConstraints: ConstraintFunction[]
     filtersConstraints: ConstraintFunction[]
@@ -22,12 +30,29 @@ interface QuadsConstraintsHelper {
     objectVar?: string
     graphVar?: string
 }
-
+/**
+ * Processes a Query instance and filters given quads according to the Query
+ */
 interface QueryProcessor {
+    /**
+     * Filters given quads based on the given query
+     * 
+     * @param quads - quads to query on
+     * @param query - the query to filter the quads
+     */
     filter(quads: Quad[], query: Query): Quad[]
 }
-
+/**
+ * Implementation of the QueryProcessor interface
+ * @see QueryProcessor
+ */
 class QueryProcessorImpl implements QueryProcessor {
+    /**
+     * Processes query to QuadsConstraints for a simpler evaluation
+     * 
+     * @param query - the query to be processed
+     * @returns QuadsConstraints based on the query
+     */
     processQuery(query: Query): QuadsConstraints {
         const constraints:QuadsConstraintsHelper = {
             valuesConstraints: [],
@@ -38,25 +63,25 @@ class QueryProcessorImpl implements QueryProcessor {
             const node = stack.pop()
             switch (node?.type) {
                 case 'triplePattern':
-                    const triple = node as TriplePattern
-                    constraints.subjectVar = triple.subject.value, 
-                    constraints.predicateVar = triple.predicate.value, 
+                    { const triple = node as TriplePattern
+                    constraints.subjectVar = triple.subject.value
+                    constraints.predicateVar = triple.predicate.value
                     constraints.objectVar = triple.object.value 
 
-                    break;
+                    break; }
                 case 'values':
-                    const values = node as Values
+                    { const values = node as Values
                     constraints.valuesConstraints.push((variablesSubstitution: Substitution) => values.evaluate(variablesSubstitution[values.variable.value]))
-                    break;
+                    break; }
                 case 'filter':
-                    const filter = node as Filter
+                    { const filter = node as Filter
                     constraints.filtersConstraints.push((variablesSubstitution: Substitution) => filter.constraint.evaluate(variablesSubstitution))
-                    break;
+                    break; }
                 case 'graph':
-                    const graph = node as Graph
+                    { const graph = node as Graph
                     constraints.graphVar = graph.graph.value
                     stack.push(...graph.children)
-                    break;
+                    break; }
             
                 default:
                     throw Error(`Node type ${node?.type} couldn't be processed`)
@@ -64,6 +89,12 @@ class QueryProcessorImpl implements QueryProcessor {
         }
         return constraints as QuadsConstraints
     }
+    /**
+     * Creates a function that will filter a quad based on the constraints
+     * 
+     * @param constraints - constraints that a quad has to satisfy
+     * @returns a function that will return true if it satisfies the constraints
+     */
     predicateForQuads(constraints: QuadsConstraints): (quad: Quad) => boolean {
         return (quad: Quad): boolean => {
             const substitution = {
@@ -77,6 +108,7 @@ class QueryProcessorImpl implements QueryProcessor {
 
         }
     }
+    
     filter(quads: Quad[], query: Query): Quad[] {
         const constraints = this.processQuery(query)
         const quadMeetsQueryConstraints = this.predicateForQuads(constraints)
@@ -91,7 +123,11 @@ class QueryProcessorImpl implements QueryProcessor {
     }
 }
 
-
+/**
+ * 
+ * @returns an implementation of the QueryProcessor
+ * @see QueryProcessor
+ */
 function queryProcessor() : QueryProcessor {
     return new QueryProcessorImpl()
 }

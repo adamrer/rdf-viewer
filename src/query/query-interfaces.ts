@@ -16,8 +16,13 @@ const ANY_LANGUAGE = "*"
  */
 type Language = typeof NO_LANG_SPECIFIED | string
 
-
+/**
+ * Types of the Query
+ */
 type QueryType = 'select' // |'construct'|'ask'|'describe'
+/**
+ * Types of the Node
+ */
 type NodeType = 'select'|
     'triplePattern'|
     'operatorExpression'|
@@ -29,20 +34,45 @@ type NodeType = 'select'|
     'union'|
     GraphPatternClauseType
     
+/**
+ * Types of the graph patterns
+ */
 type GraphPatternClauseType = 'where'|
     'optional'|
     'graph' 
 
+/**
+ * Interface representing the query for querying quads on data sources
+ */
 interface Query {
+    /**
+     * Type of the query
+     */
     type: QueryType
+    /**
+     * Where clause
+     */
     where: Where
+    /**
+     * Serializes the query to SPARQL
+     */
     toSparql(): string
 }
 
+/**
+ * Interface representing a node of a Query
+ */
 interface Node {
+    /**
+     * Type of the node
+     */
     type: NodeType
+    /**
+     * Serializes the node to SPARQL
+     */
     toSparql(): string
 }
+
 
 type ConditionalOperator = '||' 
 type RelationalOperator = '=' | '!=' 
@@ -57,15 +87,23 @@ interface OperatorExpression extends Node {
     evaluate(variablesSubstitution: Substitution): boolean
 }
 
-
+/**
+ * Represents a triple pattern constraint in query
+ */
 interface TriplePattern extends Node {
     type: 'triplePattern'
     subject: Term
     predicate: NamedNode | Variable
     object: Term
 }
+/**
+ * Types of graph patterns
+ */
 type GraphPattern = Graph | GraphPatternClause | TriplePattern | Select | Union | Filter | Bind | Optional | Values
 
+/**
+ * Represents a graph pattern clause in a query
+ */
 interface GraphPatternClause extends Node {
     type: GraphPatternClauseType
     children: GraphPattern[]
@@ -78,10 +116,18 @@ interface Union extends Node {
     rightChildren: GraphPattern[]
 }
 
+/**
+ * Character for all selector in Query of a type Select
+ */
 type AllSelector = '*'
 
+/**
+ * Type for variables in Select
+ */
 type SelectVariables = Variable[]|AllSelector
-
+/**
+ * Represents a Select Query
+ */
 interface Select extends Node, Query {
     type: 'select'
     where: Where
@@ -97,13 +143,20 @@ interface Select extends Node, Query {
     
 }
 type DataBlockValue = NamedNode | Literal 
+/**
+ * Represents Values clause in query.
+ * Constraints a variable to acquire one of the specified values.
+ */
 interface Values extends Node {
     type: 'values'
     values: DataBlockValue[]
     variable: Variable
     evaluate(value: Term): boolean
 }
-
+/**
+ * Represents Bind in query.
+ * Assigns a variable to an expression
+ */
 interface Bind extends Node {
     type: 'bind'
     expression: Expression
@@ -112,11 +165,18 @@ interface Bind extends Node {
 interface Optional extends GraphPatternClause {
     type: 'optional'
 }
+/**
+ * Represents Filter in query.
+ * Constraints quads by BuiltInCall or OperatorExpression
+ */
 interface Filter extends Node {
     type: 'filter'
     constraint: BuiltInCall|OperatorExpression
 }
-
+/**
+ * Represents Graph clause in query.
+ * Constraints quads to be in a named graph
+ */
 interface Graph extends GraphPatternClause {
     type: 'graph'
     graph: NamedNode | Variable
@@ -148,19 +208,19 @@ interface BuiltInCall extends Node {
     evaluate(variablesSubstitution: Substitution): boolean
 }
 
-
-type Substitution = {[key: string]: Term}
-
-
-
-
-
-
+/**
+ * Variable substitution
+ */
+type Substitution = {[variableName: string]: Term}
 
 interface ExpressionList extends Node {
     type: 'expressionList'
     expressions: Expression[]
 }
+/**
+ * Represents a Where clause of a query.
+ * Holds all the constraints of the query.
+ */
 interface Where extends GraphPatternClause {
     type: 'where'
 }
