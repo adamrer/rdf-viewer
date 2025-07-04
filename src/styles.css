@@ -39,9 +39,17 @@ select {
   align-items: flex-end;
 }
 
-.notification {
+#notification-container {
   position: fixed;
-  top: 0;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10000;
+  pointer-events: none;
+}
+.notification {
   margin-top: 1rem;
   padding: 1rem;
   border-radius: 6px;

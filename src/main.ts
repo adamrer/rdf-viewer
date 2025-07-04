@@ -8,7 +8,7 @@ import { displayQuads } from "./default-display";
 import { AppState } from "./app-state";
 import { Language, NO_LANG_SPECIFIED } from "./query/query-interfaces";
 import { bind } from "./ui-binding";
-import { notify } from "./notify";
+import { notifier } from "./notifier";
 
 window.onload = () => {
   bind();
@@ -51,7 +51,7 @@ async function display(pluginModule: DisplayPluginModule): Promise<void> {
     return pluginModule.displayQuads(context);
   } catch (error) {
     const messageParagraph = document.createElement("p");
-    notify("Failed to load plugin. Using default display.", "error");
+    notifier.notify("Failed to load plugin. Using default display.", "error");
     resultsEl.appendChild(messageParagraph);
     console.error(error);
     return displayQuads(context);

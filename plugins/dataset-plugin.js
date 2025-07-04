@@ -13,11 +13,19 @@ const labelPredicates = [
 ];
 
 export async function displayQuads(context) {
-  context.notifyUser("Loading data...", "info");
-  await context.loadData(labelPredicates);
-  await loadAdditionalData(context, dcat + "distribution", labelPredicates);
-  await loadAdditionalData(context, dcterms + "temporal", labelPredicates);
-  context.notifyUser("Data loaded!", "success");
+  await context.notifyPromise(
+    (async () => {
+      await context.loadData(labelPredicates);
+      await loadAdditionalData(context, dcat + "distribution", labelPredicates);
+      await loadAdditionalData(context, dcterms + "temporal", labelPredicates);
+    })(),
+    {
+      pending: "Loading data...",
+      success: "Data loaded!",
+      error: "Loading data failed",
+    }
+  );
+
   context.mount(createDatasetHtml(context));
 }
 

@@ -6,7 +6,7 @@ import {
   StructuredQuads,
 } from "./fetch-quads";
 import { Language } from "./query/query-interfaces";
-import { NotificationType, notify } from "./notify";
+import { NotificationType, notifier } from "./notifier";
 
 /**
  * Interface representing a recorded plugin in the memory.
@@ -97,7 +97,12 @@ interface RenderingContext {
    * @param message - content of the notification
    * @param type - type of the notification
    */
-  notifyUser(message: string, type: NotificationType): void;
+  notify(message: string, type: NotificationType): void;
+
+  notifyPromise<T>(
+    promise: Promise<T>,
+    messages: { pending: string; success: string; error: string }
+  ): Promise<T>
   /**
    * Mounts the given HTML element to the result element
    *
@@ -203,8 +208,11 @@ class RenderingContextImpl implements RenderingContext {
   preferredLanguages(): Language[] {
     return this.prefLangs;
   }
-  notifyUser(message: string, type: NotificationType) {
-    notify(message, type);
+  notify(message: string, type: NotificationType): void {
+    notifier.notify(message, type)
+  }
+  notifyPromise<T>(promise: Promise<T>, messages: { pending: string; success: string; error: string; }): Promise<T> {
+    return notifier.notifyPromise(promise, messages)
   }
   mount(html: HTMLElement): void {
     this.resultElement.appendChild(html);
