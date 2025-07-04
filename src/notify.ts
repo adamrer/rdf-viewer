@@ -1,12 +1,15 @@
-type NotificationType = "info" | "success" | "warning" | "error"
-
+type NotificationType = "info" | "success" | "warning" | "error";
 
 function getEmoji(type: NotificationType): string {
   switch (type) {
-    case "info": return "🛈";
-    case "success": return "✔️";
-    case "warning": return "⚠️";
-    case "error": return "❌";
+    case "info":
+      return "🛈";
+    case "success":
+      return "✔️";
+    case "warning":
+      return "⚠️";
+    case "error":
+      return "❌";
   }
 }
 
@@ -25,9 +28,5 @@ function notify(message: string, type: NotificationType) {
   }, 5000);
 }
 
-export type {
-    NotificationType
-}
-export {
-    notify
-}
+export type { NotificationType };
+export { notify };

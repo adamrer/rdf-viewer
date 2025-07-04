@@ -1,6 +1,6 @@
 // vite.config.ts
-import { defineConfig } from 'vite'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { defineConfig } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
   plugins: [
@@ -8,11 +8,11 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'plugins/*',
-          dest: 'plugins'
-        }
-      ]
-    })
+          src: "plugins/*",
+          dest: "plugins",
+        },
+      ],
+    }),
   ],
-  base: './',
-})
+  base: "./",
+});

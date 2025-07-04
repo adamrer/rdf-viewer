@@ -1,4 +1,4 @@
-body{
+body {
   background-color: #f9f9f9;
 }
 #app {
@@ -11,16 +11,18 @@ body{
   max-width: fit-content;
   margin: 0 auto;
 }
-.source-option, .plugin-option {
+.source-option,
+.plugin-option {
   display: flex;
   align-items: center;
 }
-#config-modal{
+#config-modal {
   font-family: consolas;
 }
 
-
-#app button, input, select {
+#app button,
+input,
+select {
   font-family: inherit;
   font-size: inherit;
 }
@@ -70,4 +72,3 @@ body{
   color: #991b1b;
   border: 1px solid #fecaca;
 }
-
