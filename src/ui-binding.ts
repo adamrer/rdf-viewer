@@ -118,17 +118,10 @@ function addEventListeners() {
   configBtn.addEventListener("click", () => {
     configModal.showModal();
   });
+  
   configModal.addEventListener("click", (event) => {
-    const rect = configModal
-      .querySelector("#config-content")!
-      .getBoundingClientRect();
-    const isInDialog =
-      event.clientX >= rect.left &&
-      event.clientX <= rect.right &&
-      event.clientY >= rect.top &&
-      event.clientY <= rect.bottom;
-
-    if (!isInDialog) {
+    // ::backdrop of the modal is clicked
+    if (event.target === configModal){
       configModal.close();
     }
   });
