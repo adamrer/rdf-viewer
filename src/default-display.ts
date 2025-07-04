@@ -10,10 +10,16 @@ const labelPredicates = [
 ];
 
 export async function displayQuads(context: RenderingContext) {
-  context.notifyUser("Loading data...", "info");
-  await context.loadData(labelPredicates, context.subjectIri);
-  context.notifyUser("Data loaded!", "success");
-
+  await context.notifyPromise(
+    (async () => {
+      await context.loadData(labelPredicates, context.subjectIri);
+    })(),
+    {
+      pending: "Loading data...",
+      success: "Data loaded!",
+      error: "Loading data failed",
+    }
+  );
   context.mount(createDisplayHtml(context));
 }
 
