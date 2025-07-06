@@ -118,10 +118,10 @@ function addEventListeners() {
   configBtn.addEventListener("click", () => {
     configModal.showModal();
   });
-  
+
   configModal.addEventListener("click", (event) => {
     // ::backdrop of the modal is clicked
-    if (event.target === configModal){
+    if (event.target === configModal) {
       configModal.close();
     }
   });
@@ -188,15 +188,12 @@ function addDataSourceFromFormData(formData: FormData) {
       break;
     }
     case DataSourceType.LDP: {
-      const ldpUrl = formData.get("ldp-source-text") as string | null
-      if (!ldpUrl) throw new Error("Missing url for LDP data source in form data")
-        app.addLDPDataSource(ldpUrl)
-      createSourceEntry(
-        DataSourceType.LDP,
-        ldpUrl,
-        dataSourcesContainer
-      )
-      break
+      const ldpUrl = formData.get("ldp-source-text") as string | null;
+      if (!ldpUrl)
+        throw new Error("Missing url for LDP data source in form data");
+      app.addLDPDataSource(ldpUrl);
+      createSourceEntry(DataSourceType.LDP, ldpUrl, dataSourcesContainer);
+      break;
     }
 
     default:
@@ -259,8 +256,8 @@ function createSourceEntry(
       typeLabel = "SPARQL Endpoint";
       break;
     case DataSourceType.LDP:
-      typeLabel = "LDP Server"
-      break
+      typeLabel = "LDP Server";
+      break;
     default:
       break;
   }

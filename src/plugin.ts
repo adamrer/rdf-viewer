@@ -101,8 +101,8 @@ interface RenderingContext {
 
   notifyPromise<T>(
     promise: Promise<T>,
-    messages: { pending: string; success: string; error: string }
-  ): Promise<T>
+    messages: { pending: string; success: string; error: string },
+  ): Promise<T>;
   /**
    * Mounts the given HTML element to the result element
    *
@@ -209,10 +209,13 @@ class RenderingContextImpl implements RenderingContext {
     return this.prefLangs;
   }
   notify(message: string, type: NotificationType): void {
-    notifier.notify(message, type)
+    notifier.notify(message, type);
   }
-  notifyPromise<T>(promise: Promise<T>, messages: { pending: string; success: string; error: string; }): Promise<T> {
-    return notifier.notifyPromise(promise, messages)
+  notifyPromise<T>(
+    promise: Promise<T>,
+    messages: { pending: string; success: string; error: string },
+  ): Promise<T> {
+    return notifier.notifyPromise(promise, messages);
   }
   mount(html: HTMLElement): void {
     this.resultElement.appendChild(html);

@@ -1,4 +1,4 @@
-import N3, {Quad} from "n3"
+import N3, { Quad } from "n3";
 import { Readable } from "readable-stream";
 import { rdfParser } from "rdf-parse";
 import { queryProcessor } from "../query-processor";
@@ -11,7 +11,7 @@ enum DataSourceType {
   Sparql = "SPARQL",
   LocalFile = "LOCAL_FILE",
   RemoteFile = "REMOTE_FILE",
-  LDP = "LDP"
+  LDP = "LDP",
 }
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
@@ -233,77 +233,81 @@ class FileDataSource implements DataSource {
 }
 
 class LdpDataSource implements DataSource {
-  type = DataSourceType.LDP
-  identifier: string
-  url: string
-  quads: Quad[] = []
-  quadsLoaded: boolean = false
-  constructor(url: string){
-    this.url = url    
-    this.identifier = url
+  type = DataSourceType.LDP;
+  identifier: string;
+  url: string;
+  quads: Quad[] = [];
+  quadsLoaded: boolean = false;
+  constructor(url: string) {
+    this.url = url;
+    this.identifier = url;
   }
 
   async fetchLdp(contentType = "text/turtle"): Promise<Response> {
     return fetch(this.url, {
       headers: {
-        Accept: contentType
-      }
-    })
+        Accept: contentType,
+      },
+    });
   }
-  async loadAllResourcesLimited(urls: string[], concurrency: number = 5, contentType: string = "text/turtle"): Promise<Quad[]>{
-    const limit = pLimit(concurrency)
-    const tasks = urls.map(url => 
+  async loadAllResourcesLimited(
+    urls: string[],
+    concurrency: number = 5,
+    contentType: string = "text/turtle",
+  ): Promise<Quad[]> {
+    const limit = pLimit(concurrency);
+    const tasks = urls.map((url) =>
       limit(async () => {
         const response = await fetch(url);
         const text = await response.text();
-        const parser = new N3.Parser({ format: contentType, baseIRI: url})
-        return parser.parse(text)
-      })
-    )
+        const parser = new N3.Parser({ format: contentType, baseIRI: url });
+        return parser.parse(text);
+      }),
+    );
     const results = await Promise.allSettled(tasks);
 
     return results
-      .filter((r): r is PromiseFulfilledResult<Quad[]> => r.status === "fulfilled")
-      .flatMap(r => r.value);
+      .filter(
+        (r): r is PromiseFulfilledResult<Quad[]> => r.status === "fulfilled",
+      )
+      .flatMap((r) => r.value);
   }
-  async loadContainers(containerIris: string[]){
-    const contentType = "text/turtle"
-    const response = await this.fetchLdp(contentType, )
-    const result = await response.text()
-    const parser = new N3.Parser({ format: contentType, baseIRI: this.url })
-    this.quads.push(...parser.parse(result))
-    const ldp = 'http://www.w3.org/ns/ldp#'
-    const subResourcesQuery = simpleQueryStepBuilder().subjects(containerIris).predicates([ldp+'contains']).objects().build()
-    const processor = queryProcessor()
-    const subResources = processor.filter(this.quads, subResourcesQuery)
-      .map(quad => quad.object) // get objects
-      .filter(object => object.termType === 'NamedNode') // that are NamedNodes
-      .map(object => object.value) // their IRIs
-    if (subResources.length === 0){
-      return
+  async loadContainers(containerIris: string[]) {
+    const contentType = "text/turtle";
+    const response = await this.fetchLdp(contentType);
+    const result = await response.text();
+    const parser = new N3.Parser({ format: contentType, baseIRI: this.url });
+    this.quads.push(...parser.parse(result));
+    const ldp = "http://www.w3.org/ns/ldp#";
+    const subResourcesQuery = simpleQueryStepBuilder()
+      .subjects(containerIris)
+      .predicates([ldp + "contains"])
+      .objects()
+      .build();
+    const processor = queryProcessor();
+    const subResources = processor
+      .filter(this.quads, subResourcesQuery)
+      .map((quad) => quad.object) // get objects
+      .filter((object) => object.termType === "NamedNode") // that are NamedNodes
+      .map((object) => object.value); // their IRIs
+    if (subResources.length === 0) {
+      return;
     }
-    this.quads.push(...(await this.loadAllResourcesLimited(subResources, 5, contentType)))
-    this.loadContainers(subResources)
+    this.quads.push(
+      ...(await this.loadAllResourcesLimited(subResources, 5, contentType)),
+    );
+    this.loadContainers(subResources);
   }
   async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
-    if (!this.quadsLoaded){
-      await this.loadContainers([this.url])
-      this.quadsLoaded = true
+    if (!this.quadsLoaded) {
+      await this.loadContainers([this.url]);
+      this.quadsLoaded = true;
     }
     const processor = queryProcessor();
     const filteredQuads: Quad[] = processor.filter(this.quads, query);
     return { identifier: this.url, quads: filteredQuads };
-
   }
 }
 
-export type{
-  DataSource,
-  DataSourceFetchResult,
-}
-export {
-  DataSourceType,
-  SparqlDataSource,
-  FileDataSource,
-  LdpDataSource,
-}
+export type { DataSource, DataSourceFetchResult };
+export { DataSourceType, SparqlDataSource, FileDataSource, LdpDataSource };

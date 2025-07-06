@@ -1,4 +1,9 @@
-import { DataSource, FileDataSource, LdpDataSource, SparqlDataSource } from "./fetch-quads/data-sources";
+import {
+  DataSource,
+  FileDataSource,
+  LdpDataSource,
+  SparqlDataSource,
+} from "./fetch-quads/data-sources";
 import { DisplayPlugin } from "./plugin";
 import { Language } from "./query/query-interfaces";
 
@@ -12,8 +17,7 @@ type Listener = () => void;
 class AppState {
   private static _instance: AppState;
 
-  entityIri: string =
-    "my-pod.ttl";
+  entityIri: string = "my-pod.ttl";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -83,9 +87,9 @@ class AppState {
   }
 
   addLDPDataSource(url: string) {
-    const lds = new LdpDataSource(url)
-    this.dataSources.push(lds)
-    this.notify()
+    const lds = new LdpDataSource(url);
+    this.dataSources.push(lds);
+    this.notify();
   }
 
   removeDataSource(identifier: string) {

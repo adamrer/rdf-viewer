@@ -1,5 +1,9 @@
 import { Quad_Object } from "n3";
-import { Query, SimpleQueryStepBuilder, simpleQueryStepBuilder } from "../simple-query-step-builder";
+import {
+  Query,
+  SimpleQueryStepBuilder,
+  simpleQueryStepBuilder,
+} from "../simple-query-step-builder";
 import { DataSource, DataSourceFetchResult } from "./data-sources";
 
 /**
@@ -181,13 +185,6 @@ function mergeStructuredQuads(
 
   return result;
 }
-export type {
-  QuadsFetcher,
-  StructuredQuads,
-  SourcedObject,
-};
+export type { QuadsFetcher, StructuredQuads, SourcedObject };
 
-export {
-  Fetcher,
-  mergeStructuredQuads,
-};
+export { Fetcher, mergeStructuredQuads };

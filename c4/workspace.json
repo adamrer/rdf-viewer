@@ -1,773 +1,938 @@
 {
-  "configuration" : {
-    "scope" : "SoftwareSystem"
+  "configuration": {
+    "scope": "SoftwareSystem"
   },
-  "description" : "Toto je C4 System Context diagram systému Prohlížeč RDF",
-  "documentation" : { },
-  "id" : 1,
-  "lastModifiedAgent" : "structurizr-ui",
-  "lastModifiedDate" : "2025-07-04T13:16:08Z",
-  "model" : {
-    "people" : [ {
-      "description" : "Chce si zobrazit entitu",
-      "id" : "1",
-      "location" : "Unspecified",
-      "name" : "Uživatel",
-      "properties" : {
-        "structurizr.dsl.identifier" : "user"
-      },
-      "relationships" : [ {
-        "description" : "Používá",
-        "destinationId" : "4",
-        "id" : "5",
-        "properties" : {
-          "structurizr.dsl.identifier" : "41138084-00d2-4ef0-9c0b-0f608a4949bb"
+  "description": "Toto je C4 System Context diagram systému Prohlížeč RDF",
+  "documentation": {},
+  "id": 1,
+  "lastModifiedAgent": "structurizr-ui",
+  "lastModifiedDate": "2025-07-04T13:16:08Z",
+  "model": {
+    "people": [
+      {
+        "description": "Chce si zobrazit entitu",
+        "id": "1",
+        "location": "Unspecified",
+        "name": "Uživatel",
+        "properties": {
+          "structurizr.dsl.identifier": "user"
         },
-        "sourceId" : "1",
-        "tags" : "Relationship"
-      }, {
-        "description" : "Používá",
-        "destinationId" : "3",
-        "id" : "6",
-        "linkedRelationshipId" : "5",
-        "sourceId" : "1"
-      }, {
-        "description" : "Interaguje s",
-        "destinationId" : "27",
-        "id" : "28",
-        "properties" : {
-          "structurizr.dsl.identifier" : "cf0af60d-ee2b-4975-ac4a-3d266f3eae62"
-        },
-        "sourceId" : "1",
-        "tags" : "Relationship"
-      } ],
-      "tags" : "Element,Person"
-    }, {
-      "description" : "Vytvoří plugin, který chce využít v aplikaci",
-      "id" : "2",
-      "location" : "Unspecified",
-      "name" : "Vývojář pluginů",
-      "properties" : {
-        "structurizr.dsl.identifier" : "plugindev"
+        "relationships": [
+          {
+            "description": "Používá",
+            "destinationId": "4",
+            "id": "5",
+            "properties": {
+              "structurizr.dsl.identifier": "41138084-00d2-4ef0-9c0b-0f608a4949bb"
+            },
+            "sourceId": "1",
+            "tags": "Relationship"
+          },
+          {
+            "description": "Používá",
+            "destinationId": "3",
+            "id": "6",
+            "linkedRelationshipId": "5",
+            "sourceId": "1"
+          },
+          {
+            "description": "Interaguje s",
+            "destinationId": "27",
+            "id": "28",
+            "properties": {
+              "structurizr.dsl.identifier": "cf0af60d-ee2b-4975-ac4a-3d266f3eae62"
+            },
+            "sourceId": "1",
+            "tags": "Relationship"
+          }
+        ],
+        "tags": "Element,Person"
       },
-      "relationships" : [ {
-        "description" : "Přidává pluginy v",
-        "destinationId" : "27",
-        "id" : "29",
-        "properties" : {
-          "structurizr.dsl.identifier" : "4c9f3638-0912-4943-9b31-10a1e5b3a529"
+      {
+        "description": "Vytvoří plugin, který chce využít v aplikaci",
+        "id": "2",
+        "location": "Unspecified",
+        "name": "Vývojář pluginů",
+        "properties": {
+          "structurizr.dsl.identifier": "plugindev"
         },
-        "sourceId" : "2",
-        "tags" : "Relationship"
-      }, {
-        "description" : "Přidává pluginy v",
-        "destinationId" : "4",
-        "id" : "30",
-        "linkedRelationshipId" : "29",
-        "sourceId" : "2"
-      }, {
-        "description" : "Přidává pluginy v",
-        "destinationId" : "3",
-        "id" : "31",
-        "linkedRelationshipId" : "29",
-        "sourceId" : "2"
-      } ],
-      "tags" : "Element,Person"
-    } ],
-    "softwareSystems" : [ {
-      "containers" : [ {
-        "components" : [ {
-          "description" : "Načte data z datových zdrojů ve strukturovaném formátu",
-          "documentation" : { },
-          "id" : "7",
-          "name" : "Fetcher",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.fetcher"
+        "relationships": [
+          {
+            "description": "Přidává pluginy v",
+            "destinationId": "27",
+            "id": "29",
+            "properties": {
+              "structurizr.dsl.identifier": "4c9f3638-0912-4943-9b31-10a1e5b3a529"
+            },
+            "sourceId": "2",
+            "tags": "Relationship"
           },
-          "relationships" : [ {
-            "description" : "Získává data z",
-            "destinationId" : "8",
-            "id" : "9",
-            "properties" : {
-              "structurizr.dsl.identifier" : "7b378e30-e0cb-44c2-9ac8-0979415b08b5"
-            },
-            "sourceId" : "7",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Zpřístupňuje",
-            "destinationId" : "12",
-            "id" : "13",
-            "properties" : {
-              "structurizr.dsl.identifier" : "0d6047fb-4f2b-442c-8805-85c7bef70259"
-            },
-            "sourceId" : "7",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Dotazuje se pomocí",
-            "destinationId" : "14",
-            "id" : "17",
-            "properties" : {
-              "structurizr.dsl.identifier" : "07e76c47-c297-4de6-95ac-26899d2b3941"
-            },
-            "sourceId" : "7",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Je součástí",
-            "destinationId" : "23",
-            "id" : "24",
-            "properties" : {
-              "structurizr.dsl.identifier" : "810c9f13-6cf6-484a-9bcd-80338e73cf7f"
-            },
-            "sourceId" : "7",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Načte data z jednoho SPARQL endpointu/vzdáleného souboru/nahraného souboru",
-          "documentation" : { },
-          "id" : "8",
-          "name" : "Data Source",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.datasource"
+          {
+            "description": "Přidává pluginy v",
+            "destinationId": "4",
+            "id": "30",
+            "linkedRelationshipId": "29",
+            "sourceId": "2"
           },
-          "relationships" : [ {
-            "description" : "Zpracuje dotaz pomocí",
-            "destinationId" : "10",
-            "id" : "11",
-            "properties" : {
-              "structurizr.dsl.identifier" : "84e109dc-547b-4d93-8e5a-7aeafcab6f94"
+          {
+            "description": "Přidává pluginy v",
+            "destinationId": "3",
+            "id": "31",
+            "linkedRelationshipId": "29",
+            "sourceId": "2"
+          }
+        ],
+        "tags": "Element,Person"
+      }
+    ],
+    "softwareSystems": [
+      {
+        "containers": [
+          {
+            "components": [
+              {
+                "description": "Načte data z datových zdrojů ve strukturovaném formátu",
+                "documentation": {},
+                "id": "7",
+                "name": "Fetcher",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.fetcher"
+                },
+                "relationships": [
+                  {
+                    "description": "Získává data z",
+                    "destinationId": "8",
+                    "id": "9",
+                    "properties": {
+                      "structurizr.dsl.identifier": "7b378e30-e0cb-44c2-9ac8-0979415b08b5"
+                    },
+                    "sourceId": "7",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Zpřístupňuje",
+                    "destinationId": "12",
+                    "id": "13",
+                    "properties": {
+                      "structurizr.dsl.identifier": "0d6047fb-4f2b-442c-8805-85c7bef70259"
+                    },
+                    "sourceId": "7",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Dotazuje se pomocí",
+                    "destinationId": "14",
+                    "id": "17",
+                    "properties": {
+                      "structurizr.dsl.identifier": "07e76c47-c297-4de6-95ac-26899d2b3941"
+                    },
+                    "sourceId": "7",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Je součástí",
+                    "destinationId": "23",
+                    "id": "24",
+                    "properties": {
+                      "structurizr.dsl.identifier": "810c9f13-6cf6-484a-9bcd-80338e73cf7f"
+                    },
+                    "sourceId": "7",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Načte data z jednoho SPARQL endpointu/vzdáleného souboru/nahraného souboru",
+                "documentation": {},
+                "id": "8",
+                "name": "Data Source",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.datasource"
+                },
+                "relationships": [
+                  {
+                    "description": "Zpracuje dotaz pomocí",
+                    "destinationId": "10",
+                    "id": "11",
+                    "properties": {
+                      "structurizr.dsl.identifier": "84e109dc-547b-4d93-8e5a-7aeafcab6f94"
+                    },
+                    "sourceId": "8",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Dotazuje se pomocí",
+                    "destinationId": "14",
+                    "id": "16",
+                    "properties": {
+                      "structurizr.dsl.identifier": "d175c26d-c378-4295-ae05-be21586f6d73"
+                    },
+                    "sourceId": "8",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Získává data z",
+                    "destinationId": "37",
+                    "id": "40",
+                    "properties": {
+                      "structurizr.dsl.identifier": "fe414429-6ff7-488d-a67e-ecc63137303b"
+                    },
+                    "sourceId": "8",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Zpracuje dotaz a vyfiltruje podle něj data ze souborových datových zdrojů",
+                "documentation": {},
+                "id": "10",
+                "name": "Query Processor",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.queryprocessor"
+                },
+                "relationships": [
+                  {
+                    "description": "Pošle výsledek dotazu",
+                    "destinationId": "8",
+                    "id": "34",
+                    "properties": {
+                      "structurizr.dsl.identifier": "8825116c-b21c-475f-afd6-13dbbc676ea0"
+                    },
+                    "sourceId": "10",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Vytváří dotaz pro dotazování na datové zdroje",
+                "documentation": {},
+                "id": "12",
+                "name": "Query Builder",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.querybuilder"
+                },
+                "relationships": [
+                  {
+                    "description": "Vytváří",
+                    "destinationId": "14",
+                    "id": "15",
+                    "properties": {
+                      "structurizr.dsl.identifier": "ee288be4-ab9d-4297-be81-0c3c9e8c36d1"
+                    },
+                    "sourceId": "12",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Reprezentuje dotaz pro získání dat z datových zdrojů",
+                "documentation": {},
+                "id": "14",
+                "name": "Query",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.query"
+                },
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Načte vybraný plugin a zobrazí v UI",
+                "documentation": {},
+                "id": "18",
+                "name": "Display",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.display"
+                },
+                "relationships": [
+                  {
+                    "description": "Získá data zadaná uživatelem z",
+                    "destinationId": "19",
+                    "id": "20",
+                    "properties": {
+                      "structurizr.dsl.identifier": "23fd3cf1-0ea6-4903-bdac-ff987ec77806"
+                    },
+                    "sourceId": "18",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Načte a zobrazí RDF pomocí",
+                    "destinationId": "21",
+                    "id": "22",
+                    "properties": {
+                      "structurizr.dsl.identifier": "7c75ae1c-e4bc-420f-a27c-0787e4ed9cc0"
+                    },
+                    "sourceId": "18",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Vytvoří",
+                    "destinationId": "23",
+                    "id": "26",
+                    "properties": {
+                      "structurizr.dsl.identifier": "6d085c63-b5c7-4aab-94ed-ea222ca510cf"
+                    },
+                    "sourceId": "18",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Udržuje konfiguraci nastavenou uživatelem",
+                "documentation": {},
+                "id": "19",
+                "name": "App State",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.appstate"
+                },
+                "relationships": [
+                  {
+                    "description": "Uchovává data zadaná uživatelem z",
+                    "destinationId": "27",
+                    "id": "33",
+                    "properties": {
+                      "structurizr.dsl.identifier": "46847bd3-06f7-4c20-8737-7feff05c50ea"
+                    },
+                    "sourceId": "19",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Externí rozšiřující modul, načítaný za běhu",
+                "documentation": {},
+                "id": "21",
+                "name": "Plugin",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.plugin"
+                },
+                "relationships": [
+                  {
+                    "description": "Získává data pomocí",
+                    "destinationId": "23",
+                    "id": "25",
+                    "properties": {
+                      "structurizr.dsl.identifier": "732ede8a-3a4b-4431-a42c-0a08426069ed"
+                    },
+                    "sourceId": "21",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Má přístup k (přes RenderingContext)",
+                    "destinationId": "7",
+                    "id": "36",
+                    "properties": {
+                      "structurizr.dsl.identifier": "1df6b940-b2d2-41ac-b1f5-cf3020d8fe9e"
+                    },
+                    "sourceId": "21",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component,ExternalComponent",
+                "technology": "JavaScript"
+              },
+              {
+                "description": "Seskupuje potřebné komponenty logiku nad nimi pro plugin",
+                "documentation": {},
+                "id": "23",
+                "name": "Rendering Context",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.renderingcontext"
+                },
+                "relationships": [
+                  {
+                    "description": "Zobrazuje výsledek pluginu do",
+                    "destinationId": "27",
+                    "id": "32",
+                    "properties": {
+                      "structurizr.dsl.identifier": "8de4a555-8fc2-42c4-ad9b-95bb9d580ac5"
+                    },
+                    "sourceId": "23",
+                    "tags": "Relationship"
+                  },
+                  {
+                    "description": "Má přístup k (přes Fetcher)",
+                    "destinationId": "12",
+                    "id": "35",
+                    "properties": {
+                      "structurizr.dsl.identifier": "f5fa007b-aca3-4817-8c17-cb3b30156fcb"
+                    },
+                    "sourceId": "23",
+                    "tags": "Relationship"
+                  }
+                ],
+                "tags": "Element,Component",
+                "technology": "TypeScript"
+              },
+              {
+                "description": "Rozhraní pro uživatele",
+                "documentation": {},
+                "id": "27",
+                "name": "UI",
+                "properties": {
+                  "structurizr.dsl.identifier": "rdfviewer.webapp.ui"
+                },
+                "tags": "Element,Component",
+                "technology": "HTML, CSS"
+              }
+            ],
+            "description": "Webová aplikace pro vizualizaci RDF dat rozšiřitelná pluginy",
+            "documentation": {},
+            "id": "4",
+            "name": "Webová aplikace",
+            "properties": {
+              "structurizr.dsl.identifier": "rdfviewer.webapp"
             },
-            "sourceId" : "8",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Dotazuje se pomocí",
-            "destinationId" : "14",
-            "id" : "16",
-            "properties" : {
-              "structurizr.dsl.identifier" : "d175c26d-c378-4295-ae05-be21586f6d73"
-            },
-            "sourceId" : "8",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Získává data z",
-            "destinationId" : "37",
-            "id" : "40",
-            "properties" : {
-              "structurizr.dsl.identifier" : "fe414429-6ff7-488d-a67e-ecc63137303b"
-            },
-            "sourceId" : "8",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Zpracuje dotaz a vyfiltruje podle něj data ze souborových datových zdrojů",
-          "documentation" : { },
-          "id" : "10",
-          "name" : "Query Processor",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.queryprocessor"
-          },
-          "relationships" : [ {
-            "description" : "Pošle výsledek dotazu",
-            "destinationId" : "8",
-            "id" : "34",
-            "properties" : {
-              "structurizr.dsl.identifier" : "8825116c-b21c-475f-afd6-13dbbc676ea0"
-            },
-            "sourceId" : "10",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Vytváří dotaz pro dotazování na datové zdroje",
-          "documentation" : { },
-          "id" : "12",
-          "name" : "Query Builder",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.querybuilder"
-          },
-          "relationships" : [ {
-            "description" : "Vytváří",
-            "destinationId" : "14",
-            "id" : "15",
-            "properties" : {
-              "structurizr.dsl.identifier" : "ee288be4-ab9d-4297-be81-0c3c9e8c36d1"
-            },
-            "sourceId" : "12",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Reprezentuje dotaz pro získání dat z datových zdrojů",
-          "documentation" : { },
-          "id" : "14",
-          "name" : "Query",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.query"
-          },
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Načte vybraný plugin a zobrazí v UI",
-          "documentation" : { },
-          "id" : "18",
-          "name" : "Display",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.display"
-          },
-          "relationships" : [ {
-            "description" : "Získá data zadaná uživatelem z",
-            "destinationId" : "19",
-            "id" : "20",
-            "properties" : {
-              "structurizr.dsl.identifier" : "23fd3cf1-0ea6-4903-bdac-ff987ec77806"
-            },
-            "sourceId" : "18",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Načte a zobrazí RDF pomocí",
-            "destinationId" : "21",
-            "id" : "22",
-            "properties" : {
-              "structurizr.dsl.identifier" : "7c75ae1c-e4bc-420f-a27c-0787e4ed9cc0"
-            },
-            "sourceId" : "18",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Vytvoří",
-            "destinationId" : "23",
-            "id" : "26",
-            "properties" : {
-              "structurizr.dsl.identifier" : "6d085c63-b5c7-4aab-94ed-ea222ca510cf"
-            },
-            "sourceId" : "18",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Udržuje konfiguraci nastavenou uživatelem",
-          "documentation" : { },
-          "id" : "19",
-          "name" : "App State",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.appstate"
-          },
-          "relationships" : [ {
-            "description" : "Uchovává data zadaná uživatelem z",
-            "destinationId" : "27",
-            "id" : "33",
-            "properties" : {
-              "structurizr.dsl.identifier" : "46847bd3-06f7-4c20-8737-7feff05c50ea"
-            },
-            "sourceId" : "19",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Externí rozšiřující modul, načítaný za běhu",
-          "documentation" : { },
-          "id" : "21",
-          "name" : "Plugin",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.plugin"
-          },
-          "relationships" : [ {
-            "description" : "Získává data pomocí",
-            "destinationId" : "23",
-            "id" : "25",
-            "properties" : {
-              "structurizr.dsl.identifier" : "732ede8a-3a4b-4431-a42c-0a08426069ed"
-            },
-            "sourceId" : "21",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Má přístup k (přes RenderingContext)",
-            "destinationId" : "7",
-            "id" : "36",
-            "properties" : {
-              "structurizr.dsl.identifier" : "1df6b940-b2d2-41ac-b1f5-cf3020d8fe9e"
-            },
-            "sourceId" : "21",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component,ExternalComponent",
-          "technology" : "JavaScript"
-        }, {
-          "description" : "Seskupuje potřebné komponenty logiku nad nimi pro plugin",
-          "documentation" : { },
-          "id" : "23",
-          "name" : "Rendering Context",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.renderingcontext"
-          },
-          "relationships" : [ {
-            "description" : "Zobrazuje výsledek pluginu do",
-            "destinationId" : "27",
-            "id" : "32",
-            "properties" : {
-              "structurizr.dsl.identifier" : "8de4a555-8fc2-42c4-ad9b-95bb9d580ac5"
-            },
-            "sourceId" : "23",
-            "tags" : "Relationship"
-          }, {
-            "description" : "Má přístup k (přes Fetcher)",
-            "destinationId" : "12",
-            "id" : "35",
-            "properties" : {
-              "structurizr.dsl.identifier" : "f5fa007b-aca3-4817-8c17-cb3b30156fcb"
-            },
-            "sourceId" : "23",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component",
-          "technology" : "TypeScript"
-        }, {
-          "description" : "Rozhraní pro uživatele",
-          "documentation" : { },
-          "id" : "27",
-          "name" : "UI",
-          "properties" : {
-            "structurizr.dsl.identifier" : "rdfviewer.webapp.ui"
-          },
-          "tags" : "Element,Component",
-          "technology" : "HTML, CSS"
-        } ],
-        "description" : "Webová aplikace pro vizualizaci RDF dat rozšiřitelná pluginy",
-        "documentation" : { },
-        "id" : "4",
-        "name" : "Webová aplikace",
-        "properties" : {
-          "structurizr.dsl.identifier" : "rdfviewer.webapp"
+            "relationships": [
+              {
+                "description": "Čerpá data z",
+                "destinationId": "37",
+                "id": "38",
+                "properties": {
+                  "structurizr.dsl.identifier": "ba6e0537-36df-4922-bc3d-18f19e9229bd"
+                },
+                "sourceId": "4",
+                "tags": "Relationship"
+              }
+            ],
+            "tags": "Element,Container",
+            "technology": "TypeScript, JavaScript, HTML, CSS"
+          }
+        ],
+        "documentation": {},
+        "id": "3",
+        "location": "Unspecified",
+        "name": "Prohlížeč RDF",
+        "properties": {
+          "structurizr.dsl.identifier": "rdfviewer"
         },
-        "relationships" : [ {
-          "description" : "Čerpá data z",
-          "destinationId" : "37",
-          "id" : "38",
-          "properties" : {
-            "structurizr.dsl.identifier" : "ba6e0537-36df-4922-bc3d-18f19e9229bd"
-          },
-          "sourceId" : "4",
-          "tags" : "Relationship"
-        } ],
-        "tags" : "Element,Container",
-        "technology" : "TypeScript, JavaScript, HTML, CSS"
-      } ],
-      "documentation" : { },
-      "id" : "3",
-      "location" : "Unspecified",
-      "name" : "Prohlížeč RDF",
-      "properties" : {
-        "structurizr.dsl.identifier" : "rdfviewer"
+        "relationships": [
+          {
+            "description": "Čerpá data z",
+            "destinationId": "37",
+            "id": "39",
+            "linkedRelationshipId": "38",
+            "sourceId": "3"
+          }
+        ],
+        "tags": "Element,Software System"
       },
-      "relationships" : [ {
-        "description" : "Čerpá data z",
-        "destinationId" : "37",
-        "id" : "39",
-        "linkedRelationshipId" : "38",
-        "sourceId" : "3"
-      } ],
-      "tags" : "Element,Software System"
-    }, {
-      "description" : "Zdroj RDF dat. Může být SPARQL endpoint, vzdálený RDF soubor, nebo soubor nahraný uživatelem",
-      "documentation" : { },
-      "id" : "37",
-      "location" : "Unspecified",
-      "name" : "Datové zdroje",
-      "properties" : {
-        "structurizr.dsl.identifier" : "datasources"
-      },
-      "tags" : "Element,Software System,DataSources"
-    } ]
+      {
+        "description": "Zdroj RDF dat. Může být SPARQL endpoint, vzdálený RDF soubor, nebo soubor nahraný uživatelem",
+        "documentation": {},
+        "id": "37",
+        "location": "Unspecified",
+        "name": "Datové zdroje",
+        "properties": {
+          "structurizr.dsl.identifier": "datasources"
+        },
+        "tags": "Element,Software System,DataSources"
+      }
+    ]
   },
-  "name" : "Prohlížeč RDF",
-  "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlICJQcm9obMOtxb5lxI0gUkRGIiAiVG90byBqZSBDNCBTeXN0ZW0gQ29udGV4dCBkaWFncmFtIHN5c3TDqW11IFByb2hsw63FvmXEjSBSREYiIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHVzZXIgPSBwZXJzb24gIlXFvml2YXRlbCIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiQ2hjZSBzaSB6b2JyYXppdCBlbnRpdHUiCiAgICAgICAgfQogICAgICAgIHBsdWdpbkRldiA9IHBlcnNvbiAiVsO9dm9qw6HFmSBwbHVnaW7FryIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiVnl0dm/FmcOtIHBsdWdpbiwga3RlcsO9IGNoY2Ugdnl1xb7DrXQgdiBhcGxpa2FjaSIKICAgICAgICB9CgogICAgICAgIHJkZlZpZXdlciA9IHNvZnR3YXJlU3lzdGVtICJQcm9obMOtxb5lxI0gUkRGIiB7CiAgICAgICAgICAgIHdlYkFwcCA9IGNvbnRhaW5lciAiV2Vib3bDoSBhcGxpa2FjZSIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiVHlwZVNjcmlwdCwgSmF2YVNjcmlwdCwgSFRNTCwgQ1NTIgogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIldlYm92w6EgYXBsaWthY2UgcHJvIHZpenVhbGl6YWNpIFJERiBkYXQgcm96xaFpxZlpdGVsbsOhIHBsdWdpbnkiCiAgICAgICAgICAgICAgICB1c2VyIC0+IHRoaXMgIlBvdcW+w612w6EiCgoKICAgICAgICAgICAgICAgIGZldGNoZXIgPSBjb21wb25lbnQgIkZldGNoZXIiIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJUeXBlU2NyaXB0IgogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJOYcSNdGUgZGF0YSB6IGRhdG92w71jaCB6ZHJvasWvIHZlIHN0cnVrdHVyb3ZhbsOpbSBmb3Jtw6F0dSIKCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBkYXRhU291cmNlID0gY29tcG9uZW50ICJEYXRhIFNvdXJjZSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk5hxI10ZSBkYXRhIHogamVkbm9obyBTUEFSUUwgZW5kcG9pbnR1L3Z6ZMOhbGVuw6lobyBzb3Vib3J1L25haHJhbsOpaG8gc291Ym9ydSIKICAgICAgICAgICAgICAgICAgICBmZXRjaGVyIC0+IHRoaXMgIlrDrXNrw6F2w6EgZGF0YSB6IgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcXVlcnlQcm9jZXNzb3IgPSBjb21wb25lbnQgIlF1ZXJ5IFByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlpwcmFjdWplIGRvdGF6IGEgdnlmaWx0cnVqZSBwb2RsZSBuxJtqIGRhdGEgemUgc291Ym9yb3bDvWNoIGRhdG92w71jaCB6ZHJvasWvIgogICAgICAgICAgICAgICAgICAgIGRhdGFTb3VyY2UgLT4gdGhpcyAiWnByYWN1amUgZG90YXogcG9tb2PDrSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHF1ZXJ5QnVpbGRlciA9IGNvbXBvbmVudCAiUXVlcnkgQnVpbGRlciIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlZ5dHbDocWZw60gZG90YXogcHJvIGRvdGF6b3bDoW7DrSBuYSBkYXRvdsOpIHpkcm9qZSIKICAgICAgICAgICAgICAgICAgICBmZXRjaGVyIC0+IHRoaXMgIlpwxZnDrXN0dXDFiHVqZSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHF1ZXJ5ID0gY29tcG9uZW50ICJRdWVyeSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlJlcHJlemVudHVqZSBkb3RheiBwcm8gesOtc2vDoW7DrSBkYXQgeiBkYXRvdsO9Y2ggemRyb2rFryIKICAgICAgICAgICAgICAgICAgICBxdWVyeUJ1aWxkZXIgLT4gdGhpcyAiVnl0dsOhxZnDrSIKICAgICAgICAgICAgICAgICAgICBkYXRhU291cmNlIC0+IHRoaXMgIkRvdGF6dWplIHNlIHBvbW9jw60iCiAgICAgICAgICAgICAgICAgICAgZmV0Y2hlciAtPiB0aGlzICJEb3RhenVqZSBzZSBwb21vY8OtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZGlzcGxheSA9IGNvbXBvbmVudCAiRGlzcGxheSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk5hxI10ZSB2eWJyYW7DvSBwbHVnaW4gYSB6b2JyYXrDrSB2IFVJIgoKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIGFwcFN0YXRlID0gY29tcG9uZW50ICJBcHAgU3RhdGUiIHsgCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiVHlwZVNjcmlwdCIKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiVWRyxb51amUga29uZmlndXJhY2kgbmFzdGF2ZW5vdSB1xb5pdmF0ZWxlbSIKICAgICAgICAgICAgICAgICAgICBkaXNwbGF5IC0+IHRoaXMgIlrDrXNrw6EgZGF0YSB6YWRhbsOhIHXFvml2YXRlbGVtIHoiCgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcGx1Z2luID0gY29tcG9uZW50ICJQbHVnaW4iIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJKYXZhU2NyaXB0IgogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJFeHRlcm7DrSByb3rFoWnFmXVqw61jw60gbW9kdWwsIG5hxI3DrXRhbsO9IHphIGLEm2h1IgogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkV4dGVybmFsQ29tcG9uZW50IgogICAgICAgICAgICAgICAgICAgIGRpc3BsYXkgLT4gdGhpcyAiTmHEjXRlIGEgem9icmF6w60gUkRGIHBvbW9jw60iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZW5kZXJpbmdDb250ZXh0ID0gY29tcG9uZW50ICJSZW5kZXJpbmcgQ29udGV4dCIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlNlc2t1cHVqZSBwb3TFmWVibsOpIGtvbXBvbmVudHkgbG9naWt1IG5hZCBuaW1pIHBybyBwbHVnaW4iCiAgICAgICAgICAgICAgICAgICAgZmV0Y2hlciAtPiB0aGlzICJKZSBzb3XEjcOhc3TDrSIKICAgICAgICAgICAgICAgICAgICBwbHVnaW4gLT4gdGhpcyAiWsOtc2vDoXbDoSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgICAgICAgICAgZGlzcGxheSAtPiB0aGlzICJWeXR2b8WZw60iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB1aSA9IGNvbXBvbmVudCAiVUkiIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJIVE1MLCBDU1MiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlJvemhyYW7DrSBwcm8gdcW+aXZhdGVsZSIKICAgICAgICAgICAgICAgICAgICB1c2VyIC0+IHRoaXMgIkludGVyYWd1amUgcyIKICAgICAgICAgICAgICAgICAgICBwbHVnaW5EZXYgLT4gdGhpcyAiUMWZaWTDoXbDoSBwbHVnaW55IHYiCiAgICAgICAgICAgICAgICAgICAgcmVuZGVyaW5nQ29udGV4dCAtPiB0aGlzICJab2JyYXp1amUgdsO9c2xlZGVrIHBsdWdpbnUgZG8iCiAgICAgICAgICAgICAgICAgICAgYXBwU3RhdGUgLT4gdGhpcyAiVWNob3bDoXbDoSBkYXRhIHphZGFuw6EgdcW+aXZhdGVsZW0geiIKCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBxdWVyeVByb2Nlc3NvciAtPiBkYXRhU291cmNlICJQb8WhbGUgdsO9c2xlZGVrIGRvdGF6dSIKICAgICAgICAgICAgICAgIHJlbmRlcmluZ0NvbnRleHQgLT4gcXVlcnlCdWlsZGVyICJNw6EgcMWZw61zdHVwIGsgKHDFmWVzIEZldGNoZXIpIgogICAgICAgICAgICAgICAgcGx1Z2luIC0+IGZldGNoZXIgIk3DoSBwxZnDrXN0dXAgayAocMWZZXMgUmVuZGVyaW5nQ29udGV4dCkiCgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIGRhdGFTb3VyY2VzID0gc29mdHdhcmVTeXN0ZW0gIkRhdG92w6kgemRyb2plIiB7CiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJaZHJvaiBSREYgZGF0LiBNxa/FvmUgYsO9dCBTUEFSUUwgZW5kcG9pbnQsIHZ6ZMOhbGVuw70gUkRGIHNvdWJvciwgbmVibyBzb3Vib3IgbmFocmFuw70gdcW+aXZhdGVsZW0iCiAgICAgICAgICAgIHRhZ3MgIkRhdGFTb3VyY2VzIgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwIC0+IHRoaXMgIsSMZXJww6EgZGF0YSB6IgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgLT4gdGhpcyAiWsOtc2vDoXbDoSBkYXRhIHoiCiAgICAgICAgfQoKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgc3lzdGVtQ29udGV4dCByZGZWaWV3ZXIgIkxldmVsMSIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29udGFpbmVyIHJkZlZpZXdlciAiTGV2ZWwyIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb21wb25lbnQgcmRmVmlld2VyLndlYkFwcCAiTGV2ZWwzIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgIH0KCiAgICAgICAgZHluYW1pYyByZGZWaWV3ZXIud2ViQXBwICJEaXNwbGF5UGx1Z2luIiB7CiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJQb3BpcyBwb3N0dXB1IHDFmWkgem9icmF6ZW7DrSBSREYgZGF0IgoKICAgICAgICAgICAgdXNlciAtPiByZGZWaWV3ZXIud2ViQXBwLnVpICJaYWTDoSBrb25maWd1cmFjaSBhIHNwdXN0w60gem9icmF6b3bDoW7DrSIKICAgICAgICAgICAgcmRmVmlld2VyLndlYkFwcC5hcHBTdGF0ZSAtPiByZGZWaWV3ZXIud2ViQXBwLnVpICJVbG/FvsOtIGtvbmZpZ3VyYWNpIHoiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLmFwcFN0YXRlICJaw61za8OhIGtvbmZpZ3VyYWNpIHoiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLnJlbmRlcmluZ0NvbnRleHQgIlZ5dHZvxZnDrSBuYSB6w6FrbGFkxJsga29uZmlndXJhY2UiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLnBsdWdpbiAiWmHFoWxlIHZ5dHZvxZllbsO9IFJlbmRlcmluZ0NvbnRleHQiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucGx1Z2luIC0+IHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAiWsOtc2vDoSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAtPiByZGZWaWV3ZXIud2ViQXBwLnF1ZXJ5QnVpbGRlciAiVnl0dm/FmcOtIGRvdGF6IHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAtPiByZGZWaWV3ZXIud2ViQXBwLmZldGNoZXIgIk5hxI10ZSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZmV0Y2hlciAtPiByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgIlrDrXNrw6EgZGF0YSB6IGplZG5vdGxpdsO9Y2ggZGF0b3bDvWNoIHpkcm9qxa8iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGF0YVNvdXJjZSAtPiBkYXRhU291cmNlcyAiWsOtc2vDoSBkYXRhIHoiIAogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgLT4gcmRmVmlld2VyLndlYkFwcC5xdWVyeVByb2Nlc3NvciAiWnByYWN1amUgZG90YXogYSB6w61za8OhIMW+w6FkYW7DoSBkYXRhIHplIHNvdWJvcm92w71jaCBkYXRvdsO9Y2ggemRyb2rFryBwb21vY8OtIgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLnBsdWdpbiAtPiByZGZWaWV3ZXIud2ViQXBwLnJlbmRlcmluZ0NvbnRleHQgIlDFmWVkw6Egdnl0dm/FmWVuw6kgSFRNTCIKICAgICAgICAgICAgcmRmVmlld2VyLndlYkFwcC5yZW5kZXJpbmdDb250ZXh0IC0+IHJkZlZpZXdlci53ZWJBcHAudWkgIlDFmWlkw6EgcMWZZWRhbsOpIEhUTUwgZG8gVUkiCgoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiRWxlbWVudCIgewogICAgICAgICAgICAgICAgY29sb3IgI2ZmZmZmZgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDU1MjdkCiAgICAgICAgICAgICAgICBzaGFwZSBwZXJzb24KICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJTb2Z0d2FyZSBTeXN0ZW0iIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzA2NjI5NgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDc3M2FmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiQ29tcG9uZW50IiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMzMjg1YjEKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhU291cmNlcyIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjY2JjYmNiCiAgICAgICAgICAgICAgICBjb2xvciAjMDAwMDAwCiAgICAgICAgICAgICAgICBzaGFwZSAiQ3lsaW5kZXIiCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRXh0ZXJuYWxDb21wb25lbnQiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI2I1NTU1NQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQoKICAgIGNvbmZpZ3VyYXRpb24gewogICAgICAgIHNjb3BlIHNvZnR3YXJlc3lzdGVtCiAgICB9Cgp9"
+  "name": "Prohlížeč RDF",
+  "properties": {
+    "structurizr.dsl": "d29ya3NwYWNlICJQcm9obMOtxb5lxI0gUkRGIiAiVG90byBqZSBDNCBTeXN0ZW0gQ29udGV4dCBkaWFncmFtIHN5c3TDqW11IFByb2hsw63FvmXEjSBSREYiIHsKCiAgICAhaWRlbnRpZmllcnMgaGllcmFyY2hpY2FsCgogICAgbW9kZWwgewogICAgICAgIHVzZXIgPSBwZXJzb24gIlXFvml2YXRlbCIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiQ2hjZSBzaSB6b2JyYXppdCBlbnRpdHUiCiAgICAgICAgfQogICAgICAgIHBsdWdpbkRldiA9IHBlcnNvbiAiVsO9dm9qw6HFmSBwbHVnaW7FryIgewogICAgICAgICAgICBkZXNjcmlwdGlvbiAiVnl0dm/FmcOtIHBsdWdpbiwga3RlcsO9IGNoY2Ugdnl1xb7DrXQgdiBhcGxpa2FjaSIKICAgICAgICB9CgogICAgICAgIHJkZlZpZXdlciA9IHNvZnR3YXJlU3lzdGVtICJQcm9obMOtxb5lxI0gUkRGIiB7CiAgICAgICAgICAgIHdlYkFwcCA9IGNvbnRhaW5lciAiV2Vib3bDoSBhcGxpa2FjZSIgewogICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiVHlwZVNjcmlwdCwgSmF2YVNjcmlwdCwgSFRNTCwgQ1NTIgogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIldlYm92w6EgYXBsaWthY2UgcHJvIHZpenVhbGl6YWNpIFJERiBkYXQgcm96xaFpxZlpdGVsbsOhIHBsdWdpbnkiCiAgICAgICAgICAgICAgICB1c2VyIC0+IHRoaXMgIlBvdcW+w612w6EiCgoKICAgICAgICAgICAgICAgIGZldGNoZXIgPSBjb21wb25lbnQgIkZldGNoZXIiIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJUeXBlU2NyaXB0IgogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJOYcSNdGUgZGF0YSB6IGRhdG92w71jaCB6ZHJvasWvIHZlIHN0cnVrdHVyb3ZhbsOpbSBmb3Jtw6F0dSIKCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBkYXRhU291cmNlID0gY29tcG9uZW50ICJEYXRhIFNvdXJjZSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk5hxI10ZSBkYXRhIHogamVkbm9obyBTUEFSUUwgZW5kcG9pbnR1L3Z6ZMOhbGVuw6lobyBzb3Vib3J1L25haHJhbsOpaG8gc291Ym9ydSIKICAgICAgICAgICAgICAgICAgICBmZXRjaGVyIC0+IHRoaXMgIlrDrXNrw6F2w6EgZGF0YSB6IgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcXVlcnlQcm9jZXNzb3IgPSBjb21wb25lbnQgIlF1ZXJ5IFByb2Nlc3NvciIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlpwcmFjdWplIGRvdGF6IGEgdnlmaWx0cnVqZSBwb2RsZSBuxJtqIGRhdGEgemUgc291Ym9yb3bDvWNoIGRhdG92w71jaCB6ZHJvasWvIgogICAgICAgICAgICAgICAgICAgIGRhdGFTb3VyY2UgLT4gdGhpcyAiWnByYWN1amUgZG90YXogcG9tb2PDrSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHF1ZXJ5QnVpbGRlciA9IGNvbXBvbmVudCAiUXVlcnkgQnVpbGRlciIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlZ5dHbDocWZw60gZG90YXogcHJvIGRvdGF6b3bDoW7DrSBuYSBkYXRvdsOpIHpkcm9qZSIKICAgICAgICAgICAgICAgICAgICBmZXRjaGVyIC0+IHRoaXMgIlpwxZnDrXN0dXDFiHVqZSIKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIHF1ZXJ5ID0gY29tcG9uZW50ICJRdWVyeSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlJlcHJlemVudHVqZSBkb3RheiBwcm8gesOtc2vDoW7DrSBkYXQgeiBkYXRvdsO9Y2ggemRyb2rFryIKICAgICAgICAgICAgICAgICAgICBxdWVyeUJ1aWxkZXIgLT4gdGhpcyAiVnl0dsOhxZnDrSIKICAgICAgICAgICAgICAgICAgICBkYXRhU291cmNlIC0+IHRoaXMgIkRvdGF6dWplIHNlIHBvbW9jw60iCiAgICAgICAgICAgICAgICAgICAgZmV0Y2hlciAtPiB0aGlzICJEb3RhenVqZSBzZSBwb21vY8OtIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgZGlzcGxheSA9IGNvbXBvbmVudCAiRGlzcGxheSIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIk5hxI10ZSB2eWJyYW7DvSBwbHVnaW4gYSB6b2JyYXrDrSB2IFVJIgoKICAgICAgICAgICAgICAgIH0KICAgICAgICAgICAgICAgIGFwcFN0YXRlID0gY29tcG9uZW50ICJBcHAgU3RhdGUiIHsgCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiVHlwZVNjcmlwdCIKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiVWRyxb51amUga29uZmlndXJhY2kgbmFzdGF2ZW5vdSB1xb5pdmF0ZWxlbSIKICAgICAgICAgICAgICAgICAgICBkaXNwbGF5IC0+IHRoaXMgIlrDrXNrw6EgZGF0YSB6YWRhbsOhIHXFvml2YXRlbGVtIHoiCgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgcGx1Z2luID0gY29tcG9uZW50ICJQbHVnaW4iIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJKYXZhU2NyaXB0IgogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJFeHRlcm7DrSByb3rFoWnFmXVqw61jw60gbW9kdWwsIG5hxI3DrXRhbsO9IHphIGLEm2h1IgogICAgICAgICAgICAgICAgICAgIHRhZ3MgIkV4dGVybmFsQ29tcG9uZW50IgogICAgICAgICAgICAgICAgICAgIGRpc3BsYXkgLT4gdGhpcyAiTmHEjXRlIGEgem9icmF6w60gUkRGIHBvbW9jw60iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICByZW5kZXJpbmdDb250ZXh0ID0gY29tcG9uZW50ICJSZW5kZXJpbmcgQ29udGV4dCIgewogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIlR5cGVTY3JpcHQiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlNlc2t1cHVqZSBwb3TFmWVibsOpIGtvbXBvbmVudHkgbG9naWt1IG5hZCBuaW1pIHBybyBwbHVnaW4iCiAgICAgICAgICAgICAgICAgICAgZmV0Y2hlciAtPiB0aGlzICJKZSBzb3XEjcOhc3TDrSIKICAgICAgICAgICAgICAgICAgICBwbHVnaW4gLT4gdGhpcyAiWsOtc2vDoXbDoSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgICAgICAgICAgZGlzcGxheSAtPiB0aGlzICJWeXR2b8WZw60iCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICB1aSA9IGNvbXBvbmVudCAiVUkiIHsKICAgICAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJIVE1MLCBDU1MiCiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlJvemhyYW7DrSBwcm8gdcW+aXZhdGVsZSIKICAgICAgICAgICAgICAgICAgICB1c2VyIC0+IHRoaXMgIkludGVyYWd1amUgcyIKICAgICAgICAgICAgICAgICAgICBwbHVnaW5EZXYgLT4gdGhpcyAiUMWZaWTDoXbDoSBwbHVnaW55IHYiCiAgICAgICAgICAgICAgICAgICAgcmVuZGVyaW5nQ29udGV4dCAtPiB0aGlzICJab2JyYXp1amUgdsO9c2xlZGVrIHBsdWdpbnUgZG8iCiAgICAgICAgICAgICAgICAgICAgYXBwU3RhdGUgLT4gdGhpcyAiVWNob3bDoXbDoSBkYXRhIHphZGFuw6EgdcW+aXZhdGVsZW0geiIKCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgICBxdWVyeVByb2Nlc3NvciAtPiBkYXRhU291cmNlICJQb8WhbGUgdsO9c2xlZGVrIGRvdGF6dSIKICAgICAgICAgICAgICAgIHJlbmRlcmluZ0NvbnRleHQgLT4gcXVlcnlCdWlsZGVyICJNw6EgcMWZw61zdHVwIGsgKHDFmWVzIEZldGNoZXIpIgogICAgICAgICAgICAgICAgcGx1Z2luIC0+IGZldGNoZXIgIk3DoSBwxZnDrXN0dXAgayAocMWZZXMgUmVuZGVyaW5nQ29udGV4dCkiCgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIGRhdGFTb3VyY2VzID0gc29mdHdhcmVTeXN0ZW0gIkRhdG92w6kgemRyb2plIiB7CiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJaZHJvaiBSREYgZGF0LiBNxa/FvmUgYsO9dCBTUEFSUUwgZW5kcG9pbnQsIHZ6ZMOhbGVuw70gUkRGIHNvdWJvciwgbmVibyBzb3Vib3IgbmFocmFuw70gdcW+aXZhdGVsZW0iCiAgICAgICAgICAgIHRhZ3MgIkRhdGFTb3VyY2VzIgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwIC0+IHRoaXMgIsSMZXJww6EgZGF0YSB6IgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgLT4gdGhpcyAiWsOtc2vDoXbDoSBkYXRhIHoiCiAgICAgICAgfQoKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgc3lzdGVtQ29udGV4dCByZGZWaWV3ZXIgIkxldmVsMSIgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29udGFpbmVyIHJkZlZpZXdlciAiTGV2ZWwyIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb21wb25lbnQgcmRmVmlld2VyLndlYkFwcCAiTGV2ZWwzIiB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgIH0KCiAgICAgICAgZHluYW1pYyByZGZWaWV3ZXIud2ViQXBwICJEaXNwbGF5UGx1Z2luIiB7CiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJQb3BpcyBwb3N0dXB1IHDFmWkgem9icmF6ZW7DrSBSREYgZGF0IgoKICAgICAgICAgICAgdXNlciAtPiByZGZWaWV3ZXIud2ViQXBwLnVpICJaYWTDoSBrb25maWd1cmFjaSBhIHNwdXN0w60gem9icmF6b3bDoW7DrSIKICAgICAgICAgICAgcmRmVmlld2VyLndlYkFwcC5hcHBTdGF0ZSAtPiByZGZWaWV3ZXIud2ViQXBwLnVpICJVbG/FvsOtIGtvbmZpZ3VyYWNpIHoiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLmFwcFN0YXRlICJaw61za8OhIGtvbmZpZ3VyYWNpIHoiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLnJlbmRlcmluZ0NvbnRleHQgIlZ5dHZvxZnDrSBuYSB6w6FrbGFkxJsga29uZmlndXJhY2UiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGlzcGxheSAtPiByZGZWaWV3ZXIud2ViQXBwLnBsdWdpbiAiWmHFoWxlIHZ5dHZvxZllbsO9IFJlbmRlcmluZ0NvbnRleHQiCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucGx1Z2luIC0+IHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAiWsOtc2vDoSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAtPiByZGZWaWV3ZXIud2ViQXBwLnF1ZXJ5QnVpbGRlciAiVnl0dm/FmcOtIGRvdGF6IHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAucmVuZGVyaW5nQ29udGV4dCAtPiByZGZWaWV3ZXIud2ViQXBwLmZldGNoZXIgIk5hxI10ZSBkYXRhIHBvbW9jw60iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZmV0Y2hlciAtPiByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgIlrDrXNrw6EgZGF0YSB6IGplZG5vdGxpdsO9Y2ggZGF0b3bDvWNoIHpkcm9qxa8iCiAgICAgICAgICAgIHJkZlZpZXdlci53ZWJBcHAuZGF0YVNvdXJjZSAtPiBkYXRhU291cmNlcyAiWsOtc2vDoSBkYXRhIHoiIAogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLmRhdGFTb3VyY2UgLT4gcmRmVmlld2VyLndlYkFwcC5xdWVyeVByb2Nlc3NvciAiWnByYWN1amUgZG90YXogYSB6w61za8OhIMW+w6FkYW7DoSBkYXRhIHplIHNvdWJvcm92w71jaCBkYXRvdsO9Y2ggemRyb2rFryBwb21vY8OtIgogICAgICAgICAgICByZGZWaWV3ZXIud2ViQXBwLnBsdWdpbiAtPiByZGZWaWV3ZXIud2ViQXBwLnJlbmRlcmluZ0NvbnRleHQgIlDFmWVkw6Egdnl0dm/FmWVuw6kgSFRNTCIKICAgICAgICAgICAgcmRmVmlld2VyLndlYkFwcC5yZW5kZXJpbmdDb250ZXh0IC0+IHJkZlZpZXdlci53ZWJBcHAudWkgIlDFmWlkw6EgcMWZZWRhbsOpIEhUTUwgZG8gVUkiCgoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiRWxlbWVudCIgewogICAgICAgICAgICAgICAgY29sb3IgI2ZmZmZmZgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIlBlcnNvbiIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDU1MjdkCiAgICAgICAgICAgICAgICBzaGFwZSBwZXJzb24KICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJTb2Z0d2FyZSBTeXN0ZW0iIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIzA2NjI5NgogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjMDc3M2FmCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiQ29tcG9uZW50IiB7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kICMzMjg1YjEKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJEYXRhU291cmNlcyIgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAjY2JjYmNiCiAgICAgICAgICAgICAgICBjb2xvciAjMDAwMDAwCiAgICAgICAgICAgICAgICBzaGFwZSAiQ3lsaW5kZXIiCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRXh0ZXJuYWxDb21wb25lbnQiIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQgI2I1NTU1NQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQoKICAgIGNvbmZpZ3VyYXRpb24gewogICAgICAgIHNjb3BlIHNvZnR3YXJlc3lzdGVtCiAgICB9Cgp9"
   },
-  "views" : {
-    "componentViews" : [ {
-      "containerId" : "4",
-      "dimensions" : {
-        "height" : 3669,
-        "width" : 2985
+  "views": {
+    "componentViews": [
+      {
+        "containerId": "4",
+        "dimensions": {
+          "height": 3669,
+          "width": 2985
+        },
+        "elements": [
+          {
+            "id": "1",
+            "x": 2064,
+            "y": 200
+          },
+          {
+            "id": "2",
+            "x": 1139,
+            "y": 215
+          },
+          {
+            "id": "7",
+            "x": 1544,
+            "y": 2020
+          },
+          {
+            "id": "8",
+            "x": 1553,
+            "y": 2628
+          },
+          {
+            "id": "10",
+            "x": 803,
+            "y": 2628
+          },
+          {
+            "id": "12",
+            "x": 2304,
+            "y": 1725
+          },
+          {
+            "id": "14",
+            "x": 2314,
+            "y": 2630
+          },
+          {
+            "id": "18",
+            "x": 229,
+            "y": 1415
+          },
+          {
+            "id": "19",
+            "x": 224,
+            "y": 835
+          },
+          {
+            "id": "21",
+            "x": 219,
+            "y": 2010
+          },
+          {
+            "id": "23",
+            "x": 1553,
+            "y": 1412
+          },
+          {
+            "id": "27",
+            "x": 1559,
+            "y": 825
+          },
+          {
+            "id": "37",
+            "x": 1573,
+            "y": 3169
+          }
+        ],
+        "externalContainerBoundariesVisible": false,
+        "key": "Level3",
+        "order": 3,
+        "relationships": [
+          {
+            "id": "11",
+            "vertices": [
+              {
+                "x": 1403,
+                "y": 2628
+              }
+            ]
+          },
+          {
+            "id": "13"
+          },
+          {
+            "id": "15"
+          },
+          {
+            "id": "16"
+          },
+          {
+            "id": "17"
+          },
+          {
+            "id": "20"
+          },
+          {
+            "id": "22"
+          },
+          {
+            "id": "24"
+          },
+          {
+            "id": "25"
+          },
+          {
+            "id": "26"
+          },
+          {
+            "id": "28"
+          },
+          {
+            "id": "29"
+          },
+          {
+            "id": "32"
+          },
+          {
+            "id": "33"
+          },
+          {
+            "id": "34",
+            "vertices": [
+              {
+                "x": 1403,
+                "y": 2928
+              }
+            ]
+          },
+          {
+            "id": "35"
+          },
+          {
+            "id": "36"
+          },
+          {
+            "id": "40"
+          },
+          {
+            "id": "9"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "branding": {},
+      "lastSavedView": "Level3",
+      "metadataSymbols": "SquareBrackets",
+      "styles": {
+        "elements": [
+          {
+            "color": "#ffffff",
+            "tag": "Element"
+          },
+          {
+            "background": "#05527d",
+            "shape": "Person",
+            "tag": "Person"
+          },
+          {
+            "background": "#066296",
+            "tag": "Software System"
+          },
+          {
+            "background": "#0773af",
+            "tag": "Container"
+          },
+          {
+            "background": "#3285b1",
+            "tag": "Component"
+          },
+          {
+            "background": "#cbcbcb",
+            "color": "#000000",
+            "shape": "Cylinder",
+            "tag": "DataSources"
+          },
+          {
+            "background": "#b55555",
+            "tag": "ExternalComponent"
+          }
+        ]
       },
-      "elements" : [ {
-        "id" : "1",
-        "x" : 2064,
-        "y" : 200
-      }, {
-        "id" : "2",
-        "x" : 1139,
-        "y" : 215
-      }, {
-        "id" : "7",
-        "x" : 1544,
-        "y" : 2020
-      }, {
-        "id" : "8",
-        "x" : 1553,
-        "y" : 2628
-      }, {
-        "id" : "10",
-        "x" : 803,
-        "y" : 2628
-      }, {
-        "id" : "12",
-        "x" : 2304,
-        "y" : 1725
-      }, {
-        "id" : "14",
-        "x" : 2314,
-        "y" : 2630
-      }, {
-        "id" : "18",
-        "x" : 229,
-        "y" : 1415
-      }, {
-        "id" : "19",
-        "x" : 224,
-        "y" : 835
-      }, {
-        "id" : "21",
-        "x" : 219,
-        "y" : 2010
-      }, {
-        "id" : "23",
-        "x" : 1553,
-        "y" : 1412
-      }, {
-        "id" : "27",
-        "x" : 1559,
-        "y" : 825
-      }, {
-        "id" : "37",
-        "x" : 1573,
-        "y" : 3169
-      } ],
-      "externalContainerBoundariesVisible" : false,
-      "key" : "Level3",
-      "order" : 3,
-      "relationships" : [ {
-        "id" : "11",
-        "vertices" : [ {
-          "x" : 1403,
-          "y" : 2628
-        } ]
-      }, {
-        "id" : "13"
-      }, {
-        "id" : "15"
-      }, {
-        "id" : "16"
-      }, {
-        "id" : "17"
-      }, {
-        "id" : "20"
-      }, {
-        "id" : "22"
-      }, {
-        "id" : "24"
-      }, {
-        "id" : "25"
-      }, {
-        "id" : "26"
-      }, {
-        "id" : "28"
-      }, {
-        "id" : "29"
-      }, {
-        "id" : "32"
-      }, {
-        "id" : "33"
-      }, {
-        "id" : "34",
-        "vertices" : [ {
-          "x" : 1403,
-          "y" : 2928
-        } ]
-      }, {
-        "id" : "35"
-      }, {
-        "id" : "36"
-      }, {
-        "id" : "40"
-      }, {
-        "id" : "9"
-      } ]
-    } ],
-    "configuration" : {
-      "branding" : { },
-      "lastSavedView" : "Level3",
-      "metadataSymbols" : "SquareBrackets",
-      "styles" : {
-        "elements" : [ {
-          "color" : "#ffffff",
-          "tag" : "Element"
-        }, {
-          "background" : "#05527d",
-          "shape" : "Person",
-          "tag" : "Person"
-        }, {
-          "background" : "#066296",
-          "tag" : "Software System"
-        }, {
-          "background" : "#0773af",
-          "tag" : "Container"
-        }, {
-          "background" : "#3285b1",
-          "tag" : "Component"
-        }, {
-          "background" : "#cbcbcb",
-          "color" : "#000000",
-          "shape" : "Cylinder",
-          "tag" : "DataSources"
-        }, {
-          "background" : "#b55555",
-          "tag" : "ExternalComponent"
-        } ]
-      },
-      "terminology" : { }
+      "terminology": {}
     },
-    "containerViews" : [ {
-      "automaticLayout" : {
-        "applied" : true,
-        "edgeSeparation" : 0,
-        "implementation" : "Graphviz",
-        "nodeSeparation" : 300,
-        "rankDirection" : "LeftRight",
-        "rankSeparation" : 300,
-        "vertices" : false
-      },
-      "dimensions" : {
-        "height" : 1500,
-        "width" : 2300
-      },
-      "elements" : [ {
-        "id" : "1",
-        "x" : 200,
-        "y" : 199
-      }, {
-        "id" : "2",
-        "x" : 200,
-        "y" : 899
-      }, {
-        "id" : "4",
-        "x" : 900,
-        "y" : 599
-      }, {
-        "id" : "37",
-        "x" : 1650,
-        "y" : 599
-      } ],
-      "externalSoftwareSystemBoundariesVisible" : false,
-      "key" : "Level2",
-      "order" : 2,
-      "relationships" : [ {
-        "id" : "30"
-      }, {
-        "id" : "38"
-      }, {
-        "id" : "5"
-      } ],
-      "softwareSystemId" : "3"
-    } ],
-    "dynamicViews" : [ {
-      "automaticLayout" : {
-        "applied" : true,
-        "edgeSeparation" : 0,
-        "implementation" : "Graphviz",
-        "nodeSeparation" : 300,
-        "rankDirection" : "LeftRight",
-        "rankSeparation" : 300,
-        "vertices" : false
-      },
-      "description" : "Popis postupu při zobrazení RDF dat",
-      "dimensions" : {
-        "height" : 2620,
-        "width" : 4640
-      },
-      "elementId" : "4",
-      "elements" : [ {
-        "id" : "1",
-        "x" : 1744,
-        "y" : 2019
-      }, {
-        "id" : "7",
-        "x" : 2469,
-        "y" : 219
-      }, {
-        "id" : "8",
-        "x" : 3219,
-        "y" : 773
-      }, {
-        "id" : "10",
-        "x" : 3969,
-        "y" : 773
-      }, {
-        "id" : "12",
-        "x" : 2469,
-        "y" : 819
-      }, {
-        "id" : "18",
-        "x" : 219,
-        "y" : 856
-      }, {
-        "id" : "19",
-        "x" : 1719,
-        "y" : 1419
-      }, {
-        "id" : "21",
-        "x" : 969,
-        "y" : 856
-      }, {
-        "id" : "23",
-        "x" : 1719,
-        "y" : 819
-      }, {
-        "id" : "27",
-        "x" : 2469,
-        "y" : 1419
-      }, {
-        "id" : "37",
-        "x" : 3969,
-        "y" : 1927
-      } ],
-      "externalBoundariesVisible" : false,
-      "key" : "DisplayPlugin",
-      "order" : 4,
-      "relationships" : [ {
-        "description" : "Zadá konfiguraci a spustí zobrazování",
-        "id" : "28",
-        "order" : "1",
-        "response" : false
-      }, {
-        "description" : "Uloží konfiguraci z",
-        "id" : "33",
-        "order" : "2",
-        "response" : false
-      }, {
-        "description" : "Získá konfiguraci z",
-        "id" : "20",
-        "order" : "3",
-        "response" : false,
-        "vertices" : [ {
-          "x" : 969,
-          "y" : 1306
-        } ]
-      }, {
-        "description" : "Vytvoří na základě konfigurace",
-        "id" : "26",
-        "order" : "4",
-        "response" : false,
-        "vertices" : [ {
-          "x" : 969,
-          "y" : 706
-        }, {
-          "x" : 1419,
-          "y" : 706
-        } ]
-      }, {
-        "description" : "Zašle vytvořený RenderingContext",
-        "id" : "22",
-        "order" : "5",
-        "response" : false
-      }, {
-        "description" : "Získá data pomocí",
-        "id" : "25",
-        "order" : "6",
-        "response" : false,
-        "vertices" : [ {
-          "x" : 1576,
-          "y" : 1137
-        } ]
-      }, {
-        "description" : "Vytvoří dotaz pomocí",
-        "id" : "35",
-        "order" : "7",
-        "response" : false
-      }, {
-        "description" : "Načte data pomocí",
-        "id" : "24",
-        "order" : "8",
-        "response" : true
-      }, {
-        "description" : "Získá data z jednotlivých datových zdrojů",
-        "id" : "9",
-        "order" : "9",
-        "response" : false
-      }, {
-        "description" : "Získá data z",
-        "id" : "40",
-        "order" : "10",
-        "response" : false,
-        "vertices" : [ {
-          "x" : 3969,
-          "y" : 1898
-        } ]
-      }, {
-        "description" : "Zpracuje dotaz a získá žádaná data ze souborových datových zdrojů pomocí",
-        "id" : "11",
-        "order" : "11",
-        "response" : false
-      }, {
-        "description" : "Předá vytvořené HTML",
-        "id" : "25",
-        "order" : "12",
-        "response" : false,
-        "vertices" : [ {
-          "x" : 1561,
-          "y" : 837
-        } ]
-      }, {
-        "description" : "Přidá předané HTML do UI",
-        "id" : "32",
-        "order" : "13",
-        "response" : false
-      } ]
-    } ],
-    "systemContextViews" : [ {
-      "automaticLayout" : {
-        "applied" : false,
-        "edgeSeparation" : 0,
-        "implementation" : "Graphviz",
-        "nodeSeparation" : 300,
-        "rankDirection" : "LeftRight",
-        "rankSeparation" : 300,
-        "vertices" : false
-      },
-      "elements" : [ {
-        "id" : "1",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "2",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "3",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "37",
-        "x" : 0,
-        "y" : 0
-      } ],
-      "enterpriseBoundaryVisible" : true,
-      "key" : "Level1",
-      "order" : 1,
-      "relationships" : [ {
-        "id" : "31"
-      }, {
-        "id" : "39"
-      }, {
-        "id" : "6"
-      } ],
-      "softwareSystemId" : "3"
-    } ]
+    "containerViews": [
+      {
+        "automaticLayout": {
+          "applied": true,
+          "edgeSeparation": 0,
+          "implementation": "Graphviz",
+          "nodeSeparation": 300,
+          "rankDirection": "LeftRight",
+          "rankSeparation": 300,
+          "vertices": false
+        },
+        "dimensions": {
+          "height": 1500,
+          "width": 2300
+        },
+        "elements": [
+          {
+            "id": "1",
+            "x": 200,
+            "y": 199
+          },
+          {
+            "id": "2",
+            "x": 200,
+            "y": 899
+          },
+          {
+            "id": "4",
+            "x": 900,
+            "y": 599
+          },
+          {
+            "id": "37",
+            "x": 1650,
+            "y": 599
+          }
+        ],
+        "externalSoftwareSystemBoundariesVisible": false,
+        "key": "Level2",
+        "order": 2,
+        "relationships": [
+          {
+            "id": "30"
+          },
+          {
+            "id": "38"
+          },
+          {
+            "id": "5"
+          }
+        ],
+        "softwareSystemId": "3"
+      }
+    ],
+    "dynamicViews": [
+      {
+        "automaticLayout": {
+          "applied": true,
+          "edgeSeparation": 0,
+          "implementation": "Graphviz",
+          "nodeSeparation": 300,
+          "rankDirection": "LeftRight",
+          "rankSeparation": 300,
+          "vertices": false
+        },
+        "description": "Popis postupu při zobrazení RDF dat",
+        "dimensions": {
+          "height": 2620,
+          "width": 4640
+        },
+        "elementId": "4",
+        "elements": [
+          {
+            "id": "1",
+            "x": 1744,
+            "y": 2019
+          },
+          {
+            "id": "7",
+            "x": 2469,
+            "y": 219
+          },
+          {
+            "id": "8",
+            "x": 3219,
+            "y": 773
+          },
+          {
+            "id": "10",
+            "x": 3969,
+            "y": 773
+          },
+          {
+            "id": "12",
+            "x": 2469,
+            "y": 819
+          },
+          {
+            "id": "18",
+            "x": 219,
+            "y": 856
+          },
+          {
+            "id": "19",
+            "x": 1719,
+            "y": 1419
+          },
+          {
+            "id": "21",
+            "x": 969,
+            "y": 856
+          },
+          {
+            "id": "23",
+            "x": 1719,
+            "y": 819
+          },
+          {
+            "id": "27",
+            "x": 2469,
+            "y": 1419
+          },
+          {
+            "id": "37",
+            "x": 3969,
+            "y": 1927
+          }
+        ],
+        "externalBoundariesVisible": false,
+        "key": "DisplayPlugin",
+        "order": 4,
+        "relationships": [
+          {
+            "description": "Zadá konfiguraci a spustí zobrazování",
+            "id": "28",
+            "order": "1",
+            "response": false
+          },
+          {
+            "description": "Uloží konfiguraci z",
+            "id": "33",
+            "order": "2",
+            "response": false
+          },
+          {
+            "description": "Získá konfiguraci z",
+            "id": "20",
+            "order": "3",
+            "response": false,
+            "vertices": [
+              {
+                "x": 969,
+                "y": 1306
+              }
+            ]
+          },
+          {
+            "description": "Vytvoří na základě konfigurace",
+            "id": "26",
+            "order": "4",
+            "response": false,
+            "vertices": [
+              {
+                "x": 969,
+                "y": 706
+              },
+              {
+                "x": 1419,
+                "y": 706
+              }
+            ]
+          },
+          {
+            "description": "Zašle vytvořený RenderingContext",
+            "id": "22",
+            "order": "5",
+            "response": false
+          },
+          {
+            "description": "Získá data pomocí",
+            "id": "25",
+            "order": "6",
+            "response": false,
+            "vertices": [
+              {
+                "x": 1576,
+                "y": 1137
+              }
+            ]
+          },
+          {
+            "description": "Vytvoří dotaz pomocí",
+            "id": "35",
+            "order": "7",
+            "response": false
+          },
+          {
+            "description": "Načte data pomocí",
+            "id": "24",
+            "order": "8",
+            "response": true
+          },
+          {
+            "description": "Získá data z jednotlivých datových zdrojů",
+            "id": "9",
+            "order": "9",
+            "response": false
+          },
+          {
+            "description": "Získá data z",
+            "id": "40",
+            "order": "10",
+            "response": false,
+            "vertices": [
+              {
+                "x": 3969,
+                "y": 1898
+              }
+            ]
+          },
+          {
+            "description": "Zpracuje dotaz a získá žádaná data ze souborových datových zdrojů pomocí",
+            "id": "11",
+            "order": "11",
+            "response": false
+          },
+          {
+            "description": "Předá vytvořené HTML",
+            "id": "25",
+            "order": "12",
+            "response": false,
+            "vertices": [
+              {
+                "x": 1561,
+                "y": 837
+              }
+            ]
+          },
+          {
+            "description": "Přidá předané HTML do UI",
+            "id": "32",
+            "order": "13",
+            "response": false
+          }
+        ]
+      }
+    ],
+    "systemContextViews": [
+      {
+        "automaticLayout": {
+          "applied": false,
+          "edgeSeparation": 0,
+          "implementation": "Graphviz",
+          "nodeSeparation": 300,
+          "rankDirection": "LeftRight",
+          "rankSeparation": 300,
+          "vertices": false
+        },
+        "elements": [
+          {
+            "id": "1",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "2",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "3",
+            "x": 0,
+            "y": 0
+          },
+          {
+            "id": "37",
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "enterpriseBoundaryVisible": true,
+        "key": "Level1",
+        "order": 1,
+        "relationships": [
+          {
+            "id": "31"
+          },
+          {
+            "id": "39"
+          },
+          {
+            "id": "6"
+          }
+        ],
+        "softwareSystemId": "3"
+      }
+    ]
   }
 }

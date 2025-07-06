@@ -1,16 +1,20 @@
-const notificationContainer = document.getElementById("notification-container")! as HTMLElement
+const notificationContainer = document.getElementById(
+  "notification-container",
+)! as HTMLElement;
 
 type NotificationType = "info" | "success" | "warning" | "error";
 
 interface NotifierService {
-  notify(message: string, type: NotificationType, duration: number): void
+  notify(message: string, type: NotificationType, duration: number): void;
   notifyPromise<T>(
     promise: Promise<T>,
-    messages: { pending: string; success: string; error: string}): Promise<T>
+    messages: { pending: string; success: string; error: string },
+  ): Promise<T>;
 }
 class NotifierServiceImpl implements NotifierService {
   notify(message: string, type: NotificationType) {
-    if (!notificationContainer) throw new Error("Notification container not found");
+    if (!notificationContainer)
+      throw new Error("Notification container not found");
 
     const div = document.createElement("div");
     div.className = `notification ${type}`;
@@ -29,9 +33,10 @@ class NotifierServiceImpl implements NotifierService {
       pending: string;
       success: string;
       error: string;
-    }
-  ): Promise<T>{
-    if (!notificationContainer) throw new Error("Notification container not found");
+    },
+  ): Promise<T> {
+    if (!notificationContainer)
+      throw new Error("Notification container not found");
 
     const div = document.createElement("div");
     div.className = "notification info";
@@ -40,17 +45,16 @@ class NotifierServiceImpl implements NotifierService {
 
     try {
       const res = await promise;
-      div.textContent = `${this.getEmoji('success')} ${messages.success}`;
+      div.textContent = `${this.getEmoji("success")} ${messages.success}`;
       div.className = "notification success";
       setTimeout(() => div.remove(), 4000);
       return res;
     } catch (err) {
-      div.textContent = `${this.getEmoji('error')} ${messages.error}`;
+      div.textContent = `${this.getEmoji("error")} ${messages.error}`;
       div.className = "notification error";
       setTimeout(() => div.remove(), 6000);
       throw err;
     }
-      
   }
   getEmoji(type: NotificationType): string {
     switch (type) {
@@ -66,7 +70,7 @@ class NotifierServiceImpl implements NotifierService {
   }
 }
 
-const notifier = new NotifierServiceImpl()
+const notifier = new NotifierServiceImpl();
 
 export type { NotificationType, NotifierService };
 export { notifier };

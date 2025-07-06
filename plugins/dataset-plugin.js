@@ -23,7 +23,7 @@ export async function displayQuads(context) {
       pending: "Loading data...",
       success: "Data loaded!",
       error: "Loading data failed",
-    }
+    },
   );
   context.mount(createDatasetHtml(context));
 }

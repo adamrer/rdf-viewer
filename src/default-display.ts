@@ -18,7 +18,7 @@ export async function displayQuads(context: RenderingContext) {
       pending: "Loading data...",
       success: "Data loaded!",
       error: "Loading data failed",
-    }
+    },
   );
   context.mount(createDisplayHtml(context));
 }
