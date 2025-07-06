@@ -40,7 +40,7 @@ function createHeading(context) {
   const label = context.getLabel();
   if (label)
     titleElement.appendChild(createLabelHtml(context.subjectIri, label));
-  else titleElement.textContent = context.subjectIri;
+  else titleElement.appendChild(createLabelHtmlFromIri(context.subjectIri));
   return titleElement;
 }
 /**
@@ -72,7 +72,7 @@ function addPredicateToDl(context, predicateIri, subjectIri, dlElement) {
   if (label) {
     dtElement.appendChild(createLabelHtml(predicateIri, label));
   } else {
-    dtElement.textContent = predicateIri;
+    dtElement.appendChild(createLabelHtmlFromIri(predicateIri));
   }
   termElement.appendChild(dtElement);
   dlElement.appendChild(termElement);
@@ -104,38 +104,73 @@ function createLabelHtml(iri, sourcedObjectLabel) {
 
   bold.appendChild(valueElement);
   bold.appendChild(small);
-  addCopyRedirectButtons(bold, iri);
+  addCopyButton(bold, iri)
+  addLinkButton(bold, iri)
 
   // bold.appendChild(sourcesSmall)
 
   return bold;
 }
-function addCopyRedirectButtons(element, iri) {
+function createLabelHtmlFromIri(iri) {
+  const span = document.createElement("span");
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = iri;
+  span.appendChild(labelSpan);
+  addLinkButton(span, iri)
+  addCopyButton(span, iri)
+
+  return span;
+}
+function addCopyButton(element, iri) {
   const copyButton = document.createElement("span");
   copyButton.textContent = "📋";
-  copyButton.onclick = () => {
-    navigator.clipboard.writeText(iri);
+  copyButton.onclick = async () => {
+    const originalText = copyButton.textContent;
+
+    try {
+      await navigator.clipboard.writeText(iri);
+      copyButton.textContent = "✓";
+
+      setTimeout(() => {
+        copyButton.textContent = originalText;
+      }, 1500);
+    } catch {
+      copyButton.textContent = "❌";
+
+      setTimeout(() => {
+        copyButton.textContent = originalText;
+      }, 1500);
+    }
   };
   copyButton.style.cursor = "pointer";
   copyButton.title = "Copy IRI to clipboard";
-  const linkElement = document.createElement("a");
-  linkElement.href = iri;
-  linkElement.textContent = "🔗";
-  linkElement.style.textDecoration = "none";
+
   copyButton.style.opacity = "0";
-  linkElement.style.opacity = "0";
   copyButton.style.transition = "opacity 0.3s ease";
-  linkElement.style.transition = "opacity 0.3s ease";
   element.addEventListener("mouseenter", () => {
     copyButton.style.opacity = "1";
-    linkElement.style.opacity = "1";
   });
   element.addEventListener("mouseleave", () => {
     copyButton.style.opacity = "0";
+  });
+  element.appendChild(copyButton);
+}
+function addLinkButton(element, iri) {
+  const linkElement = document.createElement("a");
+  linkElement.href = iri;
+  linkElement.target = "_blank";
+  linkElement.rel = "noopener noreferrer";
+  linkElement.textContent = "🔗";
+  linkElement.style.textDecoration = "none";
+  linkElement.style.opacity = "0";
+  linkElement.style.transition = "opacity 0.3s ease";
+  element.addEventListener("mouseenter", () => {
+    linkElement.style.opacity = "1";
+  });
+  element.addEventListener("mouseleave", () => {
     linkElement.style.opacity = "0";
   });
   element.appendChild(linkElement);
-  element.appendChild(copyButton);
 }
 /**
  * Adds a sourcedObject to dl HTML element
@@ -155,7 +190,7 @@ function addSourcedObjectToDl(context, sourcedObject, dlElement) {
     if (label) {
       ddElement.appendChild(createLabelHtml(object.value, label));
     } else {
-      ddElement.textContent = object.value;
+      ddElement.appendChild(createLabelHtmlFromIri(object.value));
     }
   }
   dlElement.appendChild(ddElement);

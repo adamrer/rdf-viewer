@@ -26,7 +26,7 @@ class AppState {
     new FileDataSource(
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
-    new LdpDataSource("https://rero.datapod.igrant.io/")
+    new LdpDataSource("https://rero.datapod.igrant.io/"),
   ];
   plugins: DisplayPlugin[] = [
     {

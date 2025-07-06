@@ -231,12 +231,12 @@ class FileDataSource implements DataSource {
     return { identifier: this.file!.name, quads: filteredQuads };
   }
 }
-function isRdfType(contentType: string){
+function isRdfType(contentType: string) {
   return [
     "text/turtle",
     "application/ld+json",
     "application/rdf+xml",
-    "application/n-triples"
+    "application/n-triples",
   ].includes(contentType);
 }
 class LdpDataSource implements DataSource {
@@ -251,11 +251,11 @@ class LdpDataSource implements DataSource {
   }
 
   /**
-   * 
+   *
    * @param urls - URLs of resources to load
    * @param concurrency - how many resources can be fetched in parallel
    * @param contentType - content type for the fetch
-   * @returns 
+   * @returns
    */
   async loadAllResources(
     urls: string[],
@@ -265,8 +265,9 @@ class LdpDataSource implements DataSource {
     const tasks = urls.map((url) =>
       limit(async () => {
         const response = await fetch(url);
-        const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
-        if (!isRdfType(contentType)){
+        const contentType =
+          response.headers.get("content-type")?.split(";")[0] ?? "";
+        if (!isRdfType(contentType)) {
           return [];
         }
         const text = await response.text();
@@ -283,8 +284,8 @@ class LdpDataSource implements DataSource {
       .flatMap((r) => r.value);
   }
   async loadContainers(containerIris: string[]) {
-    const containerQuads = await this.loadAllResources(containerIris)
-    this.quads.push(...containerQuads)
+    const containerQuads = await this.loadAllResources(containerIris);
+    this.quads.push(...containerQuads);
     const ldp = "http://www.w3.org/ns/ldp#";
     const subResourcesQuery = simpleQueryStepBuilder()
       .subjects(containerIris)
