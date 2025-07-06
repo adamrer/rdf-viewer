@@ -1,5 +1,5 @@
 import { AppState } from "./app-state";
-import { DataSourceType } from "./fetch-quads";
+import { DataSourceType } from "./fetch-quads/data-sources";
 import { display } from "./main";
 import { fetchPlugin } from "./plugin";
 
@@ -187,6 +187,17 @@ function addDataSourceFromFormData(formData: FormData) {
       );
       break;
     }
+    case DataSourceType.LDP: {
+      const ldpUrl = formData.get("ldp-source-text") as string | null
+      if (!ldpUrl) throw new Error("Missing url for LDP data source in form data")
+        app.addLDPDataSource(ldpUrl)
+      createSourceEntry(
+        DataSourceType.LDP,
+        ldpUrl,
+        dataSourcesContainer
+      )
+      break
+    }
 
     default:
       throw new Error("Unknown data source type");
@@ -247,6 +258,9 @@ function createSourceEntry(
     case DataSourceType.Sparql:
       typeLabel = "SPARQL Endpoint";
       break;
+    case DataSourceType.LDP:
+      typeLabel = "LDP Server"
+      break
     default:
       break;
   }

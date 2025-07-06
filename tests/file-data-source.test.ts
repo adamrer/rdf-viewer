@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { Fetcher, FileDataSource } from "../src/fetch-quads";
+import { Fetcher } from "../src/fetch-quads/quads-fetcher";
+import { FileDataSource } from "../src/fetch-quads/data-sources";
 import {
   SimpleQueryStepBuilder,
   simpleQueryStepBuilder,

@@ -1,8 +1,8 @@
 import {
   Fetcher,
   mergeStructuredQuads,
-  SparqlDataSource,
-} from "../src/fetch-quads";
+} from "../src/fetch-quads/quads-fetcher";
+import { SparqlDataSource } from "../src/fetch-quads/data-sources";
 import { test, expect } from "vitest";
 const dcterms = "http://purl.org/dc/terms/";
 const dcat = "http://www.w3.org/ns/dcat#";

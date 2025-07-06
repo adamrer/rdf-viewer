@@ -1,4 +1,4 @@
-import { Fetcher } from "./fetch-quads";
+import { Fetcher } from "./fetch-quads/quads-fetcher";
 import {
   DisplayPluginModule,
   renderingContext,

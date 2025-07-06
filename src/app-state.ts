@@ -1,4 +1,4 @@
-import { DataSource, FileDataSource, SparqlDataSource } from "./fetch-quads";
+import { DataSource, FileDataSource, LdpDataSource, SparqlDataSource } from "./fetch-quads/data-sources";
 import { DisplayPlugin } from "./plugin";
 import { Language } from "./query/query-interfaces";
 
@@ -13,7 +13,7 @@ class AppState {
   private static _instance: AppState;
 
   entityIri: string =
-    "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
+    "my-pod.ttl";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -24,6 +24,11 @@ class AppState {
     ),
   ];
   plugins: DisplayPlugin[] = [
+    {
+      url: getPluginUrl("ldp-plugin.js"),
+      label: "LDP Plugin",
+      classes: [],
+    },
     {
       url: getPluginUrl("dataset-plugin.js"),
       label: "Dataset Plugin",
@@ -80,6 +85,12 @@ class AppState {
     const sds = new SparqlDataSource(endpointUrl);
     this.dataSources.push(sds);
     this.notify();
+  }
+
+  addLDPDataSource(url: string) {
+    const lds = new LdpDataSource(url)
+    this.dataSources.push(lds)
+    this.notify()
   }
 
   removeDataSource(identifier: string) {

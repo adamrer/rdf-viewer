@@ -4,7 +4,7 @@ import {
   QuadsFetcher,
   SourcedObject,
   StructuredQuads,
-} from "./fetch-quads";
+} from "./fetch-quads/quads-fetcher";
 import { Language } from "./query/query-interfaces";
 import { NotificationType, notifier } from "./notifier";
 

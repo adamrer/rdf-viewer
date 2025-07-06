@@ -1,4 +1,4 @@
-import { SourcedObject } from "./fetch-quads";
+import { SourcedObject } from "./fetch-quads/quads-fetcher";
 import { RenderingContext } from "./plugin";
 import { Literal } from "n3";
 

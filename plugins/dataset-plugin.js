@@ -25,7 +25,6 @@ export async function displayQuads(context) {
       error: "Loading data failed",
     }
   );
-
   context.mount(createDatasetHtml(context));
 }
 
