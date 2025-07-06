@@ -17,7 +17,7 @@ type Listener = () => void;
 class AppState {
   private static _instance: AppState;
 
-  entityIri: string = "my-pod.ttl";
+  entityIri: string = "https://rero.datapod.igrant.io/";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -26,6 +26,7 @@ class AppState {
     new FileDataSource(
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
+    new LdpDataSource("https://rero.datapod.igrant.io/")
   ];
   plugins: DisplayPlugin[] = [
     {

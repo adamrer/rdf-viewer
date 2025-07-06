@@ -231,7 +231,14 @@ class FileDataSource implements DataSource {
     return { identifier: this.file!.name, quads: filteredQuads };
   }
 }
-
+function isRdfType(contentType: string){
+  return [
+    "text/turtle",
+    "application/ld+json",
+    "application/rdf+xml",
+    "application/n-triples"
+  ].includes(contentType);
+}
 class LdpDataSource implements DataSource {
   type = DataSourceType.LDP;
   identifier: string;
@@ -243,22 +250,25 @@ class LdpDataSource implements DataSource {
     this.identifier = url;
   }
 
-  async fetchLdp(contentType = "text/turtle"): Promise<Response> {
-    return fetch(this.url, {
-      headers: {
-        Accept: contentType,
-      },
-    });
-  }
-  async loadAllResourcesLimited(
+  /**
+   * 
+   * @param urls - URLs of resources to load
+   * @param concurrency - how many resources can be fetched in parallel
+   * @param contentType - content type for the fetch
+   * @returns 
+   */
+  async loadAllResources(
     urls: string[],
     concurrency: number = 5,
-    contentType: string = "text/turtle",
   ): Promise<Quad[]> {
     const limit = pLimit(concurrency);
     const tasks = urls.map((url) =>
       limit(async () => {
         const response = await fetch(url);
+        const contentType = response.headers.get("content-type")?.split(";")[0] ?? "";
+        if (!isRdfType(contentType)){
+          return [];
+        }
         const text = await response.text();
         const parser = new N3.Parser({ format: contentType, baseIRI: url });
         return parser.parse(text);
@@ -273,11 +283,8 @@ class LdpDataSource implements DataSource {
       .flatMap((r) => r.value);
   }
   async loadContainers(containerIris: string[]) {
-    const contentType = "text/turtle";
-    const response = await this.fetchLdp(contentType);
-    const result = await response.text();
-    const parser = new N3.Parser({ format: contentType, baseIRI: this.url });
-    this.quads.push(...parser.parse(result));
+    const containerQuads = await this.loadAllResources(containerIris)
+    this.quads.push(...containerQuads)
     const ldp = "http://www.w3.org/ns/ldp#";
     const subResourcesQuery = simpleQueryStepBuilder()
       .subjects(containerIris)
@@ -286,17 +293,14 @@ class LdpDataSource implements DataSource {
       .build();
     const processor = queryProcessor();
     const subResources = processor
-      .filter(this.quads, subResourcesQuery)
+      .filter(containerQuads, subResourcesQuery)
       .map((quad) => quad.object) // get objects
       .filter((object) => object.termType === "NamedNode") // that are NamedNodes
       .map((object) => object.value); // their IRIs
     if (subResources.length === 0) {
       return;
     }
-    this.quads.push(
-      ...(await this.loadAllResourcesLimited(subResources, 5, contentType)),
-    );
-    this.loadContainers(subResources);
+    await this.loadContainers(subResources);
   }
   async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
     if (!this.quadsLoaded) {

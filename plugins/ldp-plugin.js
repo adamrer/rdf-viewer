@@ -8,15 +8,25 @@ const labelPredicates = [
 ];
 
 export async function displayQuads(context) {
-  await context.loadData(labelPredicates);
-  await loadChildResources(context, context.subjectIri);
+  await context.notifyPromise(
+    (async () => {
+      await context.loadData(labelPredicates);
+      await loadChildResources(context, context.subjectIri)
+    })(),
+    {
+      pending: "Loading data...",
+      success: "Data loaded!",
+      error: "Loading data failed",
+    },
+  );
   context.mount(createLdpHtml(context));
 }
 
 async function loadChildResources(context, containerIri) {
   const childResources = getChildResources(context, containerIri);
+
   const promises = childResources.map((resource) =>
-    context.loadData(labelPredicates, resource.term.value),
+    context.loadData(labelPredicates, resource.term.value)
   );
   return Promise.all(promises);
 }
@@ -71,7 +81,16 @@ function createToggler(context, itemElement, itemIri) {
         togglerElement.style.transform = "rotate(90deg)";
       }
     } else {
-      await loadChildResources(context, itemIri);
+      await context.notifyPromise(
+      (async () => {
+        await loadChildResources(context, itemIri)
+      })(),
+      {
+        pending: "Loading data...",
+        success: "Data loaded!",
+        error: "Loading data failed",
+      },
+    );
       itemElement.appendChild(createList(context, itemIri));
       togglerElement.style.transform = "rotate(90deg)";
     }
