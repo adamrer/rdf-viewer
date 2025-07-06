@@ -39,11 +39,6 @@ class AppState {
       label: "Default Plugin",
       classes: [],
     },
-    {
-      url: getPluginUrl("default-table-plugin.js"),
-      label: "Default Table Plugin",
-      classes: [],
-    },
   ];
   selectedPluginIndex: number = 0;
 
