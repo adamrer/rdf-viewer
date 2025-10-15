@@ -15,4 +15,14 @@ export default defineConfig({
     }),
   ],
   base: "./",
+  build: {
+    rollupOptions: {
+      input: {
+        app: './ui.html',
+      },
+    }
+  },
+  server: {
+    open: "./ui.html"
+  }
 });

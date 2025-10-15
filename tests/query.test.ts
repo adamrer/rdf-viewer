@@ -5,15 +5,16 @@ import {
   Graph,
   Select,
   Where,
-} from "../src/query/query-interfaces";
-import QueryNodeFactory, {
+} from "../src/query-interfaces";
+import QueryNodeFactory from "../src/query-node-factory"
+import {
   or,
   isIri,
   isBlank,
   langEquality,
-} from "../src/query/query-implementations";
+} from "../src/query-functions";
 import { DataFactory } from "n3";
-import { NO_LANG_SPECIFIED } from "../src/query/query-interfaces";
+import { NO_LANG_SPECIFIED } from "../src/query-interfaces";
 
 test("creates select with empty where", () => {
   const select: Select = QueryNodeFactory.select(

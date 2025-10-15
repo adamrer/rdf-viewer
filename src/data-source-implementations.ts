@@ -1,43 +1,11 @@
 import N3, { Quad } from "n3";
 import { Readable } from "readable-stream";
 import { rdfParser } from "rdf-parse";
-import { queryProcessor } from "../query-processor";
+import { queryProcessor } from "./query-processor";
 import pLimit from "p-limit";
-import { Query, simpleQueryStepBuilder } from "../simple-query-step-builder";
-/**
- * Types of DataSource
- */
-enum DataSourceType {
-  Sparql = "SPARQL",
-  LocalFile = "LOCAL_FILE",
-  RemoteFile = "REMOTE_FILE",
-  LDP = "LDP",
-}
-/**
- * Interface for a data source from which it is possible to fetch RDF quads.
- */
-interface DataSource {
-  type: DataSourceType;
-  identifier: string;
-  /**
-   * Fetches RDF quads from data source corresponding to the query.
-   *
-   * @param query - Query which specifies the desired quads to fetch.
-   * @returns DataSourceFetchResult Promise which contains the quads.
-   * @see DataSourceFetchResult
-   */
-  fetchQuads(query: Query): Promise<DataSourceFetchResult>;
-}
+import { Query, simpleQueryStepBuilder } from "./query-builder";
+import { DataSource, DataSourceFetchResult, DataSourceType } from "./data-source";
 
-/**
- * Interface for the result of fetching quads from a data source.
- */
-interface DataSourceFetchResult {
-  /** Unique identifier of the data source from which the result origins. */
-  identifier: string;
-  /** Array of quads obtained from the data source. */
-  quads: Array<Quad>;
-}
 
 /** SPARQL JSON result RDF term types */
 type ResultType = "uri" | "literal" | "bnode";
@@ -314,5 +282,14 @@ class LdpDataSource implements DataSource {
   }
 }
 
-export type { DataSource, DataSourceFetchResult };
-export { DataSourceType, SparqlDataSource, FileDataSource, LdpDataSource };
+export type { 
+  DataSource, 
+  DataSourceFetchResult 
+};
+
+export { 
+  DataSourceType, 
+  SparqlDataSource, 
+  FileDataSource, 
+  LdpDataSource 
+};

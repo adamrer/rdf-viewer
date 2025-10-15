@@ -3,8 +3,8 @@ import {
   DataBlockValue,
   Expression,
   GraphPattern,
-} from "./query/query-interfaces";
-import QueryNodeFactory from "./query/query-implementations";
+} from "./query-interfaces";
+import QueryNodeFactory from "./query-node-factory";
 
 /**
  * Builder for building graph patterns in Query

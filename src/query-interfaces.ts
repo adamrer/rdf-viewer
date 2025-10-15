@@ -39,7 +39,7 @@ type NodeType =
 type GraphPatternClauseType = "where" | "optional" | "graph";
 
 /**
- * Interface representing the query for querying quads on data sources
+ * Interface inspired by SPARQL representing the query for querying quads on data sources
  */
 interface Query {
   /**

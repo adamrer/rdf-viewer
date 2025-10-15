@@ -3,16 +3,16 @@ import {
   FileDataSource,
   LdpDataSource,
   SparqlDataSource,
-} from "./fetch-quads/data-sources";
+} from "./data-source-implementations";
 import { DisplayPlugin } from "./plugin";
-import { Language } from "./query/query-interfaces";
+import { Language } from "./query-interfaces";
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
 
 type Listener = () => void;
-
+//TODO: rename AppState
 /**
- * Holds data set by user in the UI. Is Observable
+ * Holds and manages data set by user in the UI. Is Observable.
  */
 class AppState {
   private static _instance: AppState;

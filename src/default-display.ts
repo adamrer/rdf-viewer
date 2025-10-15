@@ -1,5 +1,5 @@
-import { SourcedObject } from "./fetch-quads/quads-fetcher";
-import { RenderingContext } from "./plugin";
+import { SourcedObject } from "./fetcher";
+import { RenderingContext } from "./rendering-context";
 import { Literal } from "n3";
 
 const labelPredicates = [

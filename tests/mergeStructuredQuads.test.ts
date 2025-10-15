@@ -1,15 +1,16 @@
 import {
+  FetcherImpl,
   Fetcher,
   mergeStructuredQuads,
-} from "../src/fetch-quads/quads-fetcher";
-import { SparqlDataSource } from "../src/fetch-quads/data-sources";
+} from "../src/fetcher";
+import { SparqlDataSource } from "../src/data-source-implementations";
 import { test, expect } from "vitest";
 const dcterms = "http://purl.org/dc/terms/";
 const dcat = "http://www.w3.org/ns/dcat#";
 const foaf = "http://xmlns.com/foaf/0.1/";
 
 test("merge structured quads", async () => {
-  const fetcher: Fetcher = new Fetcher([
+  const fetcher: Fetcher = new FetcherImpl([
     new SparqlDataSource("https://data.gov.cz/sparql"),
   ]);
   const datasetIri =

@@ -1,6 +1,6 @@
 import { AppState } from "./app-state";
-import { DataSourceType } from "./fetch-quads/data-sources";
-import { display } from "./main";
+import { DataSourceType } from "./data-source-implementations";
+import { display } from "./display";
 import { fetchPlugin } from "./plugin";
 
 const app = AppState.getInstance();

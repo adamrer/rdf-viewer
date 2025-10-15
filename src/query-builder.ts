@@ -1,12 +1,13 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3";
-import { Query } from "./query/query-interfaces";
-import { Select, Language, NO_LANG_SPECIFIED } from "./query/query-interfaces";
-import QueryNodeFactory, {
+import { Query } from "./query-interfaces";
+import { Select, Language, NO_LANG_SPECIFIED } from "./query-interfaces";
+import QueryNodeFactory from "./query-node-factory"
+import {
   isBlank,
   isIri,
   or,
   langEquality,
-} from "./query/query-implementations";
+} from "./query-functions";
 import {
   GraphPatternBuilder,
   graphPatternBuilder,
@@ -22,12 +23,12 @@ import {
  *
  * graphs -> subjects -> predicates -> objects -> build
  */
-interface SimpleQueryStepBuilder extends SubjectStep, GraphStepProvider {}
+interface QueryBuilder extends SubjectStep, GraphStepProvider {}
 
 /**
  * Provides the ability to specify the graph for SimpleStepQueryBuilder
  *
- * @see SimpleQueryStepBuilder
+ * @see QueryBuilder
  */
 interface GraphStepProvider {
   /**
@@ -46,7 +47,7 @@ interface GraphStepProvider {
 /**
  * Second build step of the SimpleStepQueryBuilder for setting the subject
  *
- * @see SimpleQueryStepBuilder
+ * @see QueryBuilder
  */
 interface SubjectStep {
   /**
@@ -61,7 +62,7 @@ interface SubjectStep {
 /**
  * Third build step of the SimpleStepQueryBuilder for setting the first predicate
  *
- * @see SimpleQueryStepBuilder
+ * @see QueryBuilder
  */
 interface PredicateStep {
   /**
@@ -84,7 +85,7 @@ interface LiteralCreationHelper {
  * Fourth build step of the SimpleStepQueryBuilder for setting the first object and
  * additional predicates
  *
- * @see SimpleQueryStepBuilder
+ * @see QueryBuilder
  */
 interface ObjectStep {
   /**
@@ -101,7 +102,7 @@ interface ObjectStep {
  * Fifth and final build step of the SimpleStepQueryBuilder for setting solution for
  * the query like limit and offset. Also for building the query.
  *
- * @see SimpleQueryStepBuilder
+ * @see QueryBuilder
  */
 interface FinalStep {
   /**
@@ -347,9 +348,9 @@ class FinalStepImpl implements FinalStep {
   }
 }
 
-function simpleQueryStepBuilder(): SimpleQueryStepBuilder {
+function queryBuilder(): QueryBuilder {
   return new SimpleStepQueryBuilderImpl();
 }
 
-export type { Query, Language, SimpleQueryStepBuilder };
-export { NO_LANG_SPECIFIED, simpleQueryStepBuilder };
+export type { Query, Language, QueryBuilder as SimpleQueryStepBuilder };
+export { NO_LANG_SPECIFIED, queryBuilder as simpleQueryStepBuilder };

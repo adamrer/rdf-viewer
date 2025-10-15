@@ -3,15 +3,15 @@ import {
   Query,
   SimpleQueryStepBuilder,
   simpleQueryStepBuilder,
-} from "../simple-query-step-builder";
-import { DataSource, DataSourceFetchResult } from "./data-sources";
+} from "./query-builder";
+import { DataSource, DataSourceFetchResult } from "./data-source-implementations";
 
 /**
  * Interface for fetching quads from multiple data sources
  *
  * @see DataSource
  */
-interface QuadsFetcher {
+interface Fetcher {
   /** Array of data sources to fetch from */
   dataSources: Array<DataSource>;
   /**
@@ -39,9 +39,9 @@ const DEFAULT_GRAPH = "default";
 /**
  * Class implementing the QuadsFetcher interface.
  *
- * @see QuadsFetcher
+ * @see Fetcher
  */
-class Fetcher implements QuadsFetcher {
+class FetcherImpl implements Fetcher {
   dataSources: Array<DataSource>;
 
   constructor(dataSources: Array<DataSource>) {
@@ -185,6 +185,6 @@ function mergeStructuredQuads(
 
   return result;
 }
-export type { QuadsFetcher, StructuredQuads, SourcedObject };
+export type { Fetcher, StructuredQuads, SourcedObject };
 
-export { Fetcher, mergeStructuredQuads };
+export { FetcherImpl, mergeStructuredQuads };

@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
-import { Fetcher } from "../src/fetch-quads/quads-fetcher";
-import { FileDataSource } from "../src/fetch-quads/data-sources";
+import { FetcherImpl } from "../src/fetcher";
+import { FileDataSource } from "../src/data-source-implementations";
 import {
   SimpleQueryStepBuilder,
   simpleQueryStepBuilder,
-} from "../src/simple-query-step-builder";
+} from "../src/query-builder";
 
 test("fetch label for skos:prefLabel", async () => {
   const fds = new FileDataSource(
@@ -46,7 +46,7 @@ test("fetch label for dcterms:title", async () => {
   const fds = new FileDataSource(
     "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
   );
-  const fetcher = new Fetcher([fds]);
+  const fetcher = new FetcherImpl([fds]);
   const builder = fetcher.builder() as SimpleQueryStepBuilder;
   const query = builder
     .subjects(["http://purl.org/dc/terms/title"])
@@ -66,7 +66,7 @@ test("fetch label for dcterms:title", async () => {
 
 test("fetch label for dcat:theme", async () => {
   const fds = new FileDataSource("https://www.w3.org/ns/dcat3.ttl");
-  const fetcher = new Fetcher([fds]);
+  const fetcher = new FetcherImpl([fds]);
   const builder = fetcher.builder() as SimpleQueryStepBuilder;
   const query = builder
     .subjects(["http://www.w3.org/ns/dcat#theme"])

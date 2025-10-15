@@ -8,7 +8,7 @@ import {
   Node,
   Substitution,
   Select,
-} from "./query/query-interfaces";
+} from "./query-interfaces";
 
 /**
  * Type of a function that evaluates a constraint with given variable substitution
