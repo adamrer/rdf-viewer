@@ -4,7 +4,7 @@ import { rdfParser } from "rdf-parse";
 import { queryProcessor } from "./query-processor";
 import pLimit from "p-limit";
 import { Query, simpleQueryStepBuilder } from "./query-builder";
-import { DataSource, DataSourceFetchResult, DataSourceType } from "./data-source";
+import { DataSource, DataSourceType, Sourced } from "./data-source";
 
 
 /** SPARQL JSON result RDF term types */
@@ -91,7 +91,7 @@ class SparqlDataSource implements DataSource {
     });
   }
 
-  async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
+  async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
     const queryUrl = `${this.endpointUrl}?query=${encodeURIComponent(query.toSparql())}`;
     return new Promise((resolve, reject) => {
       fetch(queryUrl, {
@@ -104,10 +104,12 @@ class SparqlDataSource implements DataSource {
           const jsonQuads = jsonResponse.results.bindings;
 
           const quads = this.parseJsonQuads(jsonQuads);
-          const result: DataSourceFetchResult = {
-            identifier: this.endpointUrl.toString(),
-            quads: quads,
-          };
+          const result: Array<Sourced<Quad>> = quads.map(quad => {
+            return {
+              value: quad, 
+              sources: [this.endpointUrl.toString()]
+            }
+          })
           resolve(result);
         })
         .catch((error) => {
@@ -189,14 +191,20 @@ class FileDataSource implements DataSource {
     });
   }
 
-  async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
+  async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
     await this.parseQuads();
     if (!this.quads) {
       throw new Error("Failed to load quads from file");
     }
     const processor = queryProcessor();
     const filteredQuads: Quad[] = processor.filter(this.quads, query);
-    return { identifier: this.file!.name, quads: filteredQuads };
+    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map(quad => {
+      return {
+        value: quad,
+        sources: [this.file!.name]
+      }
+    })
+    return sourcedQuads;
   }
 }
 function isRdfType(contentType: string) {
@@ -271,20 +279,25 @@ class LdpDataSource implements DataSource {
     }
     await this.loadContainers(subResources);
   }
-  async fetchQuads(query: Query): Promise<DataSourceFetchResult> {
+  async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
     if (!this.quadsLoaded) {
       await this.loadContainers([this.url]);
       this.quadsLoaded = true;
     }
     const processor = queryProcessor();
     const filteredQuads: Quad[] = processor.filter(this.quads, query);
-    return { identifier: this.url, quads: filteredQuads };
+    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map(quad =>{
+      return {
+        value: quad,
+        sources: [this.url]
+      }
+    })
+    return sourcedQuads;
   }
 }
 
 export type { 
   DataSource, 
-  DataSourceFetchResult 
 };
 
 export { 

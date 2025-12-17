@@ -1,6 +1,6 @@
-import { SourcedObject } from "./fetcher";
+import { Sourced } from "./data-source";
 import { RenderingContext } from "./rendering-context";
-import { Literal } from "n3";
+import { Literal, Quad_Object } from "n3";
 
 const labelPredicates = [
   "http://purl.org/dc/terms/title",
@@ -95,8 +95,8 @@ function addPredicateToDl(
  * @param {*} sourcedObjectLabel - Label returned by context
  * @returns {HTMLElement}
  */
-function createLabelHtml(iri: string, sourcedObjectLabel: SourcedObject) {
-  const literal = sourcedObjectLabel.term;
+function createLabelHtml(iri: string, sourcedObjectLabel: Sourced<Quad_Object>) {
+  const literal = sourcedObjectLabel.value;
   const bold = document.createElement("div");
   const valueElement = document.createElement("span");
   valueElement.textContent = literal.value + " ";
@@ -148,16 +148,16 @@ function addCopyRedirectButtons(element: HTMLElement, iri: string) {
  * Adds a sourcedObject to dl HTML element
  *
  * @param {*} context - Rendering context
- * @param {SourcedObject} sourcedObject
+ * @param {Sourced<Quad_Object>} sourcedObject
  * @param {HTMLDListElement} dlElement
  */
 function addSourcedObjectToDl(
   context: RenderingContext,
-  sourcedObject: SourcedObject,
+  sourcedObject: Sourced<Quad_Object>,
   dlElement: HTMLDListElement,
 ) {
   const ddElement = document.createElement("dd");
-  const object = sourcedObject.term;
+  const object = sourcedObject.value;
   if (object.termType === "Literal") {
     const literalHtml = createLabelHtml(object.value, sourcedObject);
     ddElement.appendChild(literalHtml);

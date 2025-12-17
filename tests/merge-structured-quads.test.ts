@@ -30,7 +30,7 @@ test("merge structured quads", async () => {
   const datasetQuads = await fetcher.fetchStructuredQuads(datasetQuery);
   const distributionIri = Object.values(
     datasetQuads[datasetIri][dcat + "distribution"],
-  )[0].term.value;
+  )[0].value.value;
   const distributionQuery = fetcher
     .builder()
     .subjects([distributionIri])

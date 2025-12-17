@@ -1,5 +1,6 @@
 import { Quad } from "n3";
 import { Query } from "./query";
+import { IRI } from "./rdf-types";
 
 /**
  * Types of DataSource
@@ -23,22 +24,18 @@ interface DataSource {
    * @returns DataSourceFetchResult Promise which contains the quads.
    * @see DataSourceFetchResult
    */
-  fetchQuads(query: Query): Promise<DataSourceFetchResult>;
+  fetchQuads(query: Query): Promise<Array<Sourced<Quad>>>;
+}
+interface Sourced<T> {
+  value: T
+  sources: IRI[]
+  graphs?: IRI[]
 }
 
-/**
- * Interface for the result of fetching quads from a data source.
- */
-interface DataSourceFetchResult {
-  /** Unique identifier of the data source from which the result origins. */
-  identifier: string;
-  /** Array of quads obtained from the data source. */
-  quads: Array<Quad>;
-}
 
 export type {
     DataSource,
-    DataSourceFetchResult
+    Sourced
     
 }
 export {

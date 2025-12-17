@@ -1,10 +1,11 @@
-import { Quad_Object } from "n3";
+import { Quad, Quad_Object } from "n3";
 import {
   Query,
   SimpleQueryStepBuilder,
   simpleQueryStepBuilder,
 } from "./query-builder";
-import { DataSource, DataSourceFetchResult } from "./data-source-implementations";
+import { DataSource } from "./data-source-implementations";
+import { Sourced } from "./data-source";
 
 /**
  * Interface for fetching quads from multiple data sources
@@ -19,7 +20,7 @@ interface Fetcher {
    *
    * @param query - Query which specifies the desired quads to fetch.
    */
-  fetchQuads(query: Query): Promise<DataSourceFetchResult[]>;
+  fetchQuads(query: Query): Promise<Array<Sourced<Quad>>>;
 
   /**
    * Fetches RDF quads from all of the specified data sources and returns them as StructuredQuads
@@ -48,16 +49,16 @@ class FetcherImpl implements Fetcher {
     this.dataSources = dataSources;
   }
 
-  async fetchQuads(query: Query): Promise<DataSourceFetchResult[]> {
+  async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
     const results = await Promise.allSettled(
       this.dataSources.map((ds) => ds.fetchQuads(query)),
     );
 
-    const successfulResults: DataSourceFetchResult[] = [];
+    const successfulResults: Array<Sourced<Quad>> = [];
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
-        successfulResults.push(result.value);
+        successfulResults.push(...result.value);
       } else {
         console.error(`DataSource ${index} failed:`, result.reason);
       }
@@ -71,38 +72,38 @@ class FetcherImpl implements Fetcher {
     return this.structureQuads(fetchResult);
   }
 
-  structureQuads(fetchResult: DataSourceFetchResult[]): StructuredQuads {
+  structureQuads(fetchResult: Array<Sourced<Quad>>): StructuredQuads {
     const result: StructuredQuads = {};
 
-    for (const { identifier: sourceId, quads } of fetchResult) {
-      for (const quad of quads) {
-        const subjectIri = quad.subject.value;
-        const predicateIri = quad.predicate.value;
-        const object = quad.object;
-        const graph = quad.graph.value || DEFAULT_GRAPH;
+    for (const { value: quad, sources: sources } of fetchResult) {
+      const subjectIri = quad.subject.value;
+      const predicateIri = quad.predicate.value;
+      const object = quad.object;
+      const graph = quad.graph.value || DEFAULT_GRAPH;
 
-        if (!result[subjectIri]) {
-          result[subjectIri] = {};
-        }
-        if (!result[subjectIri][predicateIri]) {
-          result[subjectIri][predicateIri] = {};
-        }
-        const existing = result[subjectIri][predicateIri][object.value];
-        if (existing) {
-          if (!existing.sourceIds.includes(sourceId)) {
-            existing.sourceIds.push(sourceId);
+      if (!result[subjectIri]) {
+        result[subjectIri] = {};
+      }
+      if (!result[subjectIri][predicateIri]) {
+        result[subjectIri][predicateIri] = {};
+      }
+      const existing = result[subjectIri][predicateIri][object.value];
+      if (existing) {
+        for (const source of sources){
+          if (!existing.sources.includes(source)) {
+            existing.sources.push(source);
           }
-          if (!existing.graphs.includes(graph)) {
-            existing.graphs.push(graph);
-          }
-        } else {
-          const newObject: SourcedObject = {
-            term: object,
-            sourceIds: [sourceId],
-            graphs: [graph],
-          };
-          result[subjectIri][predicateIri][object.value] = newObject;
         }
+        if (!existing.graphs?.includes(graph)) {
+          existing.graphs?.push(graph);
+        }
+      } else {
+        const newObject: Sourced<Quad_Object> = {
+          value: object,
+          sources: sources,
+          graphs: [graph],
+        };
+        result[subjectIri][predicateIri][object.value] = newObject;
       }
     }
 
@@ -114,14 +115,6 @@ class FetcherImpl implements Fetcher {
   }
 }
 
-/**
- * Interface to hold the information from where the term was fetched and from which graph it is
- */
-interface SourcedObject {
-  term: Quad_Object;
-  sourceIds: string[];
-  graphs: string[];
-}
 
 /**
  * Interface for quads fetched from data sources.
@@ -130,7 +123,7 @@ interface SourcedObject {
 interface StructuredQuads {
   [subjectIri: string]: {
     [predicateIri: string]: {
-      [objectValue: string]: SourcedObject;
+      [objectValue: string]: Sourced<Quad_Object>;
     };
   };
 }
@@ -169,13 +162,19 @@ function mergeStructuredQuads(
         if (objectsResult[objectKey]) {
           const objA = objectsResult[objectKey];
 
-          // Merge sourceIds
-          objA.sourceIds = Array.from(
-            new Set([...objA.sourceIds, ...objB.sourceIds]),
+          // Merge sources
+          objA.sources = Array.from(
+            new Set([...objA.sources, ...objB.sources]),
           );
 
           // Merge graphs
-          objA.graphs = Array.from(new Set([...objA.graphs, ...objB.graphs]));
+          const graphs = []
+          if (objA.graphs)
+            graphs.push(...objA.graphs)
+          if (objB.graphs)
+            graphs.push(...objB.graphs)
+
+          objA.graphs = Array.from(new Set(graphs));
         } else {
           objectsResult[objectKey] = objB;
         }
@@ -185,6 +184,6 @@ function mergeStructuredQuads(
 
   return result;
 }
-export type { Fetcher, StructuredQuads, SourcedObject };
+export type { Fetcher, StructuredQuads };
 
 export { FetcherImpl, mergeStructuredQuads };

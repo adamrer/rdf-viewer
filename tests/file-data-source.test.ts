@@ -19,7 +19,7 @@ test("fetch label for skos:prefLabel", async () => {
     .build();
   const result = await fds.fetchQuads(query);
   expect(fds.quads?.length).toBeGreaterThan(0);
-  expect(result.quads[0].object.value).toBe("preferred label");
+  expect(result[0].value.object.value).toBe("preferred label");
 });
 
 test("fetch label for dcterms:publisher", async () => {
@@ -39,7 +39,7 @@ test("fetch label for dcterms:publisher", async () => {
     .build();
   const result = await fds.fetchQuads(query);
   expect(fds.quads?.length).toBeGreaterThan(0);
-  expect(result.quads[0].object.value).toBe("Publisher");
+  expect(result[0].value.object.value).toBe("Publisher");
 });
 
 test("fetch label for dcterms:title", async () => {
@@ -60,8 +60,7 @@ test("fetch label for dcterms:title", async () => {
   const result = await fetcher.fetchQuads(query);
 
   expect(result.length).toBeGreaterThan(0);
-  expect(result[0].quads.length).toBeGreaterThan(0);
-  expect(result[0].quads[0].object.value).toBe("Title");
+  expect(result[0].value.object.value).toBe("Title");
 });
 
 test("fetch label for dcat:theme", async () => {
@@ -80,6 +79,5 @@ test("fetch label for dcat:theme", async () => {
   const result = await fetcher.fetchQuads(query);
 
   expect(result.length).toBeGreaterThan(0);
-  expect(result[0].quads.length).toBeGreaterThan(0);
-  expect(result[0].quads[0].object.value).toBe("theme");
+  expect(result[0].value.object.value).toBe("theme");
 });
