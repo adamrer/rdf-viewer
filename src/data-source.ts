@@ -16,7 +16,7 @@ enum DataSourceType {
  */
 interface DataSource {
   type: DataSourceType;
-  identifier: string;
+  identifier: IRI | string;
   /**
    * Fetches RDF quads from data source corresponding to the query.
    *

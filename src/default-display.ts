@@ -1,4 +1,5 @@
 import { Sourced } from "./data-source";
+import { IRI } from "./rdf-types";
 import { RenderingContext } from "./rendering-context";
 import { Literal, Quad_Object } from "n3";
 
@@ -63,14 +64,14 @@ function createDl(context: RenderingContext) {
  * Adds a predicate of a subject to given dl HTML element
  *
  * @param {*} context - Rendering context
- * @param {string} predicateIri
- * @param {string} subjectIri
+ * @param {IRI} predicateIri
+ * @param {IRI} subjectIri
  * @param {HTMLDListElement} dlElement
  */
 function addPredicateToDl(
   context: RenderingContext,
-  predicateIri: string,
-  subjectIri: string,
+  predicateIri: IRI,
+  subjectIri: IRI,
   dlElement: HTMLDListElement,
 ) {
   const dtElement = document.createElement("dt");
@@ -91,11 +92,11 @@ function addPredicateToDl(
 /**
  * Creates HTML for a subject with a label
  *
- * @param {string} iri - IRI of the labeled subject
+ * @param {IRI} iri - IRI of the labeled subject
  * @param {*} sourcedObjectLabel - Label returned by context
  * @returns {HTMLElement}
  */
-function createLabelHtml(iri: string, sourcedObjectLabel: Sourced<Quad_Object>) {
+function createLabelHtml(iri: IRI, sourcedObjectLabel: Sourced<Quad_Object>) {
   const literal = sourcedObjectLabel.value;
   const bold = document.createElement("div");
   const valueElement = document.createElement("span");
@@ -117,7 +118,7 @@ function createLabelHtml(iri: string, sourcedObjectLabel: Sourced<Quad_Object>) 
 
   return bold;
 }
-function addCopyRedirectButtons(element: HTMLElement, iri: string) {
+function addCopyRedirectButtons(element: HTMLElement, iri: IRI) {
   const copyButton = document.createElement("span");
   copyButton.textContent = "📋";
   copyButton.onclick = () => {
@@ -173,7 +174,7 @@ function addSourcedObjectToDl(
 }
 /**
  *
- * @param {string[]} sources - List of data source identifiers
+ * @param {IRI|string[]} sources - List of data source identifiers
  * @returns {Element} HTML element showing sources with their indices which can be used as reference
  */
 // function createLegend(sources: string[]){

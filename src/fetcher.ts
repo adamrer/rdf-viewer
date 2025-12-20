@@ -6,6 +6,7 @@ import {
 } from "./query-builder";
 import { DataSource } from "./data-source-implementations";
 import { Sourced } from "./data-source";
+import { IRI } from "./rdf-types";
 
 /**
  * Interface for fetching quads from multiple data sources
@@ -121,9 +122,9 @@ class FetcherImpl implements Fetcher {
  * Hierarchical structure, deduplicated quads.
  */
 interface StructuredQuads {
-  [subjectIri: string]: {
-    [predicateIri: string]: {
-      [objectValue: string]: Sourced<Quad_Object>;
+  [subjectIri: IRI]: {
+    [predicateIri: IRI]: {
+      [objectValue: IRI]: Sourced<Quad_Object>;
     };
   };
 }

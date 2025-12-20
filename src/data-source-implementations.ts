@@ -5,6 +5,7 @@ import { queryProcessor } from "./query-processor";
 import pLimit from "p-limit";
 import { Query, simpleQueryStepBuilder } from "./query-builder";
 import { DataSource, DataSourceType, Sourced } from "./data-source";
+import { IRI } from "./rdf-types";
 
 
 /** SPARQL JSON result RDF term types */
@@ -19,11 +20,11 @@ interface ResultTerm {
   /** Type of the node */
   type: ResultType;
   /** Value of the node */
-  value: string;
+  value: IRI | string;
   /** If the node is of a type literal, this represents a language tag */
   "xml:lang"?: string;
   /** If the node is of a type literal, this represents the type of the literal */
-  datatype?: string;
+  datatype?: IRI | string;
 }
 
 /**
@@ -124,11 +125,11 @@ class FileDataSource implements DataSource {
   type: DataSourceType.LocalFile | DataSourceType.RemoteFile;
   quads?: Quad[];
   file?: File;
-  url?: string;
+  url?: IRI;
   fileLoaded: boolean = false;
-  identifier: string;
+  identifier: IRI | string;
 
-  constructor(fileOrUrl: File | string) {
+  constructor(fileOrUrl: File | IRI) {
     if (fileOrUrl instanceof File) {
       this.file = fileOrUrl;
       this.identifier = fileOrUrl.name;
@@ -146,7 +147,7 @@ class FileDataSource implements DataSource {
    * @param url
    * @returns
    */
-  async fetchFile(url: string): Promise<File> {
+  async fetchFile(url: IRI): Promise<File> {
     const response = await fetch(url);
     const blob = await response.blob();
     return new File([blob], url);
@@ -217,11 +218,11 @@ function isRdfType(contentType: string) {
 }
 class LdpDataSource implements DataSource {
   type = DataSourceType.LDP;
-  identifier: string;
-  url: string;
+  identifier: IRI | string;
+  url: IRI;
   quads: Quad[] = [];
   quadsLoaded: boolean = false;
-  constructor(url: string) {
+  constructor(url: IRI) {
     this.url = url;
     this.identifier = url;
   }
@@ -234,7 +235,7 @@ class LdpDataSource implements DataSource {
    * @returns
    */
   async loadAllResources(
-    urls: string[],
+    urls: IRI[],
     concurrency: number = 5,
   ): Promise<Quad[]> {
     const limit = pLimit(concurrency);

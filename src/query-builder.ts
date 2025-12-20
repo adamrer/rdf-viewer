@@ -12,6 +12,7 @@ import {
   GraphPatternBuilder,
   graphPatternBuilder,
 } from "./graph-pattern-builder";
+import { IRI } from "./rdf-types";
 
 /**
  * Interface for simple query step builder where you can specify
@@ -41,7 +42,7 @@ interface GraphStepProvider {
    *
    * @see GraphStepProvider
    */
-  graphs(iris?: string[]): SubjectStep;
+  graphs(iris?: IRI[]): SubjectStep;
 }
 
 /**
@@ -56,7 +57,7 @@ interface SubjectStep {
    * @param iris - IRIs of the subjects that the quads should have.
    * If not specified, then all subjects will be retrieved.
    */
-  subjects(iris?: string[]): PredicateStep;
+  subjects(iris?: IRI[]): PredicateStep;
 }
 
 /**
@@ -72,14 +73,14 @@ interface PredicateStep {
    * If not specified, then all predicates will be retrieved.
    * The specified IRIs are connected as in logical OR.
    */
-  predicates(iris?: string[]): ObjectStep;
+  predicates(iris?: IRI[]): ObjectStep;
 }
 /**
  * Interface for caring information to create a literal
  */
 interface LiteralCreationHelper {
   value: string;
-  languageOrDatatype?: string;
+  languageOrDatatype?: IRI|string;
 }
 /**
  * Fourth build step of the SimpleStepQueryBuilder for setting the first object and
@@ -95,7 +96,7 @@ interface ObjectStep {
    * If not specified, then all predicates will be retrieved.
    * The specified IRIs are connected as in logical OR.
    */
-  objects(irisOrLiterals?: (string | LiteralCreationHelper)[]): FinalStep;
+  objects(irisOrLiterals?: (IRI | string | LiteralCreationHelper)[]): FinalStep;
 }
 
 /**
@@ -188,7 +189,7 @@ class SubjectStepImpl implements SubjectStep {
     this.graphValues = graphs;
   }
 
-  subjects(iris: readonly string[] = ALL_SUBJECTS): PredicateStep {
+  subjects(iris: readonly IRI[] = ALL_SUBJECTS): PredicateStep {
     const subjectValues = iris.map((iri) => DataFactory.namedNode(iri));
     if (iris !== ALL_SUBJECTS) {
       this.graphPatternBuilder.values(this.subjectVar, subjectValues);
@@ -208,7 +209,7 @@ class SimpleStepQueryBuilderImpl
   extends SubjectStepImpl
   implements GraphStepProvider
 {
-  graphs(iris: readonly string[] = ALL_GRAPHS): SubjectStep {
+  graphs(iris: readonly IRI[] = ALL_GRAPHS): SubjectStep {
     this.graphValues = iris.map((iri) => DataFactory.namedNode(iri));
     return new SubjectStepImpl(this.graphValues);
   }
@@ -221,7 +222,7 @@ class PredicateStepImpl implements PredicateStep {
     this.buildingHelper = buildingHelper;
   }
 
-  predicates(iris: readonly string[] = ALL_PREDICATES): ObjectStep {
+  predicates(iris: readonly IRI[] = ALL_PREDICATES): ObjectStep {
     const predicateValues = iris.map((iri) => DataFactory.namedNode(iri));
     if (iris.length !== 0) {
       this.buildingHelper.graphPatternBuilder.values(
@@ -244,7 +245,7 @@ class ObjectStepImpl implements ObjectStep {
     this.buildingHelper = buildingHelper;
   }
   objects(
-    iris: readonly (string | LiteralCreationHelper)[] = ALL_OBJECTS,
+    iris: readonly (IRI | LiteralCreationHelper)[] = ALL_OBJECTS,
   ): FinalStep {
     const objectValues = iris.map((item) =>
       typeof item === "string"

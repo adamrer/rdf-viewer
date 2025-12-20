@@ -6,6 +6,7 @@ import {
 } from "./data-source-implementations";
 import { DisplayPlugin } from "./plugin";
 import { Language } from "./query-interfaces";
+import { IRI } from "./rdf-types";
 
 const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
 
@@ -17,7 +18,7 @@ type Listener = () => void;
 class AppState {
   private static _instance: AppState;
 
-  entityIri: string = "https://rero.datapod.igrant.io/";
+  entityIri: IRI = "https://rero.datapod.igrant.io/";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -70,43 +71,43 @@ class AppState {
     return this.plugins[this.selectedPluginIndex];
   }
 
-  setEntityIRI(iri: string) {
+  setEntityIRI(iri: IRI) {
     this.entityIri = decodeURIComponent(iri);
     this.notify();
   }
 
-  addFileDataSource(fileOrUrl: File | string) {
+  addFileDataSource(fileOrUrl: File | IRI) {
     const fds = new FileDataSource(fileOrUrl);
     this.dataSources.push(fds);
     this.notify();
   }
 
-  addSparqlDataSource(endpointUrl: string) {
+  addSparqlDataSource(endpointUrl: IRI) {
     const sds = new SparqlDataSource(endpointUrl);
     this.dataSources.push(sds);
     this.notify();
   }
 
-  addLDPDataSource(url: string) {
+  addLDPDataSource(url: IRI) {
     const lds = new LdpDataSource(url);
     this.dataSources.push(lds);
     this.notify();
   }
 
-  removeDataSource(identifier: string) {
+  removeDataSource(identifier: IRI) {
     this.dataSources = this.dataSources.filter(
       (ds) => ds.identifier !== identifier,
     );
     this.notify();
   }
 
-  addPlugin(label: string, url: string) {
+  addPlugin(label: string, url: IRI) {
     const plugin: DisplayPlugin = { label: label, url: url, classes: [] };
     this.plugins.push(plugin);
     this.notify();
   }
 
-  setSelectedPlugin(url: string) {
+  setSelectedPlugin(url: IRI) {
     this.selectedPluginIndex = this.plugins.findIndex(
       (plugin) => plugin.url === url,
     );

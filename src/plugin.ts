@@ -1,3 +1,4 @@
+import { IRI } from "./rdf-types";
 import { RenderingContext } from "./rendering-context";
 
 /**
@@ -5,7 +6,7 @@ import { RenderingContext } from "./rendering-context";
  */
 interface DisplayPlugin {
   /** URL from which is the plugin accessible */
-  url: string;
+  url: IRI;
   /** Label which will be displayed to the user */
   label: string;
   /** Classes which the plugin can display */

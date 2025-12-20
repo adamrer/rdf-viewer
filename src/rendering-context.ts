@@ -1,7 +1,9 @@
-import { Literal } from "n3";
-import { mergeStructuredQuads, Fetcher, SourcedObject, StructuredQuads } from "./fetcher";
+import { Literal, Quad_Object } from "n3";
+import { mergeStructuredQuads, Fetcher, StructuredQuads } from "./fetcher";
 import { NotificationType, notifier } from "./notifier";
 import { Language } from "./query-interfaces";
+import { IRI } from "./rdf-types";
+import { Sourced } from "./data-source";
 
 /**
  * Interface for the plugin to use for rendering and fetching the data
@@ -17,7 +19,7 @@ interface RenderingContext {
    * @param labelPredicates - Predicate IRIs which objects can be used as labels of any fetched IRI
    * @param subjectIri - Subject IRI of the quads that will be fetched
    */
-  loadData(labelPredicates: string[], subjectIri: string): Promise<void>;
+  loadData(labelPredicates: IRI[], subjectIri: IRI): Promise<void>;
   /**
    * Returns label for the given IRI, undefined if it has no label from labelPredicates parameter in loadData.
    * The label that is the most preferred by the user is picked.
@@ -25,20 +27,20 @@ interface RenderingContext {
    * @param iri - IRI to get label of
    * @see loadData
    */
-  getLabel(iri: string): SourcedObject | undefined;
+  getLabel(iri: IRI): Sourced<Quad_Object> | undefined;
   /**
    * Returns the objects of the quads with the given subject and predicate
    *
    * @param subjectIri - the subject IRI
    * @param predicateIri - the predicate IRI
    */
-  getObjects(subjectIri: string, predicateIri: string): SourcedObject[];
+  getObjects(subjectIri: IRI, predicateIri: IRI): Sourced<Quad_Object>[];
   /**
    * Returns a list of predicates of the specified subject
    *
    * @param subjectIri - the subject IRI
    */
-  getPredicates(subjectIri: string): string[];
+  getPredicates(subjectIri: IRI): IRI[];
   /**
    * Returns an instance of QuadsFetcher
    */
@@ -80,7 +82,7 @@ class RenderingContextImpl implements RenderingContext {
   resultElement: HTMLElement;
 
   constructor(
-    subjectIri: string,
+    subjectIri: IRI,
     fetcher: Fetcher,
     preferredLanguages: Language[],
     resultElement: HTMLElement,
@@ -92,8 +94,8 @@ class RenderingContextImpl implements RenderingContext {
   }
 
   async loadData(
-    labelPredicates: string[] = [],
-    subjectIri: string = this.subjectIri,
+    labelPredicates: IRI[] = [],
+    subjectIri: IRI = this.subjectIri,
   ): Promise<void> {
     const query = this.fetcherInstance
       .builder()
@@ -111,7 +113,7 @@ class RenderingContextImpl implements RenderingContext {
   }
   async loadLabels(
     structuredQuads: StructuredQuads,
-    labelPredicates: string[] = [],
+    labelPredicates: IRI[] = [],
   ): Promise<StructuredQuads> {
     const iris = this.collectIris(structuredQuads);
     const labelQuery = this.fetcherInstance
@@ -123,18 +125,18 @@ class RenderingContextImpl implements RenderingContext {
       .build();
     return this.fetcherInstance.fetchStructuredQuads(labelQuery);
   }
-  getLabel(iri: string = this.subjectIri): SourcedObject | undefined {
+  getLabel(iri: IRI = this.subjectIri): Sourced<Quad_Object> | undefined {
     const labelPredicates = this.labels[iri];
     if (!labelPredicates) return undefined;
     for (const predicate in labelPredicates) {
       const labelObjects = Object.values(labelPredicates[predicate]);
       const literals = labelObjects.filter(
-        (o) => o.term.termType === "Literal",
+        (o) => o.value.termType === "Literal",
       );
 
       literals.sort((a, b) => {
-        const langA = (a.term as Literal).language || "";
-        const langB = (b.term as Literal).language || "";
+        const langA = (a.value as Literal).language || "";
+        const langB = (b.value as Literal).language || "";
         return this.getLangPriority(langA) - this.getLangPriority(langB);
       });
 
@@ -144,9 +146,9 @@ class RenderingContextImpl implements RenderingContext {
     return undefined;
   }
   getObjects(
-    predicateIri: string,
-    subjectIri: string = this.subjectIri,
-  ): SourcedObject[] {
+    predicateIri: IRI,
+    subjectIri: IRI = this.subjectIri,
+  ): Sourced<Quad_Object>[] {
     const predicateMap = this.data[subjectIri];
     if (predicateMap) {
       const objectsMap = predicateMap[predicateIri];
@@ -155,7 +157,7 @@ class RenderingContextImpl implements RenderingContext {
 
     return [];
   }
-  getPredicates(subjectIri: string = this.subjectIri): string[] {
+  getPredicates(subjectIri: IRI = this.subjectIri): IRI[] {
     return Object.keys(this.data[subjectIri]);
   }
   fetcher(): Fetcher {
@@ -190,7 +192,7 @@ class RenderingContextImpl implements RenderingContext {
         iris.push(predicateIri);
         const objectKeys = predicates[predicateIri];
         for (const objectKey in objectKeys) {
-          const object = objectKeys[objectKey].term;
+          const object = objectKeys[objectKey].value;
           if (object.termType !== "Literal") {
             iris.push(object.value);
           }
@@ -211,7 +213,7 @@ class RenderingContextImpl implements RenderingContext {
  * @see RenderingContext
  */
 function renderingContext(
-  subjectIri: string,
+  subjectIri: IRI,
   fetcher: Fetcher,
   preferredLanguages: Language[],
   resultElement: HTMLElement,

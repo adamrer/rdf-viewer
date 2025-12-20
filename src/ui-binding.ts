@@ -2,6 +2,7 @@ import { AppState } from "./app-state";
 import { DataSourceType } from "./data-source-implementations";
 import { display } from "./display";
 import { fetchPlugin } from "./plugin";
+import { IRI } from "./rdf-types";
 
 const app = AppState.getInstance();
 
@@ -135,7 +136,7 @@ function addPluginFromFormData(formData: FormData) {
   const pluginType: PluginType = formData.get("plugin") as PluginType;
   switch (pluginType) {
     case "url": {
-      const url = formData.get("url-plugin") as string | null;
+      const url = formData.get("url-plugin") as IRI | null;
       if (!url) throw new Error("Missing url for plugin in form data");
       const label = formData.get("label-plugin") as string | null;
       if (!label) throw new Error("Missing label for plugin in form data");
@@ -157,7 +158,7 @@ function addDataSourceFromFormData(formData: FormData) {
   const dsType: DataSourceType = formData.get("source") as DataSourceType;
   switch (dsType) {
     case DataSourceType.Sparql: {
-      const sparqlUrl = formData.get("sparql-source-text") as string | null;
+      const sparqlUrl = formData.get("sparql-source-text") as IRI | null;
       if (!sparqlUrl)
         throw new Error("Missing url for sparql endpoint in form data");
       app.addSparqlDataSource(sparqlUrl);
@@ -177,7 +178,7 @@ function addDataSourceFromFormData(formData: FormData) {
       break;
     }
     case DataSourceType.RemoteFile: {
-      const fileUrl = formData.get("remote-file-source-text") as string | null;
+      const fileUrl = formData.get("remote-file-source-text") as IRI | null;
       if (!fileUrl) throw new Error("Missing url for remote file in form data");
       app.addFileDataSource(fileUrl);
       createSourceEntry(
@@ -188,7 +189,7 @@ function addDataSourceFromFormData(formData: FormData) {
       break;
     }
     case DataSourceType.LDP: {
-      const ldpUrl = formData.get("ldp-source-text") as string | null;
+      const ldpUrl = formData.get("ldp-source-text") as IRI | null;
       if (!ldpUrl)
         throw new Error("Missing url for LDP data source in form data");
       app.addLDPDataSource(ldpUrl);
@@ -239,7 +240,7 @@ function setupRadioTextToggle(containerClass: string) {
  */
 function createSourceEntry(
   type: DataSourceType,
-  identifier: string,
+  identifier: IRI | string,
   containerEl: HTMLElement,
 ) {
   const entryEl = document.createElement("div");
@@ -282,7 +283,7 @@ function createSourceEntry(
  */
 function addPluginOption(
   label: string,
-  url: string,
+  url: IRI,
   selectEl: HTMLSelectElement,
 ) {
   const option = document.createElement("option");
