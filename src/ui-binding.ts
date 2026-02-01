@@ -66,7 +66,7 @@ function addEventListeners() {
   });
 
   addSourceFormEl.addEventListener("reset", () => {
-    // will run after resetting the form
+    // will run after reseting the form
     setTimeout(() => {
       const radios = addSourceFormEl.querySelectorAll('input[type="radio"]');
       radios.forEach((radio) => {

@@ -75,7 +75,7 @@ class AppState {
     this.entityIri = decodeURIComponent(iri);
     this.notify();
   }
-
+  // TODO: merge adding functions to one with a parameter
   addFileDataSource(fileOrUrl: File | IRI) {
     const fds = new FileDataSource(fileOrUrl);
     this.dataSources.push(fds);

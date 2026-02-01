@@ -18,11 +18,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        app: './ui.html',
+        app: './index.html',
       },
     }
   },
   server: {
-    open: "./ui.html"
+    open: "./index.html"
   }
 });
