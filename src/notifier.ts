@@ -2,16 +2,40 @@ const notificationContainer = document.getElementById(
   "notification-container",
 )! as HTMLElement;
 
+/**
+ * Type of the notification
+ */
 type NotificationType = "info" | "success" | "warning" | "error";
 
+/**
+ * Service for showing notifications to the user
+ */
 interface NotifierService {
+  /**
+   * 
+   * @param message - Text content of the notification
+   * @param type - Type of the notification
+   * @param duration - Duration in milliseconds for which the notification is shown
+   */
   notify(message: string, type: NotificationType, duration: number): void;
+
+  /**
+   * 
+   * @param promise - Promise to be tracked
+   * @param messages - Messages to be shown for different states of the promise
+   */
   notifyPromise<T>(
     promise: Promise<T>,
     messages: { pending: string; success: string; error: string },
   ): Promise<T>;
 }
+
+
+/**
+ * Implementation of the NotifierService interface
+ */
 class NotifierServiceImpl implements NotifierService {
+
   notify(message: string, type: NotificationType) {
     if (!notificationContainer)
       throw new Error("Notification container not found");

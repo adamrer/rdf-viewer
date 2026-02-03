@@ -4,7 +4,7 @@ import {
   LdpDataSource,
   SparqlDataSource,
 } from "./data-source-implementations";
-import { DisplayPlugin } from "./plugin";
+import { DisplayPlugin } from "./plugin-api";
 import { Language } from "./query-interfaces";
 import { IRI } from "./rdf-types";
 

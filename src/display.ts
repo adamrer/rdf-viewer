@@ -1,5 +1,5 @@
 
-import { DisplayPluginModule } from "./plugin";
+import { DisplayPluginModule } from "./plugin-api";
 import { displayQuads } from "./default-display";
 import { notifier } from "./notifier";
 import { AppState } from "./app-state";

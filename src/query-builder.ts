@@ -353,5 +353,5 @@ function queryBuilder(): QueryBuilder {
   return new SimpleStepQueryBuilderImpl();
 }
 
-export type { Query, Language, QueryBuilder as SimpleQueryStepBuilder };
-export { NO_LANG_SPECIFIED, queryBuilder as simpleQueryStepBuilder };
+export type { Query, Language, QueryBuilder };
+export { NO_LANG_SPECIFIED, queryBuilder };
