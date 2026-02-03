@@ -209,7 +209,7 @@ interface PluginV1DataContext {
     builder: () => QueryBuilder
     /**
      * 
-     * @param query query to evaluate on data sources
+     * @param query - query to evaluate on data sources
      * @returns queried data
      */
     execute: (query: Query) => Promise<GraphNavigator>

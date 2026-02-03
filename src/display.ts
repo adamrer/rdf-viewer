@@ -2,7 +2,7 @@
 import { DisplayPluginModule } from "./plugin-api";
 import { displayQuads } from "./default-display";
 import { notifier } from "./notifier";
-import { AppState } from "./app-state";
+import { StateManager } from "./app-state";
 import { FetcherImpl } from "./fetcher";
 import {
   renderingContext,
@@ -16,7 +16,7 @@ import { Language, NO_LANG_SPECIFIED } from "./query-interfaces";
  * @returns a promise to show the plugins result
  */
 async function display(pluginModule: DisplayPluginModule): Promise<void> {
-  const app = AppState.getInstance();
+  const app = StateManager.getInstance();
   const resultsEl: HTMLDivElement = document.getElementById(
     "results",
   ) as HTMLDivElement;
@@ -46,7 +46,7 @@ async function display(pluginModule: DisplayPluginModule): Promise<void> {
  * @see RenderingContext
  */
 function createContextFromAppState(
-  app: AppState,
+  app: StateManager,
   resultElement: HTMLElement,
 ): RenderingContext {
   const entityIri = app.entityIri;

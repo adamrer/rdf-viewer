@@ -1,10 +1,10 @@
-import { AppState } from "./app-state";
+import { StateManager } from "./app-state";
 import { DataSourceType } from "./data-source-implementations";
 import { display } from "./display";
 import { fetchPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
 
-const app = AppState.getInstance();
+const app = StateManager.getInstance();
 
 type PluginType = "url";
 

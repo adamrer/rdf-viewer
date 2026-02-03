@@ -15,8 +15,8 @@ type Listener = () => void;
 /**
  * Holds and manages data set by user in the UI. Is Observable.
  */
-class AppState {
-  private static _instance: AppState;
+class StateManager {
+  private static _instance: StateManager;
 
   entityIri: IRI = "https://rero.datapod.igrant.io/";
   languages: Language[] = ["cs", "en"];
@@ -52,11 +52,11 @@ class AppState {
 
   private constructor() {}
 
-  static getInstance(): AppState {
-    if (!AppState._instance) {
-      AppState._instance = new AppState();
+  static getInstance(): StateManager {
+    if (!StateManager._instance) {
+      StateManager._instance = new StateManager();
     }
-    return AppState._instance;
+    return StateManager._instance;
   }
 
   subscribe(listener: Listener) {
@@ -123,4 +123,4 @@ function getPluginUrl(pluginName: string): string {
   return pluginBaseUrl + pluginName;
 }
 
-export { AppState };
+export { StateManager };

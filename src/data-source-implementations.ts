@@ -3,7 +3,7 @@ import { Readable } from "readable-stream";
 import { rdfParser } from "rdf-parse";
 import { queryProcessor } from "./query-processor";
 import pLimit from "p-limit";
-import { Query, simpleQueryStepBuilder } from "./query-builder";
+import { Query, queryBuilder } from "./query-builder";
 import { DataSource, DataSourceType, Sourced } from "./data-source";
 import { IRI } from "./rdf-types";
 
@@ -264,7 +264,7 @@ class LdpDataSource implements DataSource {
     const containerQuads = await this.loadAllResources(containerIris);
     this.quads.push(...containerQuads);
     const ldp = "http://www.w3.org/ns/ldp#";
-    const subResourcesQuery = simpleQueryStepBuilder()
+    const subResourcesQuery = queryBuilder()
       .subjects(containerIris)
       .predicates([ldp + "contains"])
       .objects()

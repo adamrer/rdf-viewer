@@ -2,8 +2,8 @@ import { expect, test } from "vitest";
 import { FetcherImpl } from "../src/fetcher";
 import { FileDataSource } from "../src/data-source-implementations";
 import {
-  SimpleQueryStepBuilder,
-  simpleQueryStepBuilder,
+  QueryBuilder,
+  queryBuilder,
 } from "../src/query-builder";
 
 test("fetch label for skos:prefLabel", async () => {
@@ -11,7 +11,7 @@ test("fetch label for skos:prefLabel", async () => {
     "https://www.w3.org/2009/08/skos-reference/skos.rdf",
   );
 
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/2004/02/skos/core#prefLabel"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -27,7 +27,7 @@ test("fetch label for dcterms:publisher", async () => {
     "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
   );
 
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://purl.org/dc/terms/publisher"])
     .predicates([
@@ -47,7 +47,7 @@ test("fetch label for dcterms:title", async () => {
     "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
   );
   const fetcher = new FetcherImpl([fds]);
-  const builder = fetcher.builder() as SimpleQueryStepBuilder;
+  const builder = fetcher.builder() as QueryBuilder;
   const query = builder
     .subjects(["http://purl.org/dc/terms/title"])
     .predicates([
@@ -66,7 +66,7 @@ test("fetch label for dcterms:title", async () => {
 test("fetch label for dcat:theme", async () => {
   const fds = new FileDataSource("https://www.w3.org/ns/dcat3.ttl");
   const fetcher = new FetcherImpl([fds]);
-  const builder = fetcher.builder() as SimpleQueryStepBuilder;
+  const builder = fetcher.builder() as QueryBuilder;
   const query = builder
     .subjects(["http://www.w3.org/ns/dcat#theme"])
     .predicates([
