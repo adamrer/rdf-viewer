@@ -5,8 +5,6 @@ import { notifier } from "./notifier";
 import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
 
-const app = StateManager.getInstance();
-
 type PluginType = "url";
 
 const addSourceFormEl = document.getElementById(
@@ -32,31 +30,48 @@ const configModal = document.getElementById(
 )! as HTMLDialogElement;
 
 /**
- * Binds UI to StateManager
+ * Binds UI to StateManager. Should be called once on application startup.
  */
 function bind() {
   addEventListeners();
   setupRadioTextToggle("source-option");
   setupRadioTextToggle("plugin-option");
-  loadStateManager();
+  createSubscriptions();
 }
-/**
- * Loads values from StateManager to UI
+
+/** 
+ * Creates subscriptions to StateManager changes to update the UI
  */
-function loadStateManager() {
-  iriEl.value = app.entityIri;
-  languagesEl.value = app.languages.join(", ");
-  app.dataSources.forEach((ds) =>
-    createSourceEntry(ds.type, ds.identifier, dataSourcesContainer),
-  );
-  app.plugins.forEach((plugin) =>
-    addPluginOption(plugin, pluginSelectEl),
-  );
+function createSubscriptions() {
+  const app = StateManager.getInstance();
+
+  app.subscribe(() => {
+    const optionElements = app.plugins.map(createPluginOption);
+    pluginSelectEl.replaceChildren(...optionElements);
+  }, ["plugins"], true);
+  
+  app.subscribe(() => {
+    iriEl.value = app.entityIri;
+  }, ["entityIri"], true);
+
+  app.subscribe(() => {
+    languagesEl.value = app.languages.join(", ");
+  }, ["languages"], true);  
+
+  app.subscribe(() => {
+    const dataSourcesElements = app.dataSources.map((ds) => {
+      return createDataSourceEntry(ds.type, ds.identifier);
+    })
+    dataSourcesContainer.replaceChildren(...dataSourcesElements);
+  }, ["dataSources"], true);
 }
+
 /**
  * Adds all event listeners to UI elements
  */
 function addEventListeners() {
+  const app = StateManager.getInstance();
+
   addSourceFormEl.addEventListener("submit", (event: SubmitEvent) => {
     event.preventDefault();
     const formData = new FormData(addSourceFormEl);
@@ -98,9 +113,8 @@ function addEventListeners() {
   });
 
   pluginSelectEl.addEventListener("change", () => {
-    const selectedValue = pluginSelectEl.value;
     // TODO: use index instead of label for selecting plugin (two-way bind with StateManager)
-    app.setSelectedPlugin(selectedValue);
+    app.setSelectedPlugin(pluginSelectEl.selectedIndex);
   });
 
   // TODO: refactor to new PluginV1 system
@@ -138,18 +152,14 @@ function addEventListeners() {
  * @param formData - FormData with information about new plugin
  */
 async function addPluginsFromFormData(formData: FormData) {
+  const app = StateManager.getInstance();
   const pluginType: PluginType = formData.get("plugin") as PluginType;
   switch (pluginType) {
     case "url": {
       const url = formData.get("url-plugin") as IRI | null;
       if (!url) throw new Error("Missing url for plugin in form data");
       // TODO: handle errors
-      // TODO: use subscribe method to update UI
-      const newPlugins: LabeledPlugin[] = await app.addPlugins(url);
-      newPlugins.forEach((plugin) => {
-        addPluginOption(plugin, pluginSelectEl);
-      }
-      )
+      await app.addPlugins(url);
       break;
     }
 
@@ -163,6 +173,7 @@ async function addPluginsFromFormData(formData: FormData) {
  * @param formData - FormData with information about new DataSource
  */
 function addDataSourceFromFormData(formData: FormData) {
+  const app = StateManager.getInstance();
   const dsType: DataSourceType = formData.get("source") as DataSourceType;
   switch (dsType) {
     case DataSourceType.Sparql: {
@@ -170,18 +181,12 @@ function addDataSourceFromFormData(formData: FormData) {
       if (!sparqlUrl)
         throw new Error("Missing url for sparql endpoint in form data");
       app.addDataSource(sparqlUrl, DataSourceType.Sparql);
-      createSourceEntry(DataSourceType.Sparql, sparqlUrl, dataSourcesContainer);
       break;
     }
     case DataSourceType.LocalFile: {
       const files = formData.getAll("file-source-files") as File[];
       files.forEach((file) => {
         app.addDataSource(file, DataSourceType.LocalFile);
-        createSourceEntry(
-          DataSourceType.LocalFile,
-          file.name,
-          dataSourcesContainer,
-        );
       });
       break;
     }
@@ -189,11 +194,7 @@ function addDataSourceFromFormData(formData: FormData) {
       const fileUrl = formData.get("remote-file-source-text") as IRI | null;
       if (!fileUrl) throw new Error("Missing url for remote file in form data");
       app.addDataSource(fileUrl, DataSourceType.RemoteFile);
-      createSourceEntry(
-        DataSourceType.RemoteFile,
-        fileUrl,
-        dataSourcesContainer,
-      );
+      
       break;
     }
     case DataSourceType.LDP: {
@@ -201,7 +202,6 @@ function addDataSourceFromFormData(formData: FormData) {
       if (!ldpUrl)
         throw new Error("Missing url for LDP data source in form data");
       app.addDataSource(ldpUrl, DataSourceType.LDP);
-      createSourceEntry(DataSourceType.LDP, ldpUrl, dataSourcesContainer);
       break;
     }
 
@@ -240,17 +240,17 @@ function setupRadioTextToggle(containerClass: string) {
   sync();
 }
 /**
- * Adds DataSource to the list of defined DataSources
+ * Creates an HTML element representing a DataSource entry in the UI
  *
  * @param type - type of the DataSource
  * @param identifier - Identifier of the DataSource (URL or filename)
- * @param containerEl - Element containing the list of DataSources
+ * @returns the HTMLElement representing the DataSource entry
  */
-function createSourceEntry(
+function createDataSourceEntry(
   type: DataSourceType,
-  identifier: IRI | string,
-  containerEl: HTMLElement,
-) {
+  identifier: IRI | string
+): HTMLElement {
+  const app = StateManager.getInstance();
   const entryEl = document.createElement("div");
   entryEl.className = "source-entry";
   let typeLabel;
@@ -280,25 +280,22 @@ function createSourceEntry(
     app.removeDataSource(identifier);
   });
   entryEl.appendChild(removeButton);
-  containerEl.appendChild(entryEl);
+  return entryEl;
 }
+
 /**
- * Adds new plugin option to HTML Select element
- *
- * @param label - label for the plugin
- * @param url - URL of the plugin
- * @param selectEl - HTML Select element for plugin selection
+ * Creates HTMLOptionElement for given plugin
+ * @param plugin - Plugin to create option for
+ * @returns the HTMLOptionElement representing the plugin
  */
-function addPluginOption(
-  plugin: LabeledPlugin,
-  selectEl: HTMLSelectElement,
-) {
+function createPluginOption(plugin: LabeledPlugin): HTMLOptionElement {
   // TODO: ability to set priority in label languages
   const label = Object.values(plugin.label)[0]
   const option = document.createElement("option");
   option.value = label;
   option.textContent = label;
-  selectEl.appendChild(option);
+  return option;
 }
+
 
 export { bind };

@@ -12,9 +12,20 @@ import { IRI } from "./rdf-types";
 // const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
 
 type Listener = () => void;
+type StateMember =
+  | "entityIri"
+  | "languages"
+  | "dataSources"
+  | "plugins"
+  | "selectedPluginIndex";
+type Subscription = { keys: StateMember[]; listener: Listener };
+
 /**
  * Holds and manages data set by user in the UI. Is Observable.
  */
+// TODO: persist state in localStorage or IndexedDB
+// TODO: rename to something like ConfigManager
+// TODO: add comments
 class StateManager {
   private static _instance: StateManager;
 
@@ -32,7 +43,7 @@ class StateManager {
   plugins: LabeledPlugin[] = [];
   selectedPluginIndex: number = 0;
 
-  listeners: Listener[] = [];
+  subscriptions: Subscription[] = [];
 
   private constructor() {}
 
@@ -43,12 +54,39 @@ class StateManager {
     return StateManager._instance;
   }
 
-  subscribe(listener: Listener) {
-    this.listeners.push(listener);
+  /**
+   * Subscribe to changes. Provide an array of state member keys to listen to.
+   * If `keys` is empty or omitted, the listener will be notified for any change.
+   */
+  subscribe(listener: Listener, keys?: StateMember[], notifyImmediately = false) {
+    this.subscriptions.push({ keys: keys ?? [], listener });
+    if (notifyImmediately) {
+      listener();
+    }
   }
 
-  notify() {
-    this.listeners.forEach((listener) => listener());
+  /**
+   * Notify listeners. If `changed` is omitted, notify all listeners.
+   * Otherwise only those whose subscribed keys intersect `changed` (or who subscribed to all keys) are called.
+   */
+  notify(changed?: StateMember[]) {
+    if (!changed || changed.length === 0) {
+      this.subscriptions.forEach((s) => s.listener());
+      return;
+    }
+    const changedSet = new Set(changed);
+    this.subscriptions.forEach((s) => {
+      if (s.keys.length === 0) {
+        s.listener();
+        return;
+      }
+      for (const k of s.keys) {
+        if (changedSet.has(k)) {
+          s.listener();
+          return;
+        }
+      }
+    });
   }
 
   getSelectedPlugin() {
@@ -57,7 +95,7 @@ class StateManager {
 
   setEntityIRI(iri: IRI) {
     this.entityIri = decodeURIComponent(iri);
-    this.notify();
+    this.notify(["entityIri"]);
   }
   addDataSource(source: IRI | File, type: DataSourceType) {
     let ds: DataSource;
@@ -76,35 +114,33 @@ class StateManager {
         throw new Error(`Unsupported data source type: ${type}`);
     }
     this.dataSources.push(ds);
-    this.notify();
+    this.notify(["dataSources"]);
   }
 
   removeDataSource(identifier: IRI) {
     this.dataSources = this.dataSources.filter(
       (ds) => ds.identifier !== identifier,
     );
-    this.notify();
+    this.notify(["dataSources"]);
   }
 
   async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
-    const pluginModule: PluginModule = await import(pluginModuleUrl);
+    const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
     this.plugins.push(...newPlugins);
-    this.notify();
+    this.notify(["plugins"]);
 
     return newPlugins;
   }
 
-  setSelectedPlugin(label: string) {
-    this.selectedPluginIndex = this.plugins.findIndex(
-      (plugin) => Object.values(plugin.label).includes(label),
-    );
-    this.notify();
+  setSelectedPlugin(index: number) {
+    this.selectedPluginIndex = index
+    this.notify(["selectedPluginIndex"]);
   }
 
   setLanguages(languages: Language[]) {
     this.languages = languages;
-    this.notify();
+    this.notify(["languages"]);
   }
 }
 
