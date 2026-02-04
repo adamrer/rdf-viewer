@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceType,
   FileDataSource,
   LdpDataSource,
   SparqlDataSource,
@@ -58,22 +59,23 @@ class StateManager {
     this.entityIri = decodeURIComponent(iri);
     this.notify();
   }
-  // TODO: merge adding functions to one with a parameter
-  addFileDataSource(fileOrUrl: File | IRI) {
-    const fds = new FileDataSource(fileOrUrl);
-    this.dataSources.push(fds);
-    this.notify();
-  }
-
-  addSparqlDataSource(endpointUrl: IRI) {
-    const sds = new SparqlDataSource(endpointUrl);
-    this.dataSources.push(sds);
-    this.notify();
-  }
-
-  addLDPDataSource(url: IRI) {
-    const lds = new LdpDataSource(url);
-    this.dataSources.push(lds);
+  addDataSource(source: IRI | File, type: DataSourceType) {
+    let ds: DataSource;
+    switch (type) {
+      case DataSourceType.Sparql:
+        ds = new SparqlDataSource(source as IRI);
+        break;
+      case DataSourceType.LDP:
+        ds = new LdpDataSource(source as IRI);
+        break;
+      case DataSourceType.LocalFile:
+      case DataSourceType.RemoteFile:
+        ds = new FileDataSource(source);
+        break;
+      default:
+        throw new Error(`Unsupported data source type: ${type}`);
+    }
+    this.dataSources.push(ds);
     this.notify();
   }
 

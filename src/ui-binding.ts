@@ -1,4 +1,4 @@
-import { StateManager } from "./app-state";
+import { StateManager } from "./state-manager";
 import { DataSourceType } from "./data-source-implementations";
 import { display } from "./display";
 import { notifier } from "./notifier";
@@ -169,14 +169,14 @@ function addDataSourceFromFormData(formData: FormData) {
       const sparqlUrl = formData.get("sparql-source-text") as IRI | null;
       if (!sparqlUrl)
         throw new Error("Missing url for sparql endpoint in form data");
-      app.addSparqlDataSource(sparqlUrl);
+      app.addDataSource(sparqlUrl, DataSourceType.Sparql);
       createSourceEntry(DataSourceType.Sparql, sparqlUrl, dataSourcesContainer);
       break;
     }
     case DataSourceType.LocalFile: {
       const files = formData.getAll("file-source-files") as File[];
       files.forEach((file) => {
-        app.addFileDataSource(file);
+        app.addDataSource(file, DataSourceType.LocalFile);
         createSourceEntry(
           DataSourceType.LocalFile,
           file.name,
@@ -188,7 +188,7 @@ function addDataSourceFromFormData(formData: FormData) {
     case DataSourceType.RemoteFile: {
       const fileUrl = formData.get("remote-file-source-text") as IRI | null;
       if (!fileUrl) throw new Error("Missing url for remote file in form data");
-      app.addFileDataSource(fileUrl);
+      app.addDataSource(fileUrl, DataSourceType.RemoteFile);
       createSourceEntry(
         DataSourceType.RemoteFile,
         fileUrl,
@@ -200,7 +200,7 @@ function addDataSourceFromFormData(formData: FormData) {
       const ldpUrl = formData.get("ldp-source-text") as IRI | null;
       if (!ldpUrl)
         throw new Error("Missing url for LDP data source in form data");
-      app.addLDPDataSource(ldpUrl);
+      app.addDataSource(ldpUrl, DataSourceType.LDP);
       createSourceEntry(DataSourceType.LDP, ldpUrl, dataSourcesContainer);
       break;
     }

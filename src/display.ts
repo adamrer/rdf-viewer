@@ -1,7 +1,7 @@
 
 import { PluginV1, PluginV1InstanceContext } from "./plugin-api";
 import { notifier } from "./notifier";
-import { StateManager } from "./app-state";
+import { StateManager } from "./state-manager";
 import { FetcherImpl } from "./fetcher";
 import {
   renderingContext,
