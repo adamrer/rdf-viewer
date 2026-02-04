@@ -7,7 +7,7 @@ import {
 import QueryNodeFactory from "./query-node-factory";
 
 /**
- * Builder for building graph patterns in Query
+ * Builder for building graph patterns in Query inspired by SPARQL 
  * @see Query
  */
 interface GraphPatternBuilder {

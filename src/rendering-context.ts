@@ -42,7 +42,9 @@ interface RenderingContext {
    */
   getPredicates(subjectIri: IRI): IRI[];
   /**
-   * Returns an instance of QuadsFetcher
+   * Returns an instance of Fetcher
+   * 
+   * @see Fetcher
    */
   fetcher(): Fetcher;
   /**

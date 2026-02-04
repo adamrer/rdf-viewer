@@ -15,8 +15,8 @@ import {
 import { IRI } from "./rdf-types";
 
 /**
- * Interface for simple query step builder where you can specify
- * a subject you want to get quads of, then predicates you are
+ * Interface for query step builder for a subset of SPARQL where you can specify
+ * a subjects you want to get quads of, then predicates you are
  * interested in and objects that it should have. Defined predicates
  * and objects are connected in logical OR. You can also specify the
  * graph at the beginning
