@@ -1,7 +1,8 @@
 import { StateManager } from "./app-state";
 import { DataSourceType } from "./data-source-implementations";
 import { display } from "./display";
-import { fetchPlugin } from "./plugin-api";
+import { notifier } from "./notifier";
+import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
 
 const app = StateManager.getInstance();
@@ -31,25 +32,25 @@ const configModal = document.getElementById(
 )! as HTMLDialogElement;
 
 /**
- * Binds UI to AppState
+ * Binds UI to StateManager
  */
 function bind() {
   addEventListeners();
   setupRadioTextToggle("source-option");
   setupRadioTextToggle("plugin-option");
-  loadAppState();
+  loadStateManager();
 }
 /**
- * Loads values from AppState to UI
+ * Loads values from StateManager to UI
  */
-function loadAppState() {
+function loadStateManager() {
   iriEl.value = app.entityIri;
   languagesEl.value = app.languages.join(", ");
   app.dataSources.forEach((ds) =>
     createSourceEntry(ds.type, ds.identifier, dataSourcesContainer),
   );
   app.plugins.forEach((plugin) =>
-    addPluginOption(plugin.label, plugin.url, pluginSelectEl),
+    addPluginOption(plugin, pluginSelectEl),
   );
 }
 /**
@@ -78,7 +79,7 @@ function addEventListeners() {
   addPluginFormEl.addEventListener("submit", (event: SubmitEvent) => {
     event.preventDefault();
     const formData = new FormData(addPluginFormEl);
-    addPluginFromFormData(formData);
+    addPluginsFromFormData(formData);
     addPluginFormEl.reset();
     // prevent refresh
     return false;
@@ -98,16 +99,20 @@ function addEventListeners() {
 
   pluginSelectEl.addEventListener("change", () => {
     const selectedValue = pluginSelectEl.value;
+    // TODO: use index instead of label for selecting plugin (two-way bind with StateManager)
     app.setSelectedPlugin(selectedValue);
   });
 
-  displayBtn.addEventListener("click", async () => {
+  // TODO: refactor to new PluginV1 system
+  displayBtn.addEventListener("click", () => {
     displayBtn.disabled = true;
     const selectedPlugin = app.getSelectedPlugin();
     try {
       if (selectedPlugin) {
-        const pluginModule = await fetchPlugin(selectedPlugin);
-        await display(pluginModule);
+        display(selectedPlugin.v1, app.entityIri);
+      }
+      else {
+        notifier.notify("No plugin selected.", "error");
       }
     } catch (err) {
       console.error("Error while displaying", err);
@@ -128,20 +133,23 @@ function addEventListeners() {
   });
 }
 /**
- * Adds plugin defined in formData to AppState and UI
+ * Adds plugin defined in formData to StateManager and UI
  *
  * @param formData - FormData with information about new plugin
  */
-function addPluginFromFormData(formData: FormData) {
+async function addPluginsFromFormData(formData: FormData) {
   const pluginType: PluginType = formData.get("plugin") as PluginType;
   switch (pluginType) {
     case "url": {
       const url = formData.get("url-plugin") as IRI | null;
       if (!url) throw new Error("Missing url for plugin in form data");
-      const label = formData.get("label-plugin") as string | null;
-      if (!label) throw new Error("Missing label for plugin in form data");
-      app.addPlugin(label, url);
-      addPluginOption(label, url, pluginSelectEl);
+      // TODO: handle errors
+      // TODO: use subscribe method to update UI
+      const newPlugins: LabeledPlugin[] = await app.addPlugins(url);
+      newPlugins.forEach((plugin) => {
+        addPluginOption(plugin, pluginSelectEl);
+      }
+      )
       break;
     }
 
@@ -150,7 +158,7 @@ function addPluginFromFormData(formData: FormData) {
   }
 }
 /**
- * Adds DataSource defined in formData to AppState and UI
+ * Adds DataSource defined in formData to StateManager and UI
  *
  * @param formData - FormData with information about new DataSource
  */
@@ -282,12 +290,13 @@ function createSourceEntry(
  * @param selectEl - HTML Select element for plugin selection
  */
 function addPluginOption(
-  label: string,
-  url: IRI,
+  plugin: LabeledPlugin,
   selectEl: HTMLSelectElement,
 ) {
+  // TODO: ability to set priority in label languages
+  const label = Object.values(plugin.label)[0]
   const option = document.createElement("option");
-  option.value = url;
+  option.value = label;
   option.textContent = label;
   selectEl.appendChild(option);
 }

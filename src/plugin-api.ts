@@ -264,7 +264,9 @@ export type {
   DisplayPlugin, 
   DisplayPluginModule,
   PluginModule,
-  PluginV1InstanceContext
+  PluginV1InstanceContext,
+  PluginV1,
+  LabeledPlugin
 
 };
 export { fetchPlugin };

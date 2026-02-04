@@ -1,6 +1,5 @@
 
-import { DisplayPluginModule } from "./plugin-api";
-import { displayQuads } from "./default-display";
+import { PluginV1, PluginV1InstanceContext } from "./plugin-api";
 import { notifier } from "./notifier";
 import { StateManager } from "./app-state";
 import { FetcherImpl } from "./fetcher";
@@ -9,31 +8,32 @@ import {
   RenderingContext
 } from "./rendering-context"
 import { Language, NO_LANG_SPECIFIED } from "./query-interfaces";
+import { IRI } from "./rdf-types";
 
 /**
- * Calls the display function of plugin module
- *
- * @returns a promise to show the plugins result
+ * Is responsible for displaying the entity with a plugin to the user.
+ * 
+ * @param plugin plugin to use
+ * @returns void
  */
-async function display(pluginModule: DisplayPluginModule): Promise<void> {
+async function display(plugin: PluginV1, entityIri: IRI): Promise<void> {
   const app = StateManager.getInstance();
+  const pluginInstance = plugin.createPluginInstance(createInstanceContext(app), entityIri)
+  if (pluginInstance == null){
+    // error msg - couldn't create plugin instance
+    notifier.notify("Failed to create plugin instance.", "error");
+    // TODO: what to do with displayQuads? What default behavior to do?
+    return;
+  }
   const resultsEl: HTMLDivElement = document.getElementById(
     "results",
   ) as HTMLDivElement;
+  pluginInstance?.mount(resultsEl);
 
-  const context = createContextFromAppState(app, resultsEl);
-  // Clear previous results
-  resultsEl.innerHTML = "";
+}
 
-  try {
-    return pluginModule.displayQuads(context);
-  } catch (error) {
-    const messageParagraph = document.createElement("p");
-    notifier.notify("Failed to load plugin. Using default display.", "error");
-    resultsEl.appendChild(messageParagraph);
-    console.error(error);
-    return displayQuads(context);
-  }
+function createInstanceContext(app: StateManager): PluginV1InstanceContext {
+  return null as any; // TODO: implement
 }
 
 
@@ -45,6 +45,7 @@ async function display(pluginModule: DisplayPluginModule): Promise<void> {
  * @returns RenderingContext from AppState instance
  * @see RenderingContext
  */
+// TODO: refactor to createInstanceContext, DataContext etc.
 function createContextFromAppState(
   app: StateManager,
   resultElement: HTMLElement,

@@ -4,14 +4,13 @@ import {
   LdpDataSource,
   SparqlDataSource,
 } from "./data-source-implementations";
-import { DisplayPlugin } from "./plugin-api";
+import { LabeledPlugin, PluginModule } from "./plugin-api";
 import { Language } from "./query-interfaces";
 import { IRI } from "./rdf-types";
 
-const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
+// const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
 
 type Listener = () => void;
-//TODO: rename AppState
 /**
  * Holds and manages data set by user in the UI. Is Observable.
  */
@@ -29,23 +28,7 @@ class StateManager {
     ),
     new LdpDataSource("https://rero.datapod.igrant.io/"),
   ];
-  plugins: DisplayPlugin[] = [
-    {
-      url: getPluginUrl("ldp-plugin.js"),
-      label: "LDP Plugin",
-      classes: [],
-    },
-    {
-      url: getPluginUrl("dataset-plugin.js"),
-      label: "Dataset Plugin",
-      classes: ["https://www.w3.org/ns/dcat#Dataset"],
-    },
-    {
-      url: getPluginUrl("default-plugin.js"),
-      label: "Default Plugin",
-      classes: [],
-    },
-  ];
+  plugins: LabeledPlugin[] = [];
   selectedPluginIndex: number = 0;
 
   listeners: Listener[] = [];
@@ -101,15 +84,18 @@ class StateManager {
     this.notify();
   }
 
-  addPlugin(label: string, url: IRI) {
-    const plugin: DisplayPlugin = { label: label, url: url, classes: [] };
-    this.plugins.push(plugin);
+  async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
+    const pluginModule: PluginModule = await import(pluginModuleUrl);
+    const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
+    this.plugins.push(...newPlugins);
     this.notify();
+
+    return newPlugins;
   }
 
-  setSelectedPlugin(url: IRI) {
+  setSelectedPlugin(label: string) {
     this.selectedPluginIndex = this.plugins.findIndex(
-      (plugin) => plugin.url === url,
+      (plugin) => Object.values(plugin.label).includes(label),
     );
     this.notify();
   }
@@ -119,8 +105,6 @@ class StateManager {
     this.notify();
   }
 }
-function getPluginUrl(pluginName: string): string {
-  return pluginBaseUrl + pluginName;
-}
+
 
 export { StateManager };
