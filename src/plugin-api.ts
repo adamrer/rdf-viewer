@@ -142,7 +142,7 @@ interface PluginV1DataContext {
   /**
    * Already fetched data from the data sources
    */
-  fetched: GraphNavigator;
+  fetched: GraphNavigator|null;
 
   /**
    * Simple interface for fetching data from data sources
@@ -153,20 +153,20 @@ interface PluginV1DataContext {
      * @param subject - IRI of the subject
      * @returns list of types for the given subject
      */
-    types: (subject: IRI) => Sourced<IRI>[]
+    types: (subject: IRI) => Promise<Sourced<Quad_Object>[]>
     /**
      * 
      * @param subject - IRI of the subject
      * @returns list of predicates for the given subject
      */
-    predicates: (subject: IRI) => Sourced<IRI>[]
+    predicates: (subject: IRI) => Promise<IRI[]>
     /**
      * 
      * @param subject - IRI of the subject
      * @param predicate - IRI of the predicate
      * @returns list of objects for the given subject and predicate
      */
-    objects: (subject: IRI, predicate: IRI) => Sourced<Quad_Object>[]
+    objects: (subject: IRI, predicate: IRI) => Promise<Sourced<Quad_Object>[]>
   }
 
   /**
@@ -222,7 +222,12 @@ interface PluginV1Instance {
 export type { 
   PluginModule,
   PluginV1InstanceContext,
+  PluginV1DataContext,
+  PluginV1CompatibilityContext,
+  PluginV1SetupContext,
+  PluginV1Instance,
   PluginV1,
+  PluginV1Handler,
   LabeledPlugin
 
 };
