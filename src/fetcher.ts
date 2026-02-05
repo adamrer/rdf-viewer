@@ -185,6 +185,11 @@ function mergeStructuredQuads(
 
   return result;
 }
+
+function fetcher(dataSources: DataSource[]): Fetcher {
+  return new FetcherImpl(dataSources);
+}
+
 export type { Fetcher, StructuredQuads };
 
-export { FetcherImpl, mergeStructuredQuads };
+export { fetcher, mergeStructuredQuads };
