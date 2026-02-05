@@ -113,11 +113,9 @@ function addEventListeners() {
   });
 
   pluginSelectEl.addEventListener("change", () => {
-    // TODO: use index instead of label for selecting plugin (two-way bind with StateManager)
     app.setSelectedPlugin(pluginSelectEl.selectedIndex);
   });
 
-  // TODO: refactor to new PluginV1 system
   displayBtn.addEventListener("click", () => {
     displayBtn.disabled = true;
     const selectedPlugin = app.getSelectedPlugin();
@@ -158,8 +156,14 @@ async function addPluginsFromFormData(formData: FormData) {
     case "url": {
       const url = formData.get("url-plugin") as IRI | null;
       if (!url) throw new Error("Missing url for plugin in form data");
-      // TODO: handle errors
-      await app.addPlugins(url);
+      
+      try{
+        await app.addPlugins(url);
+      }
+      catch(err){
+        console.error("Error while loading plugin", err);
+        notifier.notify("Failed to load plugin. Please check the console for more details.", "error");
+      }
       break;
     }
 
