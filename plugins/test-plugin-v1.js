@@ -50,7 +50,7 @@ function createPlugin(){
             async checkCompatibility(context, subject) {
                 return {
                     isCompatible: true,
-                    priority: PluginV1Match.Fallback,
+                    priority: 0,
                 }
             },
         }

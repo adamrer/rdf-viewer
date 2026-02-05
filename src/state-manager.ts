@@ -21,7 +21,8 @@ type StateMember =
 type Subscription = { keys: StateMember[]; listener: Listener };
 
 /**
- * Holds and manages data set by user in the UI. Is Observable.
+ * Holds and manages data set by user in the UI for RDF display configuration. 
+ * Observable Singleton class.
  */
 // TODO: persist state in localStorage or IndexedDB
 // TODO: rename to something like ConfigManager
