@@ -17,7 +17,7 @@ interface NotifierService {
    * @param type - Type of the notification
    * @param duration - Duration in milliseconds for which the notification is shown
    */
-  notify(message: string, type: NotificationType, duration: number): void;
+  notify(message: string, type: NotificationType, duration?: number): void;
 
   /**
    * 
