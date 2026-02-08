@@ -61,8 +61,18 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
       renderSubject: this.renderSubject.bind(this)
     };
   }
-  renderSubject(subjectIri: IRI, element: HTMLElement): PluginV1Handler {
-    return null as any // TODO: implement
+  async renderSubject(subjectIri: IRI, element: HTMLElement): Promise<PluginV1Handler|null> {
+    // find compatible plugin in order of state manager plugins and use the first one
+
+    const app = StateManager.getInstance();
+    for (const plugin of app.plugins){
+      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app), subjectIri)
+        if (compatibility.isCompatible){
+          const handler = display(plugin, subjectIri, element)
+          return handler;
+        }
+      }
+    return null;
   }
 
 }
