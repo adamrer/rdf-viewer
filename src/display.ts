@@ -1,5 +1,5 @@
 
-import { PluginV1, PluginV1CompatibilityContext, PluginV1DataContext, PluginV1Handler, PluginV1InstanceContext } from "./plugin-api";
+import { LabeledPlugin, PluginV1CompatibilityContext, PluginV1DataContext, PluginV1Handler, PluginV1InstanceContext, PluginV1SetupContext, PluginV1Vocabulary } from "./plugin-api";
 import { notifier, NotifierService } from "./notifier";
 import { StateManager } from "./state-manager";
 import { Fetcher, fetcher, mergeStructuredQuads, StructuredQuads } from "./fetcher";
@@ -12,36 +12,45 @@ import { graphNavigator } from "./graph-navigator";
 /**
  * Is responsible for displaying the entity with a plugin to the user.
  * 
- * @param plugin plugin to use
+ * @param plugin - plugin to use
+ * @param entityIri - IRI of the entity to display
+ * @param element - HTML element to display the entity in
+ * @returns handler for the displayed plugin instance, or null if the instance couldn't be created
+ * @see PluginV1InstanceContext
+ * @see PluginV1Handler
  */
-async function display(plugin: PluginV1, entityIri: IRI): Promise<void> {
+async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): Promise<PluginV1Handler | null> {
   const app = StateManager.getInstance();
-  const pluginInstance = plugin.createPluginInstance(createInstanceContext(app), entityIri)
+
+  const setupContext = createSetupContext()
+  plugin.v1.setup(setupContext);
+
+  const instanceContext = createInstanceContext(app, setupContext.vocabulary.getReadableVocabulary());
+  const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)
   if (pluginInstance == null){
-    // error msg - couldn't create plugin instance
     notifier.notify("Failed to create plugin instance.", "error");
     // TODO: what to do with displayQuads? What default behavior to do?
-    return;
+    return null;
   }
-  const resultsEl: HTMLDivElement = document.getElementById(
-    "results",
-  ) as HTMLDivElement;
-  pluginInstance?.mount(resultsEl);
+  pluginInstance?.mount(element);
+  return {
+    pluginLabel: plugin.label,
+    unmount: pluginInstance.unmount
+  }
 
 }
 
-function createInstanceContext(app: StateManager): PluginV1InstanceContext {
-  const data = createDataContext(app.dataSources)
+function createInstanceContext(app: StateManager, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
+  const data = createDataContext(app.dataSources, vocabulary)
   return new PluginV1InstanceContextImpl(data, app.languages, notifier)
 }
 
-function createDataContext(dataSources: DataSource[]): PluginV1DataContext {
-  return new PluginV1DataContextImpl(dataSources);
+function createDataContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
+  return new PluginV1DataContextImpl(dataSources, vocabulary);
 }
 
 function createCompatibilityContext(app: StateManager): PluginV1CompatibilityContext {
-  const data = createDataContext(app.dataSources)
-  return { data: data}
+  return { data: createDataContext(app.dataSources, createSetupContext().vocabulary.getReadableVocabulary()) }
 } 
 
 class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
@@ -81,13 +90,14 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
 
   private fetchedStructured: StructuredQuads = {};
   private fetcher: Fetcher;
-
+  
   fetched = graphNavigator(this.fetchedStructured);
-
+  
   fetch: PluginV1DataContext["fetch"]
   query: PluginV1DataContext["query"]
+  vocabulary: PluginV1DataContext["vocabulary"];
 
-  constructor(dataSources: DataSource[]) {
+  constructor(dataSources: DataSource[], vocabulary: PluginV1Vocabulary) {
     this.fetcher = fetcher(dataSources);
     this.query = {
       builder: queryBuilder,
@@ -98,6 +108,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
       predicates: this.predicates.bind(this),
       objects: this.objects.bind(this)
     }
+    this.vocabulary = vocabulary;
     
   }
   async execute(query: Query) {
@@ -136,8 +147,51 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
   
 }
 
+class PluginV1SetupContextImpl implements PluginV1SetupContext {
+  
+  data: Map<IRI, Set<IRI>> = new Map();
+  
+  vocabulary: PluginV1SetupContext["vocabulary"];
+
+
+  constructor() {
+    this.vocabulary = {
+      addSemanticallySimilar: this.addSemanticallySimilar.bind(this),
+      getReadableVocabulary: this.getReadableVocabulary.bind(this)
+    }
+  }
+
+  addSemanticallySimilar(original: IRI, ...similar: IRI[]) {
+    if (this.data.has(original)){
+      const existing = this.data.get(original);
+      if (existing){
+        similar.forEach(iri => existing.add(iri));
+      }
+      else{
+        this.data.set(original, new Set(similar));
+      }
+    }
+  }
+
+  getReadableVocabulary(): PluginV1Vocabulary {
+    return {
+      getSemanticallySimilar: (original: IRI) => {
+        const similarSet = this.data.get(original);
+        if (similarSet){
+          return Array.from(similarSet);
+        }
+        return []
+      }
+    }
+  }
+}
+
+function createSetupContext(): PluginV1SetupContext {
+  return new PluginV1SetupContextImpl();
+}
 
 export { 
   display,
-  createCompatibilityContext 
+  createCompatibilityContext,
+  createSetupContext
 };

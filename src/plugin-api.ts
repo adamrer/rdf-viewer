@@ -89,8 +89,9 @@ interface PluginV1SetupContext {
      *
      * TODO: We may replace this with skos:broader or skos:narrower ...
      */
-    addSemanticallySimilar(original: IRI, similar: IRI): void;
+    addSemanticallySimilar(original: IRI, ...similar: IRI[]): void;
 
+    getReadableVocabulary(): PluginV1Vocabulary;
   };
 
 }
@@ -118,7 +119,7 @@ interface PluginV1InstanceContext {
    * Services to use other suitable plugins in a plugin
    */
   interoperability: {
-      renderSubject: (subject: IRI, element: HTMLElement) => PluginV1Handler;
+      renderSubject: (subject: IRI, element: HTMLElement) => Promise<PluginV1Handler|null>;
   }
 
   /**
@@ -155,6 +156,8 @@ interface PluginV1DataContext {
      */
     types: (subject: IRI) => Promise<Sourced<Quad_Object>[]>
     /**
+     * Loads all quads with the given subject into the fetched data
+     * and returns list of predicate IRIs
      * 
      * @param subject - IRI of the subject
      * @returns list of predicates for the given subject
@@ -185,6 +188,18 @@ interface PluginV1DataContext {
      */
     execute: (query: Query) => Promise<GraphNavigator>
   }
+
+  vocabulary: PluginV1Vocabulary;
+}
+
+interface PluginV1Vocabulary {
+
+  /**
+   * Return list of registered similar predicates.
+   * Always return the given IRI as the first item.
+   */
+  getSemanticallySimilar(original: IRI): IRI[];
+
 }
 
 /**
@@ -198,6 +213,7 @@ enum PluginV1Match {
 }
 
 interface PluginV1Handler {
+  pluginLabel: LanguageString
   unmount: () => void;
 }
 
@@ -228,6 +244,7 @@ export type {
   PluginV1Instance,
   PluginV1,
   PluginV1Handler,
-  LabeledPlugin
+  LabeledPlugin,
+  PluginV1Vocabulary
 
 };

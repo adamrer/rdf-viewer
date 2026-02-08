@@ -31,6 +31,9 @@ const configBtn = document.getElementById(
 const configModal = document.getElementById(
   "config-modal",
 )! as HTMLDialogElement;
+const resultsEl: HTMLDivElement = document.getElementById(
+  "results",
+) as HTMLDivElement;
 
 /**
  * Binds UI to StateManager. Should be called once on application startup.
@@ -190,7 +193,7 @@ function addEventListeners() {
     const selectedPlugin = app.getSelectedPlugin();
     try {
       if (selectedPlugin) {
-        display(selectedPlugin.v1, app.entityIri);
+        display(selectedPlugin, app.entityIri, resultsEl);
       }
       else {
         notifier.notify("No plugin selected.", "error");
