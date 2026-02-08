@@ -163,6 +163,18 @@ interface PluginV1DataContext {
      * @returns list of predicates for the given subject
      */
     predicates: (subject: IRI) => Promise<IRI[]>
+
+    // TODO: do this or not? It can be easily done by executing a query, but it is a common operation, so maybe it should be here for convenience
+    /**
+     * Loads labels for the given subjects and label predicates into the fetched data.
+     * If subjects parameter is not given, labels for all IRIs in fetched are loaded.
+     * 
+     * @param labelPredicates - Predicates to use for labels
+     * @param subjects - Subjects to get labels for. If not given, all subjects are considered.
+     * @returns map of subject IRIs to their labels
+     */
+    // labels: (labelPredicates: IRI[], subjects?: IRI[]) => Promise<Map<IRI, Sourced<Literal>[]>>
+
     /**
      * 
      * @param subject - IRI of the subject
