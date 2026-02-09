@@ -49,7 +49,10 @@ class GraphNavigatorImpl implements GraphNavigator {
         return Object.keys(this.data)
     }
     subject(subject: IRI){
-        return subjectNavigator(this.data[subject])
+        const predicates = this.data[subject]
+        if (predicates)
+            return subjectNavigator(predicates)
+        return subjectNavigator({})
     }
 }
 
@@ -72,7 +75,10 @@ class SubjectNavigatorImpl implements SubjectNavigator {
         return Object.keys(this.data)
     }
     predicate(predicate: IRI) {
-        return Object.values(this.data[predicate])
+        const objects = this.data[predicate]
+        if (objects)
+            return Object.values(this.data[predicate])
+        return []
     }
 }
 
