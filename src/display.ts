@@ -176,9 +176,11 @@ class PluginV1SetupContextImpl implements PluginV1SetupContext {
       getSemanticallySimilar: (original: IRI) => {
         const similarSet = this.data.get(original);
         if (similarSet){
-          return Array.from(similarSet);
+          const similarArray = Array.from(similarSet)
+          similarArray.push(original)
+          return similarArray;
         }
-        return []
+        return [original]
       }
     }
   }
