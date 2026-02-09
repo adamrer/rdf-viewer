@@ -22,17 +22,15 @@ import { graphNavigator } from "./graph-navigator";
 async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): Promise<PluginV1Handler | null> {
   const app = StateManager.getInstance();
 
-  const setupContext = createSetupContext()
-  plugin.v1.setup(setupContext);
-
-  const instanceContext = createInstanceContext(app, setupContext.vocabulary.getReadableVocabulary());
+  const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
   const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)
   if (pluginInstance == null){
     notifier.notify("Failed to create plugin instance.", "error");
     // TODO: what to do with displayQuads? What default behavior to do?
     return null;
   }
-  pluginInstance?.mount(element);
+  element.replaceChildren();
+  pluginInstance.mount(element);
   return {
     pluginLabel: plugin.label,
     unmount: pluginInstance.unmount
@@ -49,8 +47,8 @@ function createDataContext(dataSources: DataSource[], vocabulary: PluginV1Vocabu
   return new PluginV1DataContextImpl(dataSources, vocabulary);
 }
 
-function createCompatibilityContext(app: StateManager): PluginV1CompatibilityContext {
-  return { data: createDataContext(app.dataSources, createSetupContext().vocabulary.getReadableVocabulary()) }
+function createCompatibilityContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1CompatibilityContext {
+  return { data: createDataContext(dataSources, vocabulary) }
 } 
 
 class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
@@ -75,7 +73,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
 
     const app = StateManager.getInstance();
     for (const plugin of app.plugins){
-      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app), subjectIri)
+      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.dataSources, this.data.vocabulary), subjectIri)
         if (compatibility.isCompatible){
           const handler = display(plugin, subjectIri, element)
           return handler;

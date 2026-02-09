@@ -5,6 +5,7 @@ import {
   LdpDataSource,
   SparqlDataSource,
 } from "./data-source-implementations";
+import { createSetupContext } from "./display";
 import { LabeledPlugin, PluginModule } from "./plugin-api";
 import { Language } from "./query-interfaces";
 import { IRI } from "./rdf-types";
@@ -30,7 +31,7 @@ type Subscription = { keys: StateMember[]; listener: Listener };
 class StateManager {
   private static _instance: StateManager;
 
-  entityIri: IRI = "https://rero.datapod.igrant.io/";
+  entityIri: IRI = "https://data.gov.cz/zdroj/datov%C3%A9-sady/00025593/02f3decfbfdabecebd4c0548f55390a0/distribuce/a7dc5b760ebc90cace46256accc20365";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -39,7 +40,6 @@ class StateManager {
     new FileDataSource(
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
-    new LdpDataSource("https://rero.datapod.igrant.io/"),
   ];
   plugins: LabeledPlugin[] = [];
   selectedPluginIndex: number = 0;
@@ -128,6 +128,7 @@ class StateManager {
   async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
     const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
+    newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
     this.plugins.push(...newPlugins);
     this.notify(["plugins"]);
 
