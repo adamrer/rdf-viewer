@@ -124,7 +124,7 @@ class FetcherImpl implements Fetcher {
 interface StructuredQuads {
   [subjectIri: IRI]: {
     [predicateIri: IRI]: {
-      [objectValue: IRI]: Sourced<Quad_Object>;
+      [objectValue: IRI|string]: Sourced<Quad_Object>;
     };
   };
 }
