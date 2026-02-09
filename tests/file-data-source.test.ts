@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { FetcherImpl } from "../src/fetcher";
+import { fetcher } from "../src/fetcher";
 import { FileDataSource } from "../src/data-source-implementations";
 import {
   QueryBuilder,
@@ -46,8 +46,8 @@ test("fetch label for dcterms:title", async () => {
   const fds = new FileDataSource(
     "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
   );
-  const fetcher = new FetcherImpl([fds]);
-  const builder = fetcher.builder() as QueryBuilder;
+  const fetcherInstance = fetcher([fds]);
+  const builder = fetcherInstance.builder() as QueryBuilder;
   const query = builder
     .subjects(["http://purl.org/dc/terms/title"])
     .predicates([
@@ -57,7 +57,7 @@ test("fetch label for dcterms:title", async () => {
     .objects()
     .langs(["en"])
     .build();
-  const result = await fetcher.fetchQuads(query);
+  const result = await fetcherInstance.fetchQuads(query);
 
   expect(result.length).toBeGreaterThan(0);
   expect(result[0].value.object.value).toBe("Title");
@@ -65,8 +65,8 @@ test("fetch label for dcterms:title", async () => {
 
 test("fetch label for dcat:theme", async () => {
   const fds = new FileDataSource("https://www.w3.org/ns/dcat3.ttl");
-  const fetcher = new FetcherImpl([fds]);
-  const builder = fetcher.builder() as QueryBuilder;
+  const fetcherInstance = fetcher([fds]);
+  const builder = fetcherInstance.builder() as QueryBuilder;
   const query = builder
     .subjects(["http://www.w3.org/ns/dcat#theme"])
     .predicates([
@@ -76,7 +76,7 @@ test("fetch label for dcat:theme", async () => {
     .objects()
     .langs(["en"])
     .build();
-  const result = await fetcher.fetchQuads(query);
+  const result = await fetcherInstance.fetchQuads(query);
 
   expect(result.length).toBeGreaterThan(0);
   expect(result[0].value.object.value).toBe("theme");
