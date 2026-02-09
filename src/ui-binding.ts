@@ -43,6 +43,7 @@ function bind() {
   setupRadioTextToggle("source-option");
   setupRadioTextToggle("plugin-option");
   createSubscriptions();
+  notifier.setNotificationContainer(notificationContainer)
 }
 
 type CompatiblePlugin = {

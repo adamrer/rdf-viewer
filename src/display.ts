@@ -25,9 +25,10 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
   const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
   const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)
   if (pluginInstance == null){
-    notifier.notify("Failed to create plugin instance.", "error");
+    
+    throw new Error("Failed to create plugin instance.")
     // TODO: what to do with displayQuads? What default behavior to do?
-    return null;
+    
   }
   element.replaceChildren();
   pluginInstance.mount(element);
