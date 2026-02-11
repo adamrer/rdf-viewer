@@ -190,7 +190,7 @@ class SubjectStepImpl implements SubjectStep {
   }
 
   subjects(iris: readonly IRI[] = ALL_SUBJECTS): PredicateStep {
-    const subjectValues = iris.map((iri) => DataFactory.namedNode(iri));
+    const subjectValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
     if (iris !== ALL_SUBJECTS) {
       this.graphPatternBuilder.values(this.subjectVar, subjectValues);
     }
@@ -210,7 +210,7 @@ class SimpleStepQueryBuilderImpl
   implements GraphStepProvider
 {
   graphs(iris: readonly IRI[] = ALL_GRAPHS): SubjectStep {
-    this.graphValues = iris.map((iri) => DataFactory.namedNode(iri));
+    this.graphValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
     return new SubjectStepImpl(this.graphValues);
   }
 }
@@ -223,7 +223,7 @@ class PredicateStepImpl implements PredicateStep {
   }
 
   predicates(iris: readonly IRI[] = ALL_PREDICATES): ObjectStep {
-    const predicateValues = iris.map((iri) => DataFactory.namedNode(iri));
+    const predicateValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
     if (iris.length !== 0) {
       this.buildingHelper.graphPatternBuilder.values(
         this.buildingHelper.predicateVar,
@@ -249,7 +249,7 @@ class ObjectStepImpl implements ObjectStep {
   ): FinalStep {
     const objectValues = iris.map((item) =>
       typeof item === "string"
-        ? DataFactory.namedNode(item)
+        ? DataFactory.namedNode(decodeURIComponent(item))
         : DataFactory.literal(
             item.value,
             // if it includes ':' then it is not language and assume that it is a datatype

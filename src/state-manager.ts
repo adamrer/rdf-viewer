@@ -31,7 +31,7 @@ type Subscription = { keys: StateMember[]; listener: Listener };
 class StateManager {
   private static _instance: StateManager;
 
-  entityIri: IRI = "https://data.gov.cz/zdroj/datov%C3%A9-sady/00025593/02f3decfbfdabecebd4c0548f55390a0/distribuce/a7dc5b760ebc90cace46256accc20365";
+  entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
   languages: Language[] = ["cs", "en"];
   dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
