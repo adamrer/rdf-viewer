@@ -112,8 +112,9 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
   }
   async execute(query: Query) {
     const structuredQuads = await this.fetcher.fetchStructuredQuads(query);
-    this.fetchedStructured = structuredQuads;
-    return graphNavigator(structuredQuads);
+    this.addFetched(structuredQuads)
+    const navigator = graphNavigator(structuredQuads);
+    return navigator
   }
   
   async types(subject: IRI) {
@@ -122,7 +123,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     const builder = this.fetcher.builder()
     const query = builder.subjects([subject]).predicates([typePredicate]).objects().build();
     const typesQuads = this.fetcher.fetchStructuredQuads(query);
-    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, await typesQuads);
+    this.addFetched(await typesQuads)
     const navigator = graphNavigator(await typesQuads);
     return navigator.subject(subject).predicate(typePredicate);
   }
@@ -130,20 +131,24 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     const builder = this.fetcher.builder()
     const query = builder.subjects([subject]).predicates().objects().build();
     const predsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, await predsQuads);
+    this.addFetched(await predsQuads)
     const navigator = graphNavigator(await predsQuads);
-    return Object.keys(navigator.subject(subject).predicates());
+    return navigator.subject(subject).predicates();
   }
   // TODO: language preferences?
   async objects(subject: IRI, predicate: IRI) {
     const builder = this.fetcher.builder()
     const query = builder.subjects([subject]).predicates([predicate]).objects().build()
     const objsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, await objsQuads);
+    this.addFetched(await objsQuads)
     const navigator = graphNavigator(await objsQuads);
     return navigator.subject(subject).predicate(predicate);
   }
 
+  addFetched(quads: StructuredQuads){
+    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, quads)
+    this.fetched = graphNavigator(this.fetchedStructured)
+  }
   
 }
 

@@ -143,7 +143,7 @@ interface PluginV1DataContext {
   /**
    * Already fetched data from the data sources
    */
-  fetched: GraphNavigator|null;
+  fetched: GraphNavigator;
 
   /**
    * Simple interface for fetching data from data sources
