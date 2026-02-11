@@ -1,8 +1,8 @@
 import { Quad, Quad_Object } from "n3";
 import {
   Query,
-  SimpleQueryStepBuilder,
-  simpleQueryStepBuilder,
+  QueryBuilder,
+  queryBuilder,
 } from "./query-builder";
 import { DataSource } from "./data-source-implementations";
 import { Sourced } from "./data-source";
@@ -34,7 +34,7 @@ interface Fetcher {
   /**
    * @returns a query builder for creating the query
    */
-  builder(): SimpleQueryStepBuilder;
+  builder(): QueryBuilder;
 }
 
 const DEFAULT_GRAPH = "default";
@@ -111,8 +111,8 @@ class FetcherImpl implements Fetcher {
     return result;
   }
 
-  builder(): SimpleQueryStepBuilder {
-    return simpleQueryStepBuilder();
+  builder(): QueryBuilder {
+    return queryBuilder();
   }
 }
 
@@ -124,7 +124,7 @@ class FetcherImpl implements Fetcher {
 interface StructuredQuads {
   [subjectIri: IRI]: {
     [predicateIri: IRI]: {
-      [objectValue: IRI]: Sourced<Quad_Object>;
+      [objectValue: IRI|string]: Sourced<Quad_Object>;
     };
   };
 }
@@ -185,6 +185,11 @@ function mergeStructuredQuads(
 
   return result;
 }
+
+function fetcher(dataSources: DataSource[]): Fetcher {
+  return new FetcherImpl(dataSources);
+}
+
 export type { Fetcher, StructuredQuads };
 
-export { FetcherImpl, mergeStructuredQuads };
+export { fetcher, mergeStructuredQuads };

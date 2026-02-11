@@ -23,6 +23,9 @@ export default defineConfig({
     }
   },
   server: {
-    open: "./index.html"
+    open: "./index.html",
+    watch: {
+      usePolling: true
+    }
   }
 });

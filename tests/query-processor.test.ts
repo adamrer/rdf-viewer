@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { queryProcessor } from "../src/query-processor";
-import { simpleQueryStepBuilder } from "../src/query-builder";
+import { queryBuilder } from "../src/query-builder";
 import { DataFactory, Quad } from "n3";
 
 const quads: Quad[] = [
@@ -27,7 +27,7 @@ const quads: Quad[] = [
 ];
 
 test("processes query with values that has the value", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/2004/02/skos/core#prefLabel"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -42,7 +42,7 @@ test("processes query with values that has the value", () => {
 });
 
 test("processes query with more subjects specified", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects([
       "http://www.w3.org/2004/02/skos/core#prefLabel",
@@ -62,7 +62,7 @@ test("processes query with more subjects specified", () => {
 });
 
 test("processes query with values that does not have the value", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects()
     .predicates(["http://www.w3.org/2004/02/skos/core#relatedMatch"])
@@ -74,7 +74,7 @@ test("processes query with values that does not have the value", () => {
 });
 
 test("processes query with filter to get empty result", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/2004/02/skos/core#prefLabel"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -87,7 +87,7 @@ test("processes query with filter to get empty result", () => {
 });
 
 test("processes query with filter to get non-empty result", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/2004/02/skos/core#prefLabel"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -105,7 +105,7 @@ test("processes query with filter to get non-empty result", () => {
 });
 
 test("processes query with limit", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects()
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -118,7 +118,7 @@ test("processes query with limit", () => {
 });
 
 test("processes query with offset", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects()
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
@@ -132,7 +132,7 @@ test("processes query with offset", () => {
 });
 
 test("processes query with limit and offset", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .subjects()
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])

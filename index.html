@@ -18,17 +18,19 @@
 
       <label for="iri">Entity IRI</label>
       <input type="text" id="iri" placeholder="Enter entity IRI" />
+      <button id="compatible-plugins-btn">Compatible plugins</button>
+      
+      <label for="choose-plugin">Plugin</label>
+      <select id="choose-plugin"></select>
 
       <label for="languages">Languages</label>
       <input type="text" id="languages" placeholder="en, cs, fr, ..." />
-
-      <label for="choose-plugin">Plugin</label>
-      <select id="choose-plugin"></select>
       <div id="buttons">
         <button id="display-btn">Display</button>
         <button id="show-config-btn">⚙️</button>
       </div>
     </div>
+
     <dialog id="config-modal">
       <div id="config-content">
         <h2>Configuration</h2>
@@ -115,8 +117,6 @@
         <fieldset id="plugins-fieldset">
           <legend>Plugins</legend>
           <form id="add-plugin-form">
-            <label for="label-plugin">Label</label>
-            <input type="text" name="label-plugin" id="label-plugin" required />
             <div class="plugin-option">
               <input
                 type="radio"

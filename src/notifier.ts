@@ -1,26 +1,54 @@
-const notificationContainer = document.getElementById(
-  "notification-container",
-)! as HTMLElement;
 
+
+/**
+ * Type of the notification
+ */
 type NotificationType = "info" | "success" | "warning" | "error";
 
+/**
+ * Service for showing notifications to the user
+ */
 interface NotifierService {
-  notify(message: string, type: NotificationType, duration: number): void;
+  /**
+   * 
+   * @param message - Text content of the notification
+   * @param type - Type of the notification
+   * @param duration - Duration in milliseconds for which the notification is shown
+   */
+  notify(message: string, type: NotificationType, duration?: number): void;
+
+  /**
+   * 
+   * @param promise - Promise to be tracked
+   * @param messages - Messages to be shown for different states of the promise
+   */
   notifyPromise<T>(
     promise: Promise<T>,
     messages: { pending: string; success: string; error: string },
   ): Promise<T>;
 }
+
+
+/**
+ * Implementation of the NotifierService interface
+ */
 class NotifierServiceImpl implements NotifierService {
+
+  notificationContainer: HTMLElement|null = null
+
+  setNotificationContainer(container: HTMLElement){
+    this.notificationContainer = container
+  }
+
   notify(message: string, type: NotificationType) {
-    if (!notificationContainer)
+    if (!this.notificationContainer)
       throw new Error("Notification container not found");
 
     const div = document.createElement("div");
     div.className = `notification ${type}`;
     div.textContent = `${this.getEmoji(type)} ${message}`;
 
-    notificationContainer.appendChild(div);
+    this.notificationContainer.appendChild(div);
 
     setTimeout(() => {
       div.remove();
@@ -35,13 +63,13 @@ class NotifierServiceImpl implements NotifierService {
       error: string;
     },
   ): Promise<T> {
-    if (!notificationContainer)
+    if (!this.notificationContainer)
       throw new Error("Notification container not found");
 
     const div = document.createElement("div");
     div.className = "notification info";
     div.textContent = messages.pending;
-    notificationContainer.appendChild(div);
+    this.notificationContainer.appendChild(div);
 
     try {
       const res = await promise;

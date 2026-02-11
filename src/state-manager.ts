@@ -1,0 +1,150 @@
+import {
+  DataSource,
+  DataSourceType,
+  FileDataSource,
+  LdpDataSource,
+  SparqlDataSource,
+} from "./data-source-implementations";
+import { createSetupContext } from "./display";
+import { LabeledPlugin, PluginModule } from "./plugin-api";
+import { Language } from "./query-interfaces";
+import { IRI } from "./rdf-types";
+
+// const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
+
+type Listener = () => void;
+type StateMember =
+  | "entityIri"
+  | "languages"
+  | "dataSources"
+  | "plugins"
+  | "selectedPluginIndex";
+type Subscription = { keys: StateMember[]; listener: Listener };
+
+/**
+ * Holds and manages data set by user in the UI for RDF display configuration. 
+ * Observable Singleton class.
+ */
+// TODO: persist state in localStorage or IndexedDB
+// TODO: rename to something more specific
+// TODO: add comments
+class StateManager {
+  private static _instance: StateManager;
+
+  entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
+  languages: Language[] = ["cs", "en"];
+  dataSources: DataSource[] = [
+    new SparqlDataSource("https://data.gov.cz/sparql"),
+    new FileDataSource("https://www.w3.org/2009/08/skos-reference/skos.rdf"),
+    new FileDataSource("https://www.w3.org/ns/dcat3.ttl"),
+    new FileDataSource(
+      "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
+    ),
+  ];
+  plugins: LabeledPlugin[] = [];
+  selectedPluginIndex: number = 0;
+
+  subscriptions: Subscription[] = [];
+
+  private constructor() {}
+
+  static getInstance(): StateManager {
+    if (!StateManager._instance) {
+      StateManager._instance = new StateManager();
+    }
+    return StateManager._instance;
+  }
+
+  /**
+   * Subscribe to changes. Provide an array of state member keys to listen to.
+   * If `keys` is empty or omitted, the listener will be notified for any change.
+   */
+  subscribe(listener: Listener, keys?: StateMember[], notifyImmediately = false) {
+    this.subscriptions.push({ keys: keys ?? [], listener });
+    if (notifyImmediately) {
+      listener();
+    }
+  }
+
+  /**
+   * Notify listeners. If `changed` is omitted, notify all listeners.
+   * Otherwise only those whose subscribed keys intersect `changed` (or who subscribed to all keys) are called.
+   */
+  notify(changed?: StateMember[]) {
+    if (!changed || changed.length === 0) {
+      this.subscriptions.forEach((s) => s.listener());
+      return;
+    }
+    const changedSet = new Set(changed);
+    this.subscriptions.forEach((s) => {
+      if (s.keys.length === 0) {
+        s.listener();
+        return;
+      }
+      for (const k of s.keys) {
+        if (changedSet.has(k)) {
+          s.listener();
+          return;
+        }
+      }
+    });
+  }
+
+  getSelectedPlugin() {
+    return this.plugins[this.selectedPluginIndex];
+  }
+
+  setEntityIRI(iri: IRI) {
+    this.entityIri = decodeURIComponent(iri);
+    this.notify(["entityIri"]);
+  }
+  addDataSource(source: IRI | File, type: DataSourceType) {
+    let ds: DataSource;
+    switch (type) {
+      case DataSourceType.Sparql:
+        ds = new SparqlDataSource(source as IRI);
+        break;
+      case DataSourceType.LDP:
+        ds = new LdpDataSource(source as IRI);
+        break;
+      case DataSourceType.LocalFile:
+      case DataSourceType.RemoteFile:
+        ds = new FileDataSource(source);
+        break;
+      default:
+        throw new Error(`Unsupported data source type: ${type}`);
+    }
+    this.dataSources.push(ds);
+    this.notify(["dataSources"]);
+  }
+
+  removeDataSource(identifier: IRI) {
+    this.dataSources = this.dataSources.filter(
+      (ds) => ds.identifier !== identifier,
+    );
+    this.notify(["dataSources"]);
+  }
+
+  async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
+    const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
+    const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
+    newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
+    this.plugins.push(...newPlugins);
+    this.notify(["plugins"]);
+
+    return newPlugins;
+  }
+
+  setSelectedPlugin(index: number) {
+    this.selectedPluginIndex = index
+    this.notify(["selectedPluginIndex"]);
+  }
+
+  setLanguages(languages: Language[]) {
+    this.languages = languages;
+    this.notify(["languages"]);
+  }
+}
+
+
+export { StateManager };

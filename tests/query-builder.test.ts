@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
 
-import { simpleQueryStepBuilder } from "../src/query-builder";
+import { queryBuilder } from "../src/query-builder";
 import { Select } from "../src/query-interfaces";
 import { NO_LANG_SPECIFIED } from "../src/query-interfaces";
 
 test("creates basic SPOG query", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder.graphs().subjects().predicates().objects().build();
   expect((query as Select).variables.length).toBe(4);
   expect(query.toSparql())
@@ -18,7 +18,7 @@ GRAPH ?graph {
 });
 
 test("creates basic SPO query", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder.subjects().predicates().objects().build();
   expect((query as Select).variables.length).toBe(3);
   expect(query.toSparql()).toBe(`SELECT DISTINCT ?subject ?predicate ?object
@@ -28,7 +28,7 @@ WHERE {
 });
 
 test("creates query with specified predicates", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const predicates = [
     "http://purl.org/dc/terms/title",
     "http://www.w3.org/2004/02/skos/core#prefLabel",
@@ -42,7 +42,7 @@ VALUES ?predicate { <http://purl.org/dc/terms/title> <http://www.w3.org/2004/02/
 });
 
 test("creates query with specified objects", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const objects = [
     { value: "Adam" },
     "https://example.com/ns/#adam",
@@ -61,7 +61,7 @@ VALUES ?object { "Adam" <https://example.com/ns/#adam> "1"^^<http://www.w3.org/T
 });
 
 test("creates query with specified subject", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const subjectIri =
     "https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS";
   const query = builder.subjects([subjectIri]).predicates().objects().build();
@@ -74,7 +74,7 @@ VALUES ?subject { <${subjectIri}> }
 });
 
 test("creates query with specified graph", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const graphIri = "http://www.openlinksw.com/schemas/virtrdf#";
   const query = builder
     .graphs([graphIri])
@@ -94,7 +94,7 @@ GRAPH ?graph {
 });
 
 test("creates query with specified graph, subject, predicate, object", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const graph = ["http://www.openlinksw.com/schemas/virtrdf#"];
   const subject = [
     "https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS",
@@ -133,7 +133,7 @@ VALUES ?object { "Adam" <https://example.com/ns/#adam> "1"^^<http://www.w3.org/T
 });
 
 test("creates query with limit and offset specified", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .graphs()
     .subjects()
@@ -155,7 +155,7 @@ OFFSET 9`);
 });
 
 test("creates query with language specified", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .graphs()
     .subjects()
@@ -175,7 +175,7 @@ FILTER (isIRI(?object) || isBLANK(?object) || LANG(?object) = "cs")
 });
 
 test("creates query with more languages specified", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const query = builder
     .graphs()
     .subjects()
@@ -195,7 +195,7 @@ FILTER (isIRI(?object) || isBLANK(?object) || LANG(?object) = "cs" || LANG(?obje
 });
 
 test("creates query with everything specified", () => {
-  const builder = simpleQueryStepBuilder();
+  const builder = queryBuilder();
   const graph = ["http://www.openlinksw.com/schemas/virtrdf#"];
   const subject = [
     "https://monitor.statnipokladna.gov.cz/api/opendata/monitor/Priloha-konsolidace/2019_12_Data_CSUIS_PRIL_KONS",
