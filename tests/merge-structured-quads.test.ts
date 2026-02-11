@@ -1,44 +1,128 @@
 import {
-  fetcher,
-  Fetcher,
   mergeStructuredQuads,
+  StructuredQuads,
 } from "../src/fetcher";
-import { SparqlDataSource } from "../src/data-source-implementations";
 import { test, expect } from "vitest";
-const dcterms = "http://purl.org/dc/terms/";
-const dcat = "http://www.w3.org/ns/dcat#";
-const foaf = "http://xmlns.com/foaf/0.1/";
+import { DataFactory } from "n3";
+
+const quads1: StructuredQuads = {
+    "http://example.com/subject1": {
+        "http://example.com/predicate1": { 
+            "object1": {
+                graphs: [],
+                value: DataFactory.literal("object1"),
+                sources: ["source1"],
+            },
+            "object2": {
+                graphs: [],
+                value: DataFactory.literal("object2"),
+                sources: ["source2"],
+            }
+        },
+        "http://example.com/predicate2": {
+            "https://example.com/object3Iri": {
+                graphs: [],
+                value: DataFactory.namedNode("https://example.com/object3Iri"),
+                sources: ["source1"],
+            }
+        },
+    },
+    "http://example.com/subject2": {
+        "http://example.com/predicate2": {
+            "object3": {
+                graphs: [],
+                value: DataFactory.literal("object3"),
+                sources: ["source1"],
+            }
+        },
+    }
+};
+
+const quads2: StructuredQuads = {
+    "http://example.com/subject1": {
+        "http://example.com/predicate1": { 
+            "object1": { // different source
+                graphs: [],
+                value: DataFactory.literal("object1"),
+                sources: ["source3"],
+            },
+            "object2": { // same as in quads1
+                graphs: [],
+                value: DataFactory.literal("object2"),
+                sources: ["source2"],
+            }
+        },
+        "http://example.com/predicate2": { // new graph
+            "https://example.com/object3Iri": {
+                graphs: ["https://example.com/graph1"],
+                value: DataFactory.namedNode("https://example.com/object3Iri"),
+                sources: ["source1"],
+            }
+        },
+        "http://example.com/predicate3": { // new predicate
+            "https://example.com/object3Iri": {
+                graphs: [],
+                value: DataFactory.namedNode("https://example.com/object3Iri"),
+                sources: ["source3"],
+            }
+        },
+    },
+    "http://example.com/subject2": {
+        "http://example.com/predicate2": {
+            "https://example.com/object4Iri": { // new object
+                graphs: ["https://example.com/graph1"], // graph
+                value: DataFactory.namedNode("https://example.com/object4Iri"),
+                sources: ["source3"],
+            }
+        },
+    }
+};
+
 
 test("merge structured quads", async () => {
-  const fetcherInstance: Fetcher = fetcher([
-    new SparqlDataSource("https://data.gov.cz/sparql"),
-  ]);
-  const datasetIri =
-    "https://data.gov.cz/zdroj/datové-sady/00064459/c34f5a6baaa387d2e10695fb46e4bb48";
-  const datasetQuery = fetcherInstance
-    .builder()
-    .subjects([datasetIri])
-    .predicates([
-      foaf + "page",
-      dcat + "theme",
-      dcat + "keyword",
-      dcterms + "publisher",
-      dcat + "distribution",
-    ])
-    .objects()
-    .build();
-  const datasetQuads = await fetcherInstance.fetchStructuredQuads(datasetQuery);
-  const distributionIri = Object.values(
-    datasetQuads[datasetIri][dcat + "distribution"],
-  )[0].value.value;
-  const distributionQuery = fetcherInstance
-    .builder()
-    .subjects([distributionIri])
-    .predicates([dcat + "downloadURL", dcterms + "format"])
-    .objects()
-    .build();
-  const distributionQuads =
-    await fetcherInstance.fetchStructuredQuads(distributionQuery);
-  const result = mergeStructuredQuads(datasetQuads, distributionQuads);
-  expect(Object.values(result).length).toBe(2);
+  const result = mergeStructuredQuads(quads1, quads2);
+  expect(JSON.stringify(result)).toBe(JSON.stringify({
+    "http://example.com/subject1": {
+        "http://example.com/predicate1": { 
+            "object1": {
+                graphs: [],
+                value: DataFactory.literal("object1"),
+                sources: ["source1", "source3"],
+            },
+            "object2": {
+                graphs: [],
+                value: DataFactory.literal("object2"),
+                sources: ["source2"],
+            }
+        },
+        "http://example.com/predicate2": {
+            "https://example.com/object3Iri": {
+                graphs: ["https://example.com/graph1"],
+                value: DataFactory.namedNode("https://example.com/object3Iri"),
+                sources: ["source1"],
+            }
+        },
+        "http://example.com/predicate3": { 
+            "https://example.com/object3Iri": {
+                graphs: [],
+                value: DataFactory.namedNode("https://example.com/object3Iri"),
+                sources: ["source3"],
+            }
+        },
+    },
+    "http://example.com/subject2": {
+        "http://example.com/predicate2": {
+            "object3": {
+                graphs: [],
+                value: DataFactory.literal("object3"),
+                sources: ["source1"],
+            },
+            "https://example.com/object4Iri": {
+                graphs: ["https://example.com/graph1"],
+                value: DataFactory.namedNode("https://example.com/object4Iri"),
+                sources: ["source3"],
+            }
+        },
+    }
+}));
 });
