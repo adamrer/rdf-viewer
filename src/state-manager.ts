@@ -26,7 +26,7 @@ type Subscription = { keys: StateMember[]; listener: Listener };
  * Observable Singleton class.
  */
 // TODO: persist state in localStorage or IndexedDB
-// TODO: rename to something like ConfigManager
+// TODO: rename to something more specific
 // TODO: add comments
 class StateManager {
   private static _instance: StateManager;

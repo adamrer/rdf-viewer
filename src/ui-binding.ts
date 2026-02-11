@@ -1,6 +1,6 @@
 import { StateManager } from "./state-manager";
 import { DataSourceType } from "./data-source-implementations";
-import { createCompatibilityContext, display } from "./display";
+import { createCompatibilityContext, createSetupContext, display } from "./display";
 import { notifier } from "./notifier";
 import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
@@ -34,6 +34,9 @@ const configModal = document.getElementById(
 const resultsEl: HTMLDivElement = document.getElementById(
   "results",
 ) as HTMLDivElement;
+const notificationContainer = document.getElementById(
+  "notification-container",
+)! as HTMLElement;
 
 /**
  * Binds UI to StateManager. Should be called once on application startup.
@@ -62,13 +65,13 @@ type CompatiblePlugin = {
  */
 async function getCompatiblePlugins(iri: IRI) {
   const app = StateManager.getInstance();
-  const context = createCompatibilityContext(app);
+  const context = createCompatibilityContext(app.dataSources, createSetupContext().vocabulary.getReadableVocabulary());
   const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
     app.plugins.map((plugin) =>
       plugin.v1.checkCompatibility(context, iri)
         .then((result) => ({ plugin, ...result }))
         .catch((err) => {
-          console.error(`Error while checking compatibility for plugin ${plugin.label}:`, err);
+          console.error(`Error while checking compatibility for plugin ${Object.values(plugin.label)[0]}:`, err);
           return { plugin, isCompatible: false, priority: 0 };
         })
     ),

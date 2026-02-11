@@ -118,6 +118,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
   
   async types(subject: IRI) {
     const typePredicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+
     const builder = this.fetcher.builder()
     const query = builder.subjects([subject]).predicates([typePredicate]).objects().build();
     const typesQuads = this.fetcher.fetchStructuredQuads(query);
@@ -194,5 +195,6 @@ function createSetupContext(): PluginV1SetupContext {
 export { 
   display,
   createCompatibilityContext,
-  createSetupContext
+  createSetupContext,
+  createDataContext
 };
