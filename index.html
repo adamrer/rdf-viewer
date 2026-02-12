@@ -38,6 +38,7 @@
           <legend>Data Sources</legend>
 
           <form id="add-source-form">
+            <!-- TODO: make it as select input and show only the important input (file/text) -->
             <div class="source-option">
               <input
                 type="radio"
@@ -110,7 +111,7 @@
           </form>
 
           <hr />
-
+          <!-- TODO: show/hide list  -->
           <div id="source-list"></div>
         </fieldset>
 
@@ -137,6 +138,12 @@
 
             <button type="submit" class="add-plugin">+ Add Plugin</button>
           </form>
+          
+          <hr />
+
+          <ol id="plugin-list">
+          </ol>
+          
         </fieldset>
       </div>
     </dialog>

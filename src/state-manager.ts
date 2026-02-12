@@ -21,6 +21,10 @@ type StateMember =
   | "selectedPluginIndex";
 type Subscription = { keys: StateMember[]; listener: Listener };
 
+interface LabeledPluginWithId extends LabeledPlugin {
+  id: number
+}
+
 /**
  * Holds and manages data set by user in the UI for RDF display configuration. 
  * Observable Singleton class.
@@ -41,7 +45,8 @@ class StateManager {
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
   ];
-  plugins: LabeledPlugin[] = [];
+  nextPluginId = 0
+  plugins: LabeledPluginWithId[] = [];
   selectedPluginIndex: number = 0;
 
   subscriptions: Subscription[] = [];
@@ -124,15 +129,45 @@ class StateManager {
     );
     this.notify(["dataSources"]);
   }
-
+  private getNextId(){
+    const nextId = this.nextPluginId
+    this.nextPluginId++
+    return nextId
+  }
   async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
     const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
     newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
-    this.plugins.push(...newPlugins);
+    const newPluginsWithIds = newPlugins.map((plugin) => {
+      return {
+        id: this.getNextId(),
+        ...plugin
+      }
+    })
+    this.plugins.push(...newPluginsWithIds);
     this.notify(["plugins"]);
 
     return newPlugins;
+  }
+
+  removePlugin(index: number) {
+    this.plugins.splice(index, 1)
+    this.notify(["plugins"])
+  }
+
+  /**
+   * 
+   * @param order - IDs of plugins in the desired order
+   */
+  changePluginsOrder(order: number[]){
+
+    const orderMap = new Map(order.map((id, index) => [id, index]));
+    this.plugins.sort((a, b) => {
+      const posA = orderMap.get(a.id) ?? Infinity;
+      const posB = orderMap.get(b.id) ?? Infinity;
+      return posA - posB;
+    });
+    console.log(this.plugins)
   }
 
   setSelectedPlugin(index: number) {
@@ -147,4 +182,5 @@ class StateManager {
 }
 
 
+export type { LabeledPluginWithId }
 export { StateManager };

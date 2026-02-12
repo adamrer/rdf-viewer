@@ -1,42 +1,46 @@
-import { StateManager } from "./state-manager";
+import { LabeledPluginWithId, StateManager } from "./state-manager";
 import { DataSourceType } from "./data-source-implementations";
 import { createCompatibilityContext, createSetupContext, display } from "./display";
 import { notifier } from "./notifier";
 import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
+import Sortable from "sortablejs"
 
 type PluginType = "url";
 
 const addSourceFormEl = document.getElementById(
   "add-source-form",
-)! as HTMLFormElement;
+) as HTMLFormElement;
 const addPluginFormEl = document.getElementById(
   "add-plugin-form",
-)! as HTMLFormElement;
+) as HTMLFormElement;
 const iriEl = document.getElementById("iri")! as HTMLInputElement;
 const compatiblePluginsBtn = document.getElementById(
   "compatible-plugins-btn",
-)! as HTMLButtonElement;
+) as HTMLButtonElement;
 const languagesEl = document.getElementById("languages")! as HTMLInputElement;
 const pluginSelectEl = document.getElementById(
   "choose-plugin",
-)! as HTMLSelectElement;
+) as HTMLSelectElement;
 const dataSourcesContainer = document.getElementById(
   "source-list",
-)! as HTMLElement;
+) as HTMLElement;
 const displayBtn = document.getElementById("display-btn")! as HTMLButtonElement;
 const configBtn = document.getElementById(
   "show-config-btn",
-)! as HTMLButtonElement;
+) as HTMLButtonElement;
 const configModal = document.getElementById(
   "config-modal",
-)! as HTMLDialogElement;
+) as HTMLDialogElement;
 const resultsEl: HTMLDivElement = document.getElementById(
   "results",
 ) as HTMLDivElement;
 const notificationContainer = document.getElementById(
   "notification-container",
-)! as HTMLElement;
+) as HTMLElement;
+const pluginListEl = document.getElementById(
+  "plugin-list"
+) as HTMLElement
 
 /**
  * Binds UI to StateManager. Should be called once on application startup.
@@ -46,7 +50,15 @@ function bind() {
   setupRadioTextToggle("source-option");
   setupRadioTextToggle("plugin-option");
   createSubscriptions();
-  notifier.setNotificationContainer(notificationContainer)
+  notifier.setNotificationContainer(notificationContainer);
+  new Sortable(pluginListEl, {
+    animation: 150,
+    
+    onEnd: (evt) => {
+      const order: number[] = Array.from(evt.to.children).map(li => li.getAttribute("data-id")).filter(id => id !== null).map(id => Number(id))
+      StateManager.getInstance().changePluginsOrder(order)
+    }
+  })
 }
 
 type CompatiblePlugin = {
@@ -91,6 +103,14 @@ function createSubscriptions() {
     const optionElements = app.plugins.map(createPluginOption);
     pluginSelectEl.replaceChildren(...optionElements);
   }, ["plugins"], true);
+
+  app.subscribe(() => {
+    const listItems = app.plugins.map((plugin) => {
+      // TODO: language preference
+      return createPluginEntry(plugin)
+    })
+    pluginListEl.replaceChildren(...listItems)
+  })
   
   app.subscribe(() => {
     iriEl.value = app.entityIri;
@@ -222,6 +242,8 @@ function addEventListeners() {
     }
   });
 }
+
+
 /**
  * Adds plugin defined in formData to StateManager and UI
  *
@@ -240,7 +262,7 @@ async function addPluginsFromFormData(formData: FormData) {
       }
       catch(err){
         console.error("Error while loading plugin", err);
-        notifier.notify("Failed to load plugin. Please check the console for more details.", "error");
+        notifier.notify("Failed to load plugin", "error");
       }
       break;
     }
@@ -379,5 +401,29 @@ function createPluginOption(plugin: LabeledPlugin): HTMLOptionElement {
   return option;
 }
 
+function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
+  const app = StateManager.getInstance()
+
+  const entryEl = document.createElement("li")
+  entryEl.setAttribute("data-id", plugin.id.toString())
+  const textEl = document.createElement("span")
+  textEl.textContent = Object.values(plugin.label)[0]
+  entryEl.appendChild(textEl)
+
+  const removeButton = document.createElement("button");
+  removeButton.className = "remove-btn";
+  removeButton.textContent = "×";
+  entryEl.appendChild(removeButton);
+  removeButton.addEventListener("click", () => {
+    const listElement = entryEl.parentElement
+    if (listElement){
+      const index = Array.from(listElement.children).indexOf(entryEl)
+
+      entryEl.remove();
+      app.removePlugin(index);
+    }
+  });
+  return entryEl
+}
 
 export { bind };

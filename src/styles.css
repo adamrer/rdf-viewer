@@ -1,5 +1,5 @@
 #app {
-  font-family: consolas;
+  font-family: monospace;
   font-size: 1.1em;
   display: flex;
   flex-direction: column;
@@ -14,7 +14,7 @@
   align-items: center;
 }
 #config-modal {
-  font-family: consolas;
+  font-family: monospace;
 }
 
 #app button,
@@ -76,4 +76,15 @@ select {
   background-color: #fee2e2;
   color: #991b1b;
   border: 1px solid #fecaca;
+}
+
+
+#plugin-list li {
+  padding: 1em;
+  margin: .3em;
+  background-color: black;
+}
+
+#plugin-list li:hover {
+  cursor: grab
 }
