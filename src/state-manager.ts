@@ -167,7 +167,8 @@ class StateManager {
       const posB = orderMap.get(b.id) ?? Infinity;
       return posA - posB;
     });
-    console.log(this.plugins)
+    this.setSelectedPlugin(0)
+    this.notify(["plugins"])
   }
 
   setSelectedPlugin(index: number) {
