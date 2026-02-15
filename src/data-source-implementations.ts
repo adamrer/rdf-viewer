@@ -1,4 +1,4 @@
-import N3, { Quad } from "n3";
+import N3, { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from "n3";
 import { Readable } from "readable-stream";
 import { rdfParser } from "rdf-parse";
 import { queryProcessor } from "./query-processor";
@@ -6,40 +6,7 @@ import pLimit from "p-limit";
 import { Query, queryBuilder } from "./query-builder";
 import { DataSource, DataSourceType, Sourced } from "./data-source";
 import { IRI } from "./rdf-types";
-
-
-/** SPARQL JSON result RDF term types */
-type ResultType = "uri" | "literal" | "bnode";
-
-/**
- * Interface for a node, which can be a named node, literal or blank node, from JSON SPARQL result.
- *
- * @see https://www.w3.org/TR/2013/REC-sparql11-results-json-20130321/#select-encode-terms
- */
-interface ResultTerm {
-  /** Type of the node */
-  type: ResultType;
-  /** Value of the node */
-  value: IRI | string;
-  /** If the node is of a type literal, this represents a language tag */
-  "xml:lang"?: string;
-  /** If the node is of a type literal, this represents the type of the literal */
-  datatype?: IRI | string;
-}
-
-/**
- * Interface for a quad obtained from JSON SPARQL result.
- */
-interface ResultQuad {
-  /** Term representing the graph of the quad */
-  graph: ResultTerm;
-  /** Term representing the subject of the quad */
-  subject: ResultTerm;
-  /** Term representing the predicate of the quad */
-  predicate: ResultTerm;
-  /** Term representing the object of the quad */
-  object: ResultTerm;
-}
+import { SparqlJsonParser } from "sparqljson-parse";
 
 /**
  * Class for fetching RDF quads from SPARQL endpoint.
@@ -57,39 +24,19 @@ class SparqlDataSource implements DataSource {
   }
 
   /**
-   *
-   * @param jsonQuads - Result JSON of the queried quads
-   * @returns Array of parsed quads
+   * 
+   * @param jsonResult - JSON response from SPARQL endpoint
+   * @returns list of quads from the response
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseJsonQuads(jsonQuads: any): Quad[] {
-    return jsonQuads.map((quad: ResultQuad) => {
-      const graph =
-        quad.graph !== undefined
-          ? N3.DataFactory.namedNode(quad.graph?.value)
-          : undefined;
-      const predicate = N3.DataFactory.namedNode(quad.predicate.value);
-
-      const object =
-        quad.object.type === "uri"
-          ? N3.DataFactory.namedNode(quad.object.value)
-          : quad.object.type === "bnode"
-            ? N3.DataFactory.blankNode(quad.object.value)
-            : N3.DataFactory.literal(
-                quad.object.value,
-                (quad.object as ResultTerm)["xml:lang"] ||
-                  (quad.object.datatype !== undefined
-                    ? N3.DataFactory.namedNode(quad.object.datatype)
-                    : undefined),
-              );
-
-      return N3.DataFactory.quad(
-        N3.DataFactory.namedNode(quad.subject.value),
-        predicate,
-        object,
-        graph,
-      );
-    });
+  parseSparqlJsonResult(jsonResult: any): Quad[] {
+    const parser = new SparqlJsonParser()
+    const variableBindings = parser.parseJsonResults(jsonResult)
+    const quads = variableBindings.map(quad => DataFactory.quad(
+      quad["subject"] as Quad_Subject, 
+      quad["predicate"] as Quad_Predicate, 
+      quad["object"] as Quad_Object, 
+      quad["graph"] as Quad_Graph))
+    return quads
   }
 
   async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
@@ -102,9 +49,7 @@ class SparqlDataSource implements DataSource {
       })
         .then((response) => response.json())
         .then((jsonResponse) => {
-          const jsonQuads = jsonResponse.results.bindings;
-
-          const quads = this.parseJsonQuads(jsonQuads);
+          const quads = this.parseSparqlJsonResult(jsonResponse)
           const result: Array<Sourced<Quad>> = quads.map(quad => {
             return {
               value: quad, 

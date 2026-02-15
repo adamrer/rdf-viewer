@@ -169,7 +169,10 @@ interface ObjectBuildingHelper extends PredicateBuildingHelper {
 
 /**
  * Implementation of the SubjectStep
+ * Builds a simpler SPARQL query where the variables in select clause are
+ * ?graph, ?subject, ?predicate, ?object 
  * @see SubjectStep
+ * @see Query
  */
 class SubjectStepImpl implements SubjectStep {
   graphPatternBuilder: GraphPatternBuilder;
