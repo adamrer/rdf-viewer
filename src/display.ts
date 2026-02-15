@@ -30,7 +30,11 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
     // TODO: what to do with displayQuads? What default behavior to do?
     
   }
+  const usedPluginElement = document.createElement("span")
+  usedPluginElement.textContent = `Plugin: ${Object.values(plugin.label)[0]}`
+
   element.replaceChildren();
+  element.appendChild(usedPluginElement)
   pluginInstance.mount(element);
   return {
     pluginLabel: plugin.label,
