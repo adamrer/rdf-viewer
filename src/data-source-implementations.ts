@@ -162,7 +162,7 @@ function isRdfType(contentType: string) {
   ].includes(contentType);
 }
 class LdpDataSource implements DataSource {
-  type = DataSourceType.LDP;
+  type = DataSourceType.Ldp;
   identifier: IRI | string;
   url: IRI;
   quads: Quad[] = [];

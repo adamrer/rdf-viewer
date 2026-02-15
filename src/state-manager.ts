@@ -109,7 +109,7 @@ class StateManager {
       case DataSourceType.Sparql:
         ds = new SparqlDataSource(source as IRI);
         break;
-      case DataSourceType.LDP:
+      case DataSourceType.Ldp:
         ds = new LdpDataSource(source as IRI);
         break;
       case DataSourceType.LocalFile:

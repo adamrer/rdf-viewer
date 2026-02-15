@@ -6,7 +6,10 @@ import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
 import Sortable from "sortablejs"
 
-type PluginType = "url";
+enum PluginType {
+  Url = "url",
+  File = "file"
+};
 
 const addSourceFormEl = document.getElementById(
   "add-source-form",
@@ -47,18 +50,11 @@ const pluginListEl = document.getElementById(
  */
 function bind() {
   addEventListeners();
-  setupRadioTextToggle("source-option");
-  setupRadioTextToggle("plugin-option");
+  setupDataSourceSelect();
+  setupPluginSelect();
   createSubscriptions();
   notifier.setNotificationContainer(notificationContainer);
-  new Sortable(pluginListEl, {
-    animation: 150,
-    
-    onEnd: (evt) => {
-      const order: number[] = Array.from(evt.to.children).map(li => li.getAttribute("data-id")).filter(id => id !== null).map(id => Number(id))
-      StateManager.getInstance().changePluginsOrder(order)
-    }
-  })
+
 }
 
 type CompatiblePlugin = {
@@ -128,42 +124,14 @@ function createSubscriptions() {
   }, ["dataSources"], true);
 }
 
+// TODO: Divide more conceptualy, not functionaly
 /**
  * Adds all event listeners to UI elements
  */
 function addEventListeners() {
-  const app = StateManager.getInstance();
+    const app = StateManager.getInstance();
 
-  // handle adding data source form submission
-  addSourceFormEl.addEventListener("submit", (event: SubmitEvent) => {
-    event.preventDefault();
-    const formData = new FormData(addSourceFormEl);
-    addDataSourceFromFormData(formData);
-    addSourceFormEl.reset();
-    // prevent refresh
-    return false;
-  });
 
-  // handle resetting data source form - disable text/file inputs
-  addSourceFormEl.addEventListener("reset", () => {
-    // will run after reseting the form
-    setTimeout(() => {
-      const radios = addSourceFormEl.querySelectorAll('input[type="radio"]');
-      radios.forEach((radio) => {
-        radio.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-    });
-  });
-
-  // handle adding plugin form submission
-  addPluginFormEl.addEventListener("submit", (event: SubmitEvent) => {
-    event.preventDefault();
-    const formData = new FormData(addPluginFormEl);
-    addPluginsFromFormData(formData);
-    addPluginFormEl.reset();
-    // prevent refresh
-    return false;
-  });
 
   // bind change of IRI input to StateManager
   iriEl.addEventListener("change", () => {
@@ -251,10 +219,10 @@ function addEventListeners() {
  */
 async function addPluginsFromFormData(formData: FormData) {
   const app = StateManager.getInstance();
-  const pluginType: PluginType = formData.get("plugin") as PluginType;
+  const pluginType: PluginType = formData.get("plugin-add-type") as PluginType;
   switch (pluginType) {
-    case "url": {
-      const url = formData.get("url-plugin") as IRI | null;
+    case PluginType.Url: {
+      const url = formData.get("url-input") as IRI | null;
       if (!url) throw new Error("Missing url for plugin in form data");
       
       try{
@@ -278,34 +246,34 @@ async function addPluginsFromFormData(formData: FormData) {
  */
 function addDataSourceFromFormData(formData: FormData) {
   const app = StateManager.getInstance();
-  const dsType: DataSourceType = formData.get("source") as DataSourceType;
+  const dsType: DataSourceType = formData.get("data-source-select") as DataSourceType;
   switch (dsType) {
     case DataSourceType.Sparql: {
-      const sparqlUrl = formData.get("sparql-source-text") as IRI | null;
+      const sparqlUrl = formData.get("url-input") as IRI | null;
       if (!sparqlUrl)
         throw new Error("Missing url for sparql endpoint in form data");
       app.addDataSource(sparqlUrl, DataSourceType.Sparql);
       break;
     }
     case DataSourceType.LocalFile: {
-      const files = formData.getAll("file-source-files") as File[];
+      const files = formData.getAll("file-input") as File[];
       files.forEach((file) => {
         app.addDataSource(file, DataSourceType.LocalFile);
       });
       break;
     }
     case DataSourceType.RemoteFile: {
-      const fileUrl = formData.get("remote-file-source-text") as IRI | null;
+      const fileUrl = formData.get("url-input") as IRI | null;
       if (!fileUrl) throw new Error("Missing url for remote file in form data");
       app.addDataSource(fileUrl, DataSourceType.RemoteFile);
       
       break;
     }
-    case DataSourceType.LDP: {
-      const ldpUrl = formData.get("ldp-source-text") as IRI | null;
+    case DataSourceType.Ldp: {
+      const ldpUrl = formData.get("url-input") as IRI | null;
       if (!ldpUrl)
         throw new Error("Missing url for LDP data source in form data");
-      app.addDataSource(ldpUrl, DataSourceType.LDP);
+      app.addDataSource(ldpUrl, DataSourceType.Ldp);
       break;
     }
 
@@ -313,35 +281,115 @@ function addDataSourceFromFormData(formData: FormData) {
       throw new Error("Unknown data source type");
   }
 }
-/**
- * Sets the text/file inputs with radio input disabled if radio input is not selected
- *
- * @param containerClass - class of the container that holds radio input with text or file input that will be disabled
- */
-function setupRadioTextToggle(containerClass: string) {
-  const containers = Array.from(
-    document.querySelectorAll<HTMLElement>(`.${containerClass}`),
-  );
-
-  function sync() {
-    for (const container of containers) {
-      const radio = container.querySelector<HTMLInputElement>(
-        'input[type="radio"]',
-      )!;
-      const input = container.querySelector<HTMLInputElement>(
-        'input[type="text"], input[type="file"]',
-      )!;
-      input.disabled = !radio.checked;
+function switchInput(input1: HTMLInputElement, input2: HTMLInputElement){
+  input1.disabled = !input1.disabled
+  input2.disabled = !input1.disabled
+  if (input1.disabled){
+    input1.style.display = "none"
+    input2.style.display = "block"
+  }
+  else{
+    input1.style.display = "block"
+    input2.style.display = "none"
+  }
+}
+function setupDataSourceSelect() {
+  const select = addSourceFormEl.querySelector("#data-source-select") as HTMLSelectElement
+  const urlTextInput = addSourceFormEl.querySelector("#data-source-url-input") as HTMLInputElement
+  const fileInput = addSourceFormEl.querySelector("#data-source-file-input") as HTMLInputElement
+  fileInput.style.display = "none"
+  select.addEventListener("change", () => {
+    const dataSourceType: DataSourceType = select.value as DataSourceType
+    switch (dataSourceType) {
+      case DataSourceType.Sparql:
+        console.log("sparql ds")
+        if (urlTextInput.disabled)
+          switchInput(urlTextInput, fileInput)
+        break;
+      case DataSourceType.RemoteFile:
+        if (urlTextInput.disabled)
+          switchInput(urlTextInput, fileInput)
+        break;
+      case DataSourceType.LocalFile:
+        if (fileInput.disabled)
+          switchInput(urlTextInput, fileInput)
+        break;      
+      case DataSourceType.Ldp:
+        if (urlTextInput.disabled)
+          switchInput(urlTextInput, fileInput)
+        break;
+    
+      default:
+        break;
     }
-  }
+  })
 
-  for (const radio of document.querySelectorAll<HTMLInputElement>(
-    `.${containerClass} input[type="radio"]`,
-  )) {
-    radio.addEventListener("change", sync);
-  }
+  // handle adding data source form submission
+  addSourceFormEl.addEventListener("submit", (event: SubmitEvent) => {
+    event.preventDefault();
+    const formData = new FormData(addSourceFormEl);
+    addDataSourceFromFormData(formData);
+    addSourceFormEl.reset();
+    // prevent refresh
+    return false;
+  });
 
-  sync();
+  // handle resetting data source form - disable text/file inputs
+  addSourceFormEl.addEventListener("reset", () => {
+    if(urlTextInput.disabled)
+      switchInput(urlTextInput, fileInput)
+  });
+  
+}
+
+function setupPluginSelect(){
+  const select = addPluginFormEl.querySelector("#plugin-add-type-select") as HTMLSelectElement
+  const urlInput = addPluginFormEl.querySelector("#plugin-add-url-input") as HTMLInputElement
+  const fileInput = addPluginFormEl.querySelector("#plugin-add-file-input") as HTMLInputElement
+  fileInput.style.display = "none"
+  // show/hide inputs
+  select.addEventListener("change", () => {
+    const pluginType: PluginType = select.value as PluginType
+    switch (pluginType) {
+      case PluginType.Url:
+        if (urlInput.disabled)
+          switchInput(urlInput, fileInput)      
+        break;
+      case PluginType.File:
+        if (fileInput.disabled)
+          switchInput(urlInput, fileInput)
+        break;
+      default:
+        break;
+    }
+  })
+
+
+  // handle adding plugin form submission
+  addPluginFormEl.addEventListener("submit", (event: SubmitEvent) => {
+    event.preventDefault();
+    const formData = new FormData(addPluginFormEl);
+    addPluginsFromFormData(formData);
+    addPluginFormEl.reset();
+    // prevent refresh
+    return false;
+  });
+
+  addPluginFormEl.addEventListener("reset", () => {
+    if (urlInput.disabled)
+      switchInput(urlInput, fileInput)
+  })
+
+  // create sortable plugin list
+  new Sortable(pluginListEl, {
+    animation: 150,
+    
+    onEnd: (evt) => {
+      const order: number[] = Array.from(evt.to.children).map(li => li.getAttribute("data-id")).filter(id => id !== null).map(id => Number(id))
+      StateManager.getInstance().changePluginsOrder(order)
+    }
+  })
+
 }
 /**
  * Creates an HTML element representing a DataSource entry in the UI
@@ -368,7 +416,7 @@ function createDataSourceEntry(
     case DataSourceType.Sparql:
       typeLabel = "SPARQL Endpoint";
       break;
-    case DataSourceType.LDP:
+    case DataSourceType.Ldp:
       typeLabel = "LDP Server";
       break;
     default:

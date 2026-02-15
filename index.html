@@ -38,101 +38,58 @@
           <legend>Data Sources</legend>
 
           <form id="add-source-form">
-            <!-- TODO: make it as select input and show only the important input (file/text) -->
-            <div class="source-option">
-              <input
-                type="radio"
-                id="sparql-source-radio"
-                value="SPARQL"
-                name="source"
-                checked
+            <div class="flex-wrapper">
+              <select name="data-source-select" id="data-source-select">
+                <option value="SPARQL">SPARQL Endpoint</option>
+                <option value="LOCAL_FILE">Local File</option>
+                <option value="REMOTE_FILE">Remote File</option>
+                <option value="LDP">LDP Server</option>
+              </select>
+              <input 
+                type="text" 
+                name="url-input" 
+                id="data-source-url-input" 
+                placeholder="https://example.com/" 
+                required 
               />
-              <label for="sparql-source-text">SPARQL endpoint</label>
-              <input
-                type="text"
-                id="sparql-source-text"
-                name="sparql-source-text"
-                placeholder="URL"
-                required
-              />
-            </div>
-            <div class="source-option">
-              <input
-                type="radio"
-                id="ldp-source-radio"
-                value="LDP"
-                name="source"
-              />
-              <label for="ldp-source-text">LDP server</label>
-              <input
-                type="text"
-                id="ldp-source-text"
-                name="ldp-source-text"
-                placeholder="URL"
-                required
-              />
-            </div>
-            <div class="source-option">
-              <input
-                type="radio"
-                id="file-source-radio"
-                value="LOCAL_FILE"
-                name="source"
-              />
-              <label for="file-source-files">File</label>
-              <input
-                type="file"
-                id="file-source-files"
-                name="file-source-files"
-                multiple
-                disabled
-                required
-              />
-            </div>
-
-            <div class="source-option">
-              <input
-                type="radio"
-                id="remote-file-source-radio"
-                value="REMOTE_FILE"
-                name="source"
-              />
-              <label for="remote-file-source-text">Remote file</label>
-              <input
-                type="text"
-                id="remote-file-source-text"
-                name="remote-file-source-text"
-                placeholder="URL"
-                disabled
-                required
+              <input 
+                type="file" 
+                name="file-input" 
+                id="data-source-file-input" 
+                accept=".trig, .nq, .nquads, .rdf, .ttl, .turtle, .nt, .ntriples, .n3, .json, .jsonld, .rdfxml, .owl" 
+                disabled 
               />
             </div>
             <button type="submit">+ Add Data Source</button>
           </form>
-
+          
           <hr />
           <!-- TODO: show/hide list  -->
           <div id="source-list"></div>
         </fieldset>
-
+        
         <fieldset id="plugins-fieldset">
           <legend>Plugins</legend>
           <form id="add-plugin-form">
-            <div class="plugin-option">
-              <input
-                type="radio"
-                id="url-plugin-radio"
-                value="url"
-                name="plugin"
-                checked
-              />
-              <label for="url-plugin">Remote file</label>
+            <!-- TODO: make it as select input and show only the important input (file/text) -->
+            <div class="flex-wrapper">
+              <select name="plugin-add-type" id="plugin-add-type-select">
+                <option value="url">Remote File</option>
+                <option value="file">Local File</option>
+              </select>
               <input
                 type="text"
                 placeholder="URL"
-                id="url-plugin"
-                name="url-plugin"
+                id="plugin-add-url-input"
+                name="url-input"
                 required
+              />
+              <input 
+                type="file" 
+                name="file-input" 
+                id="plugin-add-file-input"
+                accept=".trig, .nq, .nquads, .rdf, .ttl, .turtle, .nt, .ntriples, .n3, .json, .jsonld, .rdfxml, .owl" 
+                disabled 
               />
             </div>
 

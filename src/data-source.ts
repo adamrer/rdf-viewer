@@ -9,7 +9,7 @@ enum DataSourceType {
   Sparql = "SPARQL",
   LocalFile = "LOCAL_FILE",
   RemoteFile = "REMOTE_FILE",
-  LDP = "LDP",
+  Ldp = "LDP",
 }
 /**
  * Interface for a data source from which it is possible to fetch RDF quads.
