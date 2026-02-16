@@ -31,6 +31,7 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
     
   }
   const usedPluginElement = document.createElement("span")
+  // TODO: language preference
   usedPluginElement.textContent = `Plugin: ${Object.values(plugin.label)[0]}`
 
   element.replaceChildren();

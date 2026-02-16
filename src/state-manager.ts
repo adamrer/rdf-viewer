@@ -134,16 +134,27 @@ class StateManager {
     this.nextPluginId++
     return nextId
   }
-  async addPlugins(pluginModuleUrl: IRI): Promise<LabeledPlugin[]> {
-    const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
+  async addPlugins(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPlugin[]> {
+    let pluginModuleUrl: IRI = ""
+    if (pluginModuleUrlOrFile instanceof File){
+      const pluginModuleText = await pluginModuleUrlOrFile.text()
+      const pluginModuleBlob = new Blob([pluginModuleText], {type: "text/javascript"})
+      pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
+    }
+    else {
+      pluginModuleUrl = pluginModuleUrlOrFile
+    }
+    const pluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
     newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
+
     const newPluginsWithIds = newPlugins.map((plugin) => {
       return {
         id: this.getNextId(),
         ...plugin
       }
     })
+
     this.plugins.push(...newPluginsWithIds);
     this.notify(["plugins"]);
 

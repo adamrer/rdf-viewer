@@ -11,12 +11,7 @@ enum PluginType {
   File = "file"
 };
 
-const addSourceFormEl = document.getElementById(
-  "add-source-form",
-) as HTMLFormElement;
-const addPluginFormEl = document.getElementById(
-  "add-plugin-form",
-) as HTMLFormElement;
+
 const iriEl = document.getElementById("iri")! as HTMLInputElement;
 const compatiblePluginsBtn = document.getElementById(
   "compatible-plugins-btn",
@@ -28,19 +23,14 @@ const pluginSelectEl = document.getElementById(
 const dataSourcesContainer = document.getElementById(
   "source-list",
 ) as HTMLElement;
-const displayBtn = document.getElementById("display-btn")! as HTMLButtonElement;
 const configBtn = document.getElementById(
   "show-config-btn",
 ) as HTMLButtonElement;
 const configModal = document.getElementById(
   "config-modal",
 ) as HTMLDialogElement;
-const resultsEl: HTMLDivElement = document.getElementById(
-  "results",
-) as HTMLDivElement;
-const notificationContainer = document.getElementById(
-  "notification-container",
-) as HTMLElement;
+
+
 const pluginListEl = document.getElementById(
   "plugin-list"
 ) as HTMLElement
@@ -50,10 +40,11 @@ const pluginListEl = document.getElementById(
  */
 function bind() {
   addEventListeners();
+  setupDisplayButton();
   setupDataSourceSelect();
   setupPluginSelect();
   createSubscriptions();
-  notifier.setNotificationContainer(notificationContainer);
+  setupNotifier();
 
 }
 
@@ -87,6 +78,13 @@ async function getCompatiblePlugins(iri: IRI) {
   const filteredCompatiblePlugins = compatiblePlugins.filter((p) => p.isCompatible);
   filteredCompatiblePlugins.sort((a, b) => b.priority - a.priority);
   return filteredCompatiblePlugins;
+}
+
+function setupNotifier(){
+  const notificationContainer = document.getElementById(
+    "notification-container",
+  ) as HTMLElement;
+  notifier.setNotificationContainer(notificationContainer);
 }
 
 /** 
@@ -179,6 +177,26 @@ function addEventListeners() {
     app.setSelectedPlugin(pluginSelectEl.selectedIndex);
   });
 
+  // show configuration modal on button click
+  configBtn.addEventListener("click", () => {
+    configModal.showModal();
+  });
+
+  // close modal when clicking outside of it
+  configModal.addEventListener("click", (event) => {
+    // ::backdrop of the modal is clicked
+    if (event.target === configModal) {
+      configModal.close();
+    }
+  });
+}
+
+function setupDisplayButton() {
+  const app = StateManager.getInstance();
+  const displayBtn = document.getElementById("display-btn")! as HTMLButtonElement;
+  const resultsEl: HTMLDivElement = document.getElementById(
+    "results",
+  ) as HTMLDivElement;
   // handle display button click
   displayBtn.addEventListener("click", () => {
     displayBtn.disabled = true;
@@ -197,20 +215,8 @@ function addEventListeners() {
     }
   });
 
-  // show configuration modal on button click
-  configBtn.addEventListener("click", () => {
-    configModal.showModal();
-  });
 
-  // close modal when clicking outside of it
-  configModal.addEventListener("click", (event) => {
-    // ::backdrop of the modal is clicked
-    if (event.target === configModal) {
-      configModal.close();
-    }
-  });
 }
-
 
 /**
  * Adds plugin defined in formData to StateManager and UI
@@ -223,7 +229,8 @@ async function addPluginsFromFormData(formData: FormData) {
   switch (pluginType) {
     case PluginType.Url: {
       const url = formData.get("url-input") as IRI | null;
-      if (!url) throw new Error("Missing url for plugin in form data");
+      if (!url) 
+        throw new Error("Missing plugin url");
       
       try{
         await app.addPlugins(url);
@@ -234,6 +241,21 @@ async function addPluginsFromFormData(formData: FormData) {
       }
       break;
     }
+    case PluginType.File: 
+      const files = formData.getAll("file-input")
+      if (files.length === 0) 
+        throw new Error("Missing plugin file")
+
+      try{
+        const promises = files.map(file => app.addPlugins(file))
+        await Promise.all(promises)
+      }
+      catch(err){
+        console.error("Error while loading plugin", err);
+        notifier.notify("Failed to load plugin", "error");
+      }
+      
+      break;
 
     default:
       throw new Error("Unknown plugin type");
@@ -294,6 +316,9 @@ function switchInput(input1: HTMLInputElement, input2: HTMLInputElement){
   }
 }
 function setupDataSourceSelect() {
+  const addSourceFormEl = document.getElementById(
+  "add-source-form",
+) as HTMLFormElement;
   const select = addSourceFormEl.querySelector("#data-source-select") as HTMLSelectElement
   const urlTextInput = addSourceFormEl.querySelector("#data-source-url-input") as HTMLInputElement
   const fileInput = addSourceFormEl.querySelector("#data-source-file-input") as HTMLInputElement
@@ -343,6 +368,9 @@ function setupDataSourceSelect() {
 }
 
 function setupPluginSelect(){
+  const addPluginFormEl = document.getElementById(
+    "add-plugin-form",
+  ) as HTMLFormElement;
   const select = addPluginFormEl.querySelector("#plugin-add-type-select") as HTMLSelectElement
   const urlInput = addPluginFormEl.querySelector("#plugin-add-url-input") as HTMLInputElement
   const fileInput = addPluginFormEl.querySelector("#plugin-add-file-input") as HTMLInputElement
