@@ -35,9 +35,9 @@ interface LabeledPluginWithId extends LabeledPlugin {
 class StateManager {
   private static _instance: StateManager;
 
-  entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
-  languages: Language[] = ["cs", "en"];
-  dataSources: DataSource[] = [
+  private entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
+  private languages: Language[] = ["cs", "en"];
+  private dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
     new FileDataSource("https://www.w3.org/2009/08/skos-reference/skos.rdf"),
     new FileDataSource("https://www.w3.org/ns/dcat3.ttl"),
@@ -45,14 +45,28 @@ class StateManager {
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
   ];
-  nextPluginId = 0
-  plugins: LabeledPluginWithId[] = [];
-  selectedPluginIndex: number = 0;
+  private nextPluginId = 0
+  private selectedPluginIndex: number = 0;
 
+  plugins: LabeledPluginWithId[] = [];
   subscriptions: Subscription[] = [];
 
   private constructor() {}
 
+  /**
+   * 
+   * @returns a new ID for a newly added plugin
+   */
+  private getNextId(){
+    const nextId = this.nextPluginId
+    this.nextPluginId++
+    return nextId
+  }
+
+  /**
+   * 
+   * @returns the instance of the StateManager
+   */
   static getInstance(): StateManager {
     if (!StateManager._instance) {
       StateManager._instance = new StateManager();
@@ -95,14 +109,36 @@ class StateManager {
     });
   }
 
-  getSelectedPlugin() {
+  /**
+   * 
+   * @returns the plugin that is set to be selected
+   */
+  getSelectedPlugin(): LabeledPluginWithId {
     return this.plugins[this.selectedPluginIndex];
   }
 
-  setEntityIRI(iri: IRI) {
+  /**
+   * Sets the entity that will be displayed by a plugin
+   * @param iri - The IRI of an entity that is desired to be displayed by a plugin
+   */
+  setEntityIri(iri: IRI) {
     this.entityIri = decodeURIComponent(iri);
     this.notify(["entityIri"]);
   }
+
+  /**
+   * 
+   * @returns the entity IRI
+   */
+  getEntityIri(): IRI {
+    return this.entityIri
+  }
+
+  /**
+   * Adds a new data source to the StateManager
+   * @param source - IRI or a File of the new data source
+   * @param type - The type of the new data source 
+   */
   addDataSource(source: IRI | File, type: DataSourceType) {
     let ds: DataSource;
     switch (type) {
@@ -123,18 +159,32 @@ class StateManager {
     this.notify(["dataSources"]);
   }
 
+  /**
+   * Removes a data source with the given IRI
+   * 
+   * @param identifier - IRI of the data source to be removed from StateManager
+   */
   removeDataSource(identifier: IRI) {
     this.dataSources = this.dataSources.filter(
       (ds) => ds.identifier !== identifier,
     );
     this.notify(["dataSources"]);
   }
-  private getNextId(){
-    const nextId = this.nextPluginId
-    this.nextPluginId++
-    return nextId
+
+  /**
+   * 
+   * @returns a list of added data sources
+   */
+  getDataSources(): DataSource[] {
+    return this.dataSources
   }
-  async addPlugins(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPlugin[]> {
+
+  /**
+   * 
+   * @param pluginModuleUrlOrFile - URL or File of plugin module from which new plugins will be loaded
+   * @returns a list of newly loaded plugins with their IDs assigned by the StateManger
+   */
+  async addPlugins(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPluginWithId[]> {
     let pluginModuleUrl: IRI = ""
     if (pluginModuleUrlOrFile instanceof File){
       const pluginModuleText = await pluginModuleUrlOrFile.text()
@@ -158,16 +208,26 @@ class StateManager {
     this.plugins.push(...newPluginsWithIds);
     this.notify(["plugins"]);
 
-    return newPlugins;
+    return newPluginsWithIds;
   }
 
-  removePlugin(index: number) {
+
+  /**
+   * Removes a plugin from the StateManager by it's ID
+   * @param pluginId - ID of the plugin wished to be removed from the StateManager
+   */
+  removePlugin(pluginId: number) {
+    const index = this.plugins.findIndex((plugin) => plugin.id === pluginId)
     this.plugins.splice(index, 1)
     this.notify(["plugins"])
   }
 
+  getPlugins(): LabeledPluginWithId[] {
+    return this.plugins
+  }
+
   /**
-   * 
+   * Changes the order of plugins by the given order
    * @param order - IDs of plugins in the desired order
    */
   changePluginsOrder(order: number[]){
@@ -182,16 +242,31 @@ class StateManager {
     this.notify(["plugins"])
   }
 
-  // TODO: select by plugin id
+  /**
+   * Sets the selected plugin by it's id
+   * @param pluginId - ID of the plugin wished to be selected for displaying the entity
+   */
   setSelectedPlugin(pluginId: number) {
     const index = this.plugins.findIndex((plugin) => plugin.id == pluginId)
     this.selectedPluginIndex = index
     this.notify(["selectedPluginIndex"]);
   }
 
+  /**
+   * Sets the preferred languages
+   * @param languages - Array of language tags
+   */
   setLanguages(languages: Language[]) {
     this.languages = languages;
     this.notify(["languages"]);
+  }
+
+  /**
+   * 
+   * @returns the preferred languages
+   */
+  getLanguages(): Language[] {
+    return this.languages
   }
 }
 

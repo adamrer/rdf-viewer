@@ -4,6 +4,10 @@ import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
 import { LabeledPluginWithId, StateManager } from "./state-manager";
 
+
+/**
+ * Setups the HTML elements that are in the main settings of the UI
+ */
 function setupMainSettingsElements(){
   setupIriElement();
   setupLanguageInput();
@@ -12,12 +16,16 @@ function setupMainSettingsElements(){
 }
 
 
+/**
+ * Binds the text input for setting the language preferences to the StateManager
+ * @see StateManager
+ */
 function setupLanguageInput() {
   const languagesEl = document.getElementById("languages")! as HTMLInputElement;
   const app = StateManager.getInstance();
 
   app.subscribe(() => {
-    languagesEl.value = app.languages.join(", ");
+    languagesEl.value = app.getLanguages().join(", ");
   }, ["languages"], true);  
 
   // bind change of languages input to StateManager
@@ -29,7 +37,10 @@ function setupLanguageInput() {
   });
 }
 
-
+/**
+ * Binds the IRI element to the StateManager
+ * @see StateManager
+ */
 function setupIriElement(){
   const iriEl = document.getElementById("iri")! as HTMLInputElement;
   const app = StateManager.getInstance()
@@ -37,16 +48,20 @@ function setupIriElement(){
   // bind change of IRI input to StateManager
   iriEl.addEventListener("change", () => {
     const iriText = iriEl.value;
-    app.setEntityIRI(iriText);
+    app.setEntityIri(iriText);
   });
 
   app.subscribe(() => {
-    iriEl.value = app.entityIri;
+    iriEl.value = app.getEntityIri();
   }, ["entityIri"], true);
 
 }
 
 
+/**
+ * Setups the button for displaying plugin with set entity IRI in the StateManager
+ * @see StateManager
+ */
 function setupDisplayButton() {
   const app = StateManager.getInstance();
   const displayBtn = document.getElementById("display-btn")! as HTMLButtonElement;
@@ -59,7 +74,7 @@ function setupDisplayButton() {
     const selectedPlugin = app.getSelectedPlugin();
     try {
       if (selectedPlugin) {
-        display(selectedPlugin, app.entityIri, resultsEl);
+        display(selectedPlugin, app.getEntityIri(), resultsEl);
       }
       else {
         notifier.notify("No plugin selected.", "error");
@@ -74,6 +89,9 @@ function setupDisplayButton() {
 
 }
 
+/**
+ * Setups the element for selecting a plugin
+ */
 function setupPluginSelect() {
   const pluginSelectEl = document.getElementById(
     "choose-plugin",
@@ -95,7 +113,7 @@ function setupPluginSelect() {
   
   // setup compatible plugins button
   compatiblePluginsBtn.addEventListener("click", async () => {
-    const iri = app.entityIri;
+    const iri = app.getEntityIri();
     if (!iri) {
       notifier.notify("Please enter an IRI to find compatible plugins.", "error");
       return;
@@ -163,7 +181,7 @@ type CompatiblePlugin = {
  */
 async function getPluginsCompatibility(iri: IRI): Promise<CompatiblePlugin[]> {
   const app = StateManager.getInstance();
-  const context = createCompatibilityContext(app.dataSources, createSetupContext().vocabulary.getReadableVocabulary());
+  const context = createCompatibilityContext(app.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
   const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
     app.plugins.map((plugin) =>
       plugin.v1.checkCompatibility(context, iri)

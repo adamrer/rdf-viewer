@@ -19,7 +19,7 @@ function setupDatasourceList() {
     "source-list",
   ) as HTMLElement;
   app.subscribe(() => {
-    const dataSourcesElements = app.dataSources.map((ds) => {
+    const dataSourcesElements = app.getDataSources().map((ds) => {
       return createDataSourceEntry(ds.type, ds.identifier);
     })
     dataSourcesList.replaceChildren(...dataSourcesElements);
@@ -345,10 +345,10 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
   removeButton.addEventListener("click", () => {
     const listElement = entryEl.parentElement
     if (listElement){
-      const index = Array.from(listElement.children).indexOf(entryEl)
+      const pluginId = Number(entryEl.getAttribute("data-id"))
 
       entryEl.remove();
-      app.removePlugin(index);
+      app.removePlugin(pluginId);
     }
   });
   return entryEl

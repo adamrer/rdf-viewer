@@ -45,8 +45,8 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
 }
 
 function createInstanceContext(app: StateManager, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
-  const data = createDataContext(app.dataSources, vocabulary)
-  return new PluginV1InstanceContextImpl(data, app.languages, notifier)
+  const data = createDataContext(app.getDataSources(), vocabulary)
+  return new PluginV1InstanceContextImpl(data, app.getLanguages(), notifier)
 }
 
 function createDataContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
@@ -79,7 +79,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
 
     const app = StateManager.getInstance();
     for (const plugin of app.plugins){
-      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.dataSources, this.data.vocabulary), subjectIri)
+      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
         if (compatibility.isCompatible){
           const handler = display(plugin, subjectIri, element)
           return handler;
