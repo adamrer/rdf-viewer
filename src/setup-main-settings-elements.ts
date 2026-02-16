@@ -2,7 +2,7 @@ import { createCompatibilityContext, createSetupContext, display } from "./displ
 import { notifier } from "./notifier";
 import { LabeledPlugin } from "./plugin-api";
 import { IRI } from "./rdf-types";
-import { StateManager } from "./state-manager";
+import { LabeledPluginWithId, StateManager } from "./state-manager";
 
 function setupMainSettingsElements(){
   setupIriElement();
@@ -102,15 +102,24 @@ function setupPluginSelect() {
     }
     compatiblePluginsBtn.disabled = true;
     try {
-      const compatiblePlugins = await getCompatiblePlugins(iri);
-      if (compatiblePlugins.length === 0) {
-        notifier.notify("No compatible plugins found for the given IRI.", "info");
-        return;
-      }
-      const options = compatiblePlugins.map((p) => createPluginOption(p.plugin));
-      pluginSelectEl.replaceChildren(...options);
-      pluginSelectEl.selectedIndex = 0;
-      app.setSelectedPlugin(0)
+      const pluginsWithCompatibility = await getPluginsCompatibility(iri);
+      const compatiblePlugins = pluginsWithCompatibility.filter(plugin => plugin.isCompatible)
+      const nonComatiblePlugins = pluginsWithCompatibility.filter(plugin => !plugin.isCompatible)
+
+      const compatibleOptGroup = document.createElement("optgroup")
+      compatibleOptGroup.label = "Compatible"
+      const nonCompatibleOptGroup = document.createElement("optgroup")
+      nonCompatibleOptGroup.label = "Not Compatible"
+      const compatibleOptions = compatiblePlugins.map(plugin => createPluginOption(plugin.plugin))
+      const nonCompatibleOptions = nonComatiblePlugins.map(plugin => createPluginOption(plugin.plugin))
+      
+      compatibleOptGroup.replaceChildren(...compatibleOptions)
+      nonCompatibleOptGroup.replaceChildren(...nonCompatibleOptions)
+      
+      pluginSelectEl.replaceChildren(...[compatibleOptGroup, nonCompatibleOptGroup])
+      const firstCompatiblePluginId = compatiblePlugins[0].plugin.id
+      app.setSelectedPlugin(firstCompatiblePluginId)
+
       notifier.notify(`Found ${compatiblePlugins.length} compatible plugin(s).`, "success");
     } catch (err) {
       console.error("Error while finding compatible plugins", err);
@@ -140,7 +149,7 @@ function createPluginOption(plugin: LabeledPlugin): HTMLOptionElement {
 
 
 type CompatiblePlugin = {
-  plugin: LabeledPlugin;
+  plugin: LabeledPluginWithId;
   isCompatible: boolean;
   priority: number;
 }
@@ -150,9 +159,9 @@ type CompatiblePlugin = {
  * the compatible plugins sorted by their priority.
  * 
  * @param iri - IRI of the entity to find compatible plugins for
- * @returns list of compatible plugins sorted by their priority
+ * @returns list of plugins with information about compatibility and sorted by their priority
  */
-async function getCompatiblePlugins(iri: IRI) {
+async function getPluginsCompatibility(iri: IRI): Promise<CompatiblePlugin[]> {
   const app = StateManager.getInstance();
   const context = createCompatibilityContext(app.dataSources, createSetupContext().vocabulary.getReadableVocabulary());
   const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
@@ -165,9 +174,8 @@ async function getCompatiblePlugins(iri: IRI) {
         })
     ),
   );
-  const filteredCompatiblePlugins = compatiblePlugins.filter((p) => p.isCompatible);
-  filteredCompatiblePlugins.sort((a, b) => b.priority - a.priority);
-  return filteredCompatiblePlugins;
+  compatiblePlugins.sort((a, b) => b.priority - a.priority);
+  return compatiblePlugins;
 }
 
 

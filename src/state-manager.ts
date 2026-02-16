@@ -182,7 +182,9 @@ class StateManager {
     this.notify(["plugins"])
   }
 
-  setSelectedPlugin(index: number) {
+  // TODO: select by plugin id
+  setSelectedPlugin(pluginId: number) {
+    const index = this.plugins.findIndex((plugin) => plugin.id == pluginId)
     this.selectedPluginIndex = index
     this.notify(["selectedPluginIndex"]);
   }
