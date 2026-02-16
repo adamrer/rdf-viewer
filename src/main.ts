@@ -1,5 +1,5 @@
-import { bind } from "./ui-binding";
+import { setupElements } from "./setup";
 
 window.onload = () => {
-  bind();
+  setupElements();
 };
