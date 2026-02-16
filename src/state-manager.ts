@@ -6,7 +6,7 @@ import {
   SparqlDataSource,
 } from "./data-source-implementations";
 import { createSetupContext } from "./display";
-import { LabeledPlugin, PluginModule } from "./plugin-api";
+import { LabeledPlugin } from "./plugin-api";
 import { Language } from "./query-interfaces";
 import { IRI } from "./rdf-types";
 
