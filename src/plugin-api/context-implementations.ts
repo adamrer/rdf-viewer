@@ -1,10 +1,10 @@
 import { DataSource } from "../fetch/data-source";
-import { display } from "../display";
+import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, Query } from "../query/query-interfaces";
 import { graphNavigator } from "../graph-navigator";
-import { notifier, NotifierService } from "../notifier";
+import { notifier, NotifierService } from "../ui/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./interfaces";
 import { IRI } from "../rdf-types";
 import { StateManager } from "../state-manager";
@@ -46,7 +46,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
     for (const plugin of app.plugins){
       const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
         if (compatibility.isCompatible){
-          const handler = display(plugin, subjectIri, element)
+          const handler = renderEntityWithPlugin(plugin, subjectIri, element)
           return handler;
         }
       }

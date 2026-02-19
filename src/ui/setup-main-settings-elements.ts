@@ -1,6 +1,6 @@
 import { createCompatibilityContext, createSetupContext} from "../plugin-api/context-implementations";
-import { display } from "../display";
-import { notifier } from "../notifier";
+import { renderEntityWithPlugin } from "../render-entity-with-plugin";
+import { notifier } from "./notifier";
 import { LabeledPlugin } from "../plugin-api/interfaces";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, StateManager } from "../state-manager";
@@ -75,7 +75,7 @@ function setupDisplayButton() {
     const selectedPlugin = app.getSelectedPlugin();
     try {
       if (selectedPlugin) {
-        display(selectedPlugin, app.getEntityIri(), resultsEl);
+        renderEntityWithPlugin(selectedPlugin, app.getEntityIri(), resultsEl);
       }
       else {
         notifier.notify("No plugin selected.", "error");

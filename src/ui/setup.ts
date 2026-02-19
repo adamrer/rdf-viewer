@@ -1,4 +1,4 @@
-import { notifier } from "../notifier";
+import { notifier } from "./notifier";
 import { setupConfigurationElements } from "./setup-configuration-elements";
 import { setupHeaderElements } from "./setup-header";
 import { setupMainSettingsElements } from "./setup-main-settings-elements";

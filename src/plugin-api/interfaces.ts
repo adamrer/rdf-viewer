@@ -1,5 +1,5 @@
 import { IRI, LanguageString } from "../rdf-types";
-import { NotifierService } from "../notifier";
+import { NotifierService } from "../ui/notifier";
 import { GraphNavigator } from "../graph-navigator";
 import { Sourced } from "../fetch/data-source";
 import { Quad_Object } from "n3";

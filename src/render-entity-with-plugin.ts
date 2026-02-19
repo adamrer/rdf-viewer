@@ -14,7 +14,7 @@ import { createInstanceContext, createSetupContext } from "./plugin-api/context-
  * @see PluginV1InstanceContext
  * @see PluginV1Handler
  */
-async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): Promise<PluginV1Handler | null> {
+async function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): Promise<PluginV1Handler | null> {
   const app = StateManager.getInstance();
 
   const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
@@ -42,5 +42,5 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
 }
 
 export { 
-  display
+  renderEntityWithPlugin
 };

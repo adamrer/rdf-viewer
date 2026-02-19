@@ -2,7 +2,7 @@ import Sortable from "sortablejs";
 import { DataSourceType } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, StateManager } from "../state-manager";
-import { notifier } from "../notifier";
+import { notifier } from "./notifier";
 
 function setupConfigurationElements(){
   setupDataSourceForm();
