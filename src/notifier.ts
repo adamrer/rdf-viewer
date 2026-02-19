@@ -84,7 +84,7 @@ class NotifierServiceImpl implements NotifierService {
       throw err;
     }
   }
-  getEmoji(type: NotificationType): string {
+  private getEmoji(type: NotificationType): string {
     switch (type) {
       case "info":
         return "🛈";

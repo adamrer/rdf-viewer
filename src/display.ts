@@ -31,8 +31,11 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
     
   }
   const usedPluginElement = document.createElement("span")
-  // TODO: language preference
-  usedPluginElement.textContent = `Plugin: ${Object.values(plugin.label)[0]}`
+
+  if (app.getAppLanguage() in plugin.label)
+    usedPluginElement.textContent = plugin.label[app.getAppLanguage()]
+  else
+    usedPluginElement.textContent = Object.values(plugin.label)[0]
 
   element.replaceChildren();
   element.appendChild(usedPluginElement)

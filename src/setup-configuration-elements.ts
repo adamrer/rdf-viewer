@@ -296,6 +296,17 @@ function createDataSourceEntry(
 ): HTMLElement {
   const app = StateManager.getInstance();
   const entryEl = document.createElement("div");
+  
+  // add remove button for data source
+  const removeButton = document.createElement("button");
+  removeButton.className = "remove-btn";
+  removeButton.textContent = "×";
+  removeButton.addEventListener("click", () => {
+    entryEl.remove();
+    app.removeDataSource(identifier);
+  });
+  entryEl.appendChild(removeButton);
+
   entryEl.className = "source-entry";
   let typeLabel;
   switch (type) {
@@ -312,18 +323,15 @@ function createDataSourceEntry(
       typeLabel = "LDP Server";
       break;
     default:
-      break;
+      throw new Error("Unknown data source type")
   }
-  entryEl.innerHTML = `<b>${typeLabel}</b>: <span>${identifier}</span>`;
-  // add remove button for data source
-  const removeButton = document.createElement("button");
-  removeButton.className = "remove-btn";
-  removeButton.textContent = "×";
-  removeButton.addEventListener("click", () => {
-    entryEl.remove();
-    app.removeDataSource(identifier);
-  });
-  entryEl.appendChild(removeButton);
+  const typeLabelEl = document.createElement("b")
+  typeLabelEl.textContent = typeLabel + ": "
+  const identifierEl = document.createElement("span")
+  identifierEl.textContent = identifier
+  entryEl.appendChild(typeLabelEl)
+  entryEl.appendChild(identifierEl)
+
   return entryEl;
 }
 
@@ -333,11 +341,7 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
 
   const entryEl = document.createElement("li")
   entryEl.setAttribute("data-id", plugin.id.toString())
-  const textEl = document.createElement("span")
-  // TODO: language preference
-  textEl.textContent = Object.values(plugin.label)[0]
-  entryEl.appendChild(textEl)
-
+  
   const removeButton = document.createElement("button");
   removeButton.className = "remove-btn";
   removeButton.textContent = "×";
@@ -351,6 +355,16 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
       app.removePlugin(pluginId);
     }
   });
+
+  const textEl = document.createElement("span")
+
+  if (app.getAppLanguage() in plugin.label)
+    textEl.textContent = plugin.label[app.getAppLanguage()]
+  else
+    textEl.textContent = Object.values(plugin.label)[0]
+
+  entryEl.appendChild(textEl)
+
   return entryEl
 }
 

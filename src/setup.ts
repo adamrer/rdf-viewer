@@ -1,5 +1,6 @@
 import { notifier } from "./notifier";
 import { setupConfigurationElements } from "./setup-configuration-elements";
+import { setupHeaderElements } from "./setup-header";
 import { setupMainSettingsElements } from "./setup-main-settings-elements";
 
 /**
@@ -8,6 +9,10 @@ import { setupMainSettingsElements } from "./setup-main-settings-elements";
  * @see StateManager
  */
 function setupElements() {
+  
+  // header
+  setupHeaderElements();
+  
   // main display settings
   setupMainSettingsElements();
 
@@ -20,8 +25,6 @@ function setupElements() {
 }
 
 
-
-
 /**
  * Setups the notifier
  */
@@ -31,9 +34,6 @@ function setupNotifier(){
   ) as HTMLElement;
   notifier.setNotificationContainer(notificationContainer);
 }
-
-
-
 
 
 export { setupElements };
