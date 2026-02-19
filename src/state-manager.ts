@@ -18,7 +18,8 @@ type StateMember =
   | "languages"
   | "dataSources"
   | "plugins"
-  | "selectedPluginIndex";
+  | "selectedPluginIndex"
+  | "appLanguage";
 type Subscription = { keys: StateMember[]; listener: Listener };
 
 interface LabeledPluginWithId extends LabeledPlugin {
@@ -29,9 +30,8 @@ interface LabeledPluginWithId extends LabeledPlugin {
  * Holds and manages data set by user in the UI for RDF display configuration. 
  * Observable Singleton class.
  */
-// TODO: persist state in localStorage or IndexedDB
+// TODO: persist state in localStorage 
 // TODO: rename to something more specific
-// TODO: add comments
 class StateManager {
   private static _instance: StateManager;
 
@@ -47,6 +47,7 @@ class StateManager {
   ];
   private nextPluginId = 0
   private selectedPluginIndex: number = 0;
+  private appLanguage: Language = "en"
 
   plugins: LabeledPluginWithId[] = [];
   subscriptions: Subscription[] = [];
@@ -267,6 +268,24 @@ class StateManager {
    */
   getLanguages(): Language[] {
     return this.languages
+  }
+
+  /**
+   * 
+   * @returns the language of the app
+   */
+  getAppLanguage(): Language {
+    return this.appLanguage
+  }
+
+  /**
+   * Sets a new language as the app language
+   * @param language - Language tag to set the app language to
+   */
+  setAppLanguage(language: Language) {
+    this.appLanguage = language
+    this.notify(["appLanguage"])
+
   }
 }
 
