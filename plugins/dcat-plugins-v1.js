@@ -2,11 +2,11 @@
 export function registerPlugins() {
     return [
         {
-            label: {"en": "Dataset Plugin"},
+            label: {"en": "Dataset Plugin", "cs": "Datová sada"},
             v1: createDatasetPlugin()
         },
         {
-            label: {"en": "Distribution Plugin"},
+            label: {"en": "Distribution Plugin", "cs": "Distribuce"},
             v1: createDistributionPlugin()
         }
     ]
