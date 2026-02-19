@@ -1,8 +1,9 @@
-import { createCompatibilityContext, createSetupContext, display } from "./display";
-import { notifier } from "./notifier";
-import { LabeledPlugin } from "./plugin-api";
-import { IRI } from "./rdf-types";
-import { LabeledPluginWithId, StateManager } from "./state-manager";
+import { createCompatibilityContext, createSetupContext} from "../plugin-api/context-implementations";
+import { display } from "../display";
+import { notifier } from "../notifier";
+import { LabeledPlugin } from "../plugin-api/interfaces";
+import { IRI } from "../rdf-types";
+import { LabeledPluginWithId, StateManager } from "../state-manager";
 
 
 /**

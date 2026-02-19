@@ -51,9 +51,7 @@ function createDatasetPlugin() {
 
     return {
         setup(context) {
-            context.vocabulary.addSemanticallySimilar(dcterms.title, rdfs.label, skos.prefLabel, vcard.fn)
-            context.vocabulary.addSemanticallySimilar(dcat.Dataset, dcat_ap_cz.DatovaSada)
-            context.vocabulary.addSemanticallySimilar(dcat.distribution, dcat_ap_cz.distribuce)
+
         },
         createPluginInstance(context, subject) {
             let mountedToElement = null;
@@ -62,13 +60,14 @@ function createDatasetPlugin() {
                     mountedToElement = element;
                     // load dataset data
                     (async () => {
-                        await context.data.fetch.predicates(subject)
-                        const datasetLabel = getLabel(subject, context);
+                        await context.data.fetch.quads([subject], undefined, context.configuration.languages)
+                        const datasetLabel = getLabel(subject, [dcterms.title, skos.prefLabel, rdfs.label], context);
                         
                         // render dataset label
                         const titleElement = document.createElement("h1")
                         titleElement.textContent = datasetLabel
                         element.appendChild(titleElement)
+                        
                         
                         // render distributions
                         const distributionsWrapper = document.createElement("div")
@@ -111,8 +110,7 @@ function createDistributionPlugin() {
 
     return {
         setup(context) {
-            context.vocabulary.addSemanticallySimilar(dcterms.title, rdfs.label, skos.prefLabel, vcard.fn)
-            context.vocabulary.addSemanticallySimilar(dcat.Distribution, dcat_ap_cz.Distribuce)
+            
         },
         createPluginInstance(context, subject) {
             let mountedToElement = null;
@@ -123,10 +121,10 @@ function createDistributionPlugin() {
 
                     // load distribution data
                     (async () => {
-                        await context.data.fetch.predicates(subject)
+                        await context.data.fetch.quads([subject])
                         
                         // get distribution label
-                        const distributionLabel = getLabel(subject, context);
+                        const distributionLabel = getLabel(subject, [dcterms.title, skos.prefLabel, rdfs.label], context);
                         
                         // render dataset label
                         const titleElement = document.createElement("h2")
@@ -162,21 +160,19 @@ function createDistributionPlugin() {
  * @param {*} context - plugin instance context
  * @returns label for the subject
  */
-function getLabel(subject, context){
-    // get distribution label
-    const labelPredicates = context.data.vocabulary.getSemanticallySimilar(dcterms.title)
-    let distributionLabel = subject
+function getLabel(subject, labelPredicates, context){
+    let subjectLabel = subject
     for (const lp of labelPredicates) {
         const labels = context.data.fetched.subject(subject).predicate(lp)
         if (labels.length > 0) {
             for (const label of labels) {
                 if (label.value.termType === "Literal") {
-                    distributionLabel = label.value.value;
-                    return distributionLabel;
+                    subjectLabel = label.value.value;
+                    return subjectLabel;
                 }
             }
         }
     }
-    return distributionLabel;
+    return label;
 
 }

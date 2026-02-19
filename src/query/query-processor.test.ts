@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { queryProcessor } from "../src/query-processor";
-import { queryBuilder } from "../src/query-builder";
+import { queryProcessor } from "./query-processor";
+import { queryBuilder } from "./query-builder";
 import { DataFactory, Quad } from "n3";
 
 const quads: Quad[] = [

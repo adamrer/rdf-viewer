@@ -1,7 +1,7 @@
 import { Quad_Object } from "n3";
-import { Sourced } from "./data-source";
+import { Sourced } from "./fetch/data-source";
 import { IRI } from "./rdf-types";
-import { StructuredQuads } from "./fetcher";
+import { StructuredQuads } from "./fetch/fetcher";
 
 interface GraphNavigator {
     /**

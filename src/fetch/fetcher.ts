@@ -3,10 +3,10 @@ import {
   Query,
   QueryBuilder,
   queryBuilder,
-} from "./query-builder";
+} from "../query/query-builder";
 import { DataSource } from "./data-source-implementations";
 import { Sourced } from "./data-source";
-import { IRI } from "./rdf-types";
+import { IRI } from "../rdf-types";
 
 /**
  * Interface for fetching quads from multiple data sources

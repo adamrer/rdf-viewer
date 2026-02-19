@@ -1,10 +1,10 @@
-import { IRI, LanguageString } from "./rdf-types";
-import { NotifierService } from "./notifier";
-import { GraphNavigator } from "./graph-navigator";
-import { Sourced } from "./data-source";
+import { IRI, LanguageString } from "../rdf-types";
+import { NotifierService } from "../notifier";
+import { GraphNavigator } from "../graph-navigator";
+import { Sourced } from "../fetch/data-source";
 import { Quad_Object } from "n3";
-import { QueryBuilder } from "./query-builder";
-import { Query } from "./query";
+import { Language, QueryBuilder } from "../query/query-builder";
+import { Query } from "../query/query";
 
 
 
@@ -86,8 +86,6 @@ interface PluginV1SetupContext {
     /**
      * Add information that given IRI is semantically similar to the
      * original IRI, thus can be used instead of the original.
-     *
-     * TODO: We may replace this with skos:broader or skos:narrower ...
      */
     addSemanticallySimilar(original: IRI, ...similar: IRI[]): void;
 
@@ -129,7 +127,7 @@ interface PluginV1InstanceContext {
       /**
        * Languages preferred by the user, sorted by priority
        */
-      languages: string[];
+      languages: Language[];
   }
 
   /**
@@ -156,15 +154,16 @@ interface PluginV1DataContext {
      */
     types: (subject: IRI) => Promise<Sourced<Quad_Object>[]>
     /**
-     * Loads all quads with the given subject into the fetched data
-     * and returns list of predicate IRIs
+     * Loads quads with the given subjects and predicates into the fetched data.
+     * If predicates are not set, then fetch all quads
      * 
      * @param subject - IRI of the subject
-     * @returns list of predicates for the given subject
+     * @param predicates - IRIs of the predicates
+     * @returns Graph navigator of the newly fetched quads
+     * @see GraphNavigator
      */
-    predicates: (subject: IRI) => Promise<IRI[]>
-
-    // TODO: do this or not? It can be easily done by executing a query, but it is a common operation, so maybe it should be here for convenience
+    quads: (subjects: IRI[], predicates?: IRI[], languages?: Language[]) => Promise<GraphNavigator>
+    
     /**
      * Loads labels for the given subjects and label predicates into the fetched data.
      * If subjects parameter is not given, labels for all IRIs in fetched are loaded.
@@ -174,14 +173,6 @@ interface PluginV1DataContext {
      * @returns map of subject IRIs to their labels
      */
     // labels: (labelPredicates: IRI[], subjects?: IRI[]) => Promise<Map<IRI, Sourced<Literal>[]>>
-
-    /**
-     * 
-     * @param subject - IRI of the subject
-     * @param predicate - IRI of the predicate
-     * @returns list of objects for the given subject and predicate
-     */
-    objects: (subject: IRI, predicate: IRI) => Promise<Sourced<Quad_Object>[]>
   }
 
   /**

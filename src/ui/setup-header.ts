@@ -1,4 +1,4 @@
-import { StateManager } from "./state-manager"
+import { StateManager } from "../state-manager"
 
 function setupHeaderElements() {
   setupAppLanguageSelect()

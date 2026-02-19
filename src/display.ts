@@ -1,13 +1,8 @@
 
-import { LabeledPlugin, PluginV1CompatibilityContext, PluginV1DataContext, PluginV1Handler, PluginV1InstanceContext, PluginV1SetupContext, PluginV1Vocabulary } from "./plugin-api";
-import { notifier, NotifierService } from "./notifier";
+import { LabeledPlugin, PluginV1Handler } from "./plugin-api/interfaces";
 import { StateManager } from "./state-manager";
-import { Fetcher, fetcher, mergeStructuredQuads, StructuredQuads } from "./fetcher";
-import { Language, Query } from "./query-interfaces";
 import { IRI } from "./rdf-types";
-import { queryBuilder } from "./query-builder";
-import { DataSource } from "./data-source";
-import { graphNavigator } from "./graph-navigator";
+import { createInstanceContext, createSetupContext } from "./plugin-api/context-implementations";
 
 /**
  * Is responsible for displaying the entity with a plugin to the user.
@@ -27,13 +22,12 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
   if (pluginInstance == null){
     
     throw new Error("Failed to create plugin instance.")
-    // TODO: what to do with displayQuads? What default behavior to do?
     
   }
   const usedPluginElement = document.createElement("span")
 
   if (app.getAppLanguage() in plugin.label)
-    usedPluginElement.textContent = plugin.label[app.getAppLanguage()]
+    usedPluginElement.textContent = "Plugin: " + plugin.label[app.getAppLanguage()]
   else
     usedPluginElement.textContent = Object.values(plugin.label)[0]
 
@@ -47,167 +41,6 @@ async function display(plugin: LabeledPlugin, entityIri: IRI, element: HTMLEleme
 
 }
 
-function createInstanceContext(app: StateManager, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
-  const data = createDataContext(app.getDataSources(), vocabulary)
-  return new PluginV1InstanceContextImpl(data, app.getLanguages(), notifier)
-}
-
-function createDataContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
-  return new PluginV1DataContextImpl(dataSources, vocabulary);
-}
-
-function createCompatibilityContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1CompatibilityContext {
-  return { data: createDataContext(dataSources, vocabulary) }
-} 
-
-class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
-
-  data: PluginV1InstanceContext["data"];
-  configuration: PluginV1InstanceContext["configuration"];
-  notification: PluginV1InstanceContext["notification"];
-  interoperability: PluginV1InstanceContext["interoperability"];
-
-  constructor(dataContext: PluginV1DataContext, languages: Language[], notification: NotifierService){
-    this.data = dataContext;
-    this.notification = notification;
-    this.configuration = {
-      languages: languages
-    }
-    this.interoperability = {
-      renderSubject: this.renderSubject.bind(this)
-    };
-  }
-  async renderSubject(subjectIri: IRI, element: HTMLElement): Promise<PluginV1Handler|null> {
-    // find compatible plugin in order of state manager plugins and use the first one
-
-    const app = StateManager.getInstance();
-    for (const plugin of app.plugins){
-      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
-        if (compatibility.isCompatible){
-          const handler = display(plugin, subjectIri, element)
-          return handler;
-        }
-      }
-    return null;
-  }
-
-}
-
-class PluginV1DataContextImpl implements PluginV1DataContext {
-
-  private fetchedStructured: StructuredQuads = {};
-  private fetcher: Fetcher;
-  
-  fetched = graphNavigator(this.fetchedStructured);
-  
-  fetch: PluginV1DataContext["fetch"]
-  query: PluginV1DataContext["query"]
-  vocabulary: PluginV1DataContext["vocabulary"];
-
-  constructor(dataSources: DataSource[], vocabulary: PluginV1Vocabulary) {
-    this.fetcher = fetcher(dataSources);
-    this.query = {
-      builder: queryBuilder,
-      execute: this.execute.bind(this)
-    }
-    this.fetch = {
-      types: this.types.bind(this),
-      predicates: this.predicates.bind(this),
-      objects: this.objects.bind(this)
-    }
-    this.vocabulary = vocabulary;
-    
-  }
-  async execute(query: Query) {
-    const structuredQuads = await this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(structuredQuads)
-    const navigator = graphNavigator(structuredQuads);
-    return navigator
-  }
-  
-  async types(subject: IRI) {
-    const typePredicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-
-    const builder = this.fetcher.builder()
-    const query = builder.subjects([subject]).predicates([typePredicate]).objects().build();
-    const typesQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await typesQuads)
-    const navigator = graphNavigator(await typesQuads);
-    return navigator.subject(subject).predicate(typePredicate);
-  }
-  async predicates(subject: IRI) {
-    const builder = this.fetcher.builder()
-    const query = builder.subjects([subject]).predicates().objects().build();
-    const predsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await predsQuads)
-    const navigator = graphNavigator(await predsQuads);
-    return navigator.subject(subject).predicates();
-  }
-  // TODO: language preferences?
-  async objects(subject: IRI, predicate: IRI) {
-    const builder = this.fetcher.builder()
-    const query = builder.subjects([subject]).predicates([predicate]).objects().build()
-    const objsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await objsQuads)
-    const navigator = graphNavigator(await objsQuads);
-    return navigator.subject(subject).predicate(predicate);
-  }
-
-  addFetched(quads: StructuredQuads){
-    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, quads)
-    this.fetched = graphNavigator(this.fetchedStructured)
-  }
-  
-}
-
-class PluginV1SetupContextImpl implements PluginV1SetupContext {
-  
-  data: Map<IRI, Set<IRI>> = new Map();
-  
-  vocabulary: PluginV1SetupContext["vocabulary"];
-
-
-  constructor() {
-    this.vocabulary = {
-      addSemanticallySimilar: this.addSemanticallySimilar.bind(this),
-      getReadableVocabulary: this.getReadableVocabulary.bind(this)
-    }
-  }
-
-  addSemanticallySimilar(original: IRI, ...similar: IRI[]) {
-    if (this.data.has(original)){
-      const existing = this.data.get(original);
-      if (existing){
-        similar.forEach(iri => existing.add(iri));
-      }
-      else{
-        this.data.set(original, new Set(similar));
-      }
-    }
-  }
-
-  getReadableVocabulary(): PluginV1Vocabulary {
-    return {
-      getSemanticallySimilar: (original: IRI) => {
-        const similarSet = this.data.get(original);
-        if (similarSet){
-          const similarArray = Array.from(similarSet)
-          similarArray.push(original)
-          return similarArray;
-        }
-        return [original]
-      }
-    }
-  }
-}
-
-function createSetupContext(): PluginV1SetupContext {
-  return new PluginV1SetupContextImpl();
-}
-
 export { 
-  display,
-  createCompatibilityContext,
-  createSetupContext,
-  createDataContext
+  display
 };

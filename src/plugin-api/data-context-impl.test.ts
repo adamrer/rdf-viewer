@@ -1,9 +1,9 @@
 import { DataFactory, Quad } from "n3";
-import { DataSource, DataSourceType, Sourced } from "../src/data-source";
+import { DataSource, DataSourceType, Sourced } from "../src/fetch/data-source";
 import { createDataContext, createSetupContext } from "../src/display";
 import { test, expect } from "vitest";
-import { Query } from "../src/query";
-import { queryProcessor } from "../src/query-processor";
+import { Query } from "../src/query/query";
+import { queryProcessor } from "../src/query/query-processor";
 
 const typePredicate = decodeURIComponent("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 const datasetType = "https://www.w3.org/ns/dcat#Dataset"

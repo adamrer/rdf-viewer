@@ -4,10 +4,10 @@ import {
   FileDataSource,
   LdpDataSource,
   SparqlDataSource,
-} from "./data-source-implementations";
-import { createSetupContext } from "./display";
-import { LabeledPlugin } from "./plugin-api";
-import { Language } from "./query-interfaces";
+} from "./fetch/data-source-implementations";
+import { createSetupContext } from "./plugin-api/context-implementations";
+import { LabeledPlugin } from "./plugin-api/interfaces";
+import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
 
 // const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;

@@ -1,11 +1,11 @@
 import N3, { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from "n3";
 import { Readable } from "readable-stream";
 import { rdfParser } from "rdf-parse";
-import { queryProcessor } from "./query-processor";
+import { queryProcessor } from "../query/query-processor";
 import pLimit from "p-limit";
-import { Query, queryBuilder } from "./query-builder";
+import { Query, queryBuilder } from "../query/query-builder";
 import { DataSource, DataSourceType, Sourced } from "./data-source";
-import { IRI } from "./rdf-types";
+import { IRI } from "../rdf-types";
 import { SparqlJsonParser } from "sparqljson-parse";
 
 /**

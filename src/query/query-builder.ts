@@ -12,7 +12,7 @@ import {
   GraphPatternBuilder,
   graphPatternBuilder,
 } from "./graph-pattern-builder";
-import { IRI } from "./rdf-types";
+import { IRI } from "../rdf-types";
 
 /**
  * Interface for query step builder for a subset of SPARQL where you can specify

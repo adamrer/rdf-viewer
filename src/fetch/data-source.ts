@@ -1,6 +1,6 @@
 import { Quad } from "n3";
-import { Query } from "./query";
-import { IRI } from "./rdf-types";
+import { Query } from "../query/query";
+import { IRI } from "../rdf-types";
 
 /**
  * Types of DataSource
