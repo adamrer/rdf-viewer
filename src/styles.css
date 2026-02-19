@@ -1,39 +1,223 @@
+/* ======================================================
+   ROOT & BODY
+====================================================== */
+
+:root {
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-border: #e5e7eb;
+  --color-text: #111827;
+  --color-muted: #6b7280;
+  --color-accent: #2563eb;
+
+  --radius: 6px;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+
+  --max-width: 900px;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+}
+
+
+/* ======================================================
+   LAYOUT
+====================================================== */
+
+.layout-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
 #app {
-  font-family: monospace;
-  font-size: 1.1em;
+  max-width: var(--max-width);
+  margin: var(--spacing-lg) auto;
+  padding: 0 var(--spacing-md);
+}
+
+
+/* ======================================================
+   SECTIONS
+====================================================== */
+
+.section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.section-surface {
+  background: var(--color-surface);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+
+/* ======================================================
+   FORM ELEMENTS
+====================================================== */
+
+.form-group {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding-top: 50px;
-  max-width: fit-content;
-  margin: 0 auto;
-}
-.flex-wrapper{
-  display: flex;
-  align-items: center;
-}
-#config-modal {
-  font-family: monospace;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
 }
 
-#app button,
+.flex-wrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
 input,
 select {
-  font-family: inherit;
-  font-size: inherit;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: #fff;
+  min-width: 200px;
 }
 
-#app fieldset {
-  margin-left: 0;
-  margin-right: 0;
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-accent);
 }
+
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+
+button {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+/* button:hover {
+  background: #44b1fa;
+} */
+
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-icon {
+  padding: 0.4rem 0.6rem;
+}
+
+
+/* ======================================================
+   BUTTON GROUP
+====================================================== */
 
 #buttons {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
+
+
+/* ======================================================
+   MODAL
+====================================================== */
+
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  padding: 0;
+  max-width: 700px;
+  width: 90%;
+}
+
+#config-content {
+  padding: var(--spacing-lg);
+}
+
+fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 var(--spacing-xs);
+}
+
+
+/* ======================================================
+   LISTS
+====================================================== */
+
+#plugin-list,
+#source-list {
+  margin-top: var(--spacing-sm);
+  padding-left: 1.2rem;
+}
+
+#plugin-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
+#plugin-list li:hover {
+  cursor: grab
+}
+
+
+/* ======================================================
+   RESULTS
+====================================================== */
+
+#results {
+  max-width: var(--max-width);
+  margin: var(--spacing-lg) auto;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+
+/* ======================================================
+   NOTIFICATIONS
+====================================================== */
 
 #notification-container {
   position: fixed;
@@ -78,12 +262,18 @@ select {
 }
 
 
-#plugin-list li {
-  padding: 1em;
-  margin: .3em;
-  background-color: black;
+/* ======================================================
+   UTILITIES
+====================================================== */
+
+.u-muted {
+  color: var(--color-muted);
 }
 
-#plugin-list li:hover {
-  cursor: grab
+.u-center {
+  text-align: center;
+}
+
+.u-hidden {
+  display: none;
 }

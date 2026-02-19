@@ -3,80 +3,136 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
     <title>RDF Viewer</title>
     <link rel="stylesheet" href="./src/styles.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
-    />
+
   </head>
+
   <body>
     <div id="notification-container"></div>
-    <div id="app">
-      <h1>RDF Viewer</h1>
 
-      <label for="iri">Entity IRI</label>
-      <input type="text" id="iri" placeholder="Enter entity IRI" />
-      <button id="compatible-plugins-btn">Compatible plugins</button>
-      
-      <label for="choose-plugin">Plugin</label>
-      <select id="choose-plugin"></select>
-
-      <label for="languages">Languages</label>
-      <input type="text" id="languages" placeholder="en, cs, fr, ..." />
-      <div id="buttons">
-        <button id="display-btn">Display</button>
-        <button id="show-config-btn">⚙️</button>
+    <!-- HEADER -->
+    <header class="header">
+      <h2>RDF Viewer</h2>
+      <div class="form-group">
+        <label for="app-language">Language</label>
+        <select name="language-select" id="app-language">
+          <option value="en">EN</option>
+        </select>
       </div>
-    </div>
+    </header>
 
+    <!-- MAIN APP -->
+    <main id="app" class="layout-container">
+
+      <section class="section">
+        <h1 class="section-title">RDF Viewer</h1>
+      </section>
+
+      <!-- ENTITY INPUT -->
+      <section class="section section-surface">
+        <div class="form-group">
+          <label for="iri">Entity IRI</label>
+          <input type="text" id="iri" placeholder="Enter entity IRI" />
+        </div>
+
+        <button id="compatible-plugins-btn">Compatible plugins</button>
+      </section>
+
+      <!-- PLUGIN + LANGUAGE -->
+      <section class="section section-surface">
+
+        <div class="form-group">
+          <label for="choose-plugin">Plugin</label>
+          <select id="choose-plugin"></select>
+        </div>
+
+        <div class="form-group">
+          <label for="languages">Languages</label>
+          <input
+            type="text"
+            id="languages"
+            placeholder="en, cs, fr, ..."
+          />
+        </div>
+
+        <div id="buttons">
+          <button id="display-btn" class="btn-primary">
+            Display
+          </button>
+          <button id="show-config-btn" class="btn-icon">
+            ⚙️
+          </button>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- CONFIG MODAL -->
     <dialog id="config-modal">
       <div id="config-content">
-        <h2>Configuration</h2>
-        <fieldset id="sources-fieldset">
+
+        <h2 class="section-title">Configuration</h2>
+
+        <!-- DATA SOURCES -->
+        <fieldset id="sources-fieldset" class="section">
           <legend>Data Sources</legend>
 
-          <form id="add-source-form">
+          <form id="add-source-form" class="section">
+
             <div class="flex-wrapper">
               <select name="data-source-select" id="data-source-select">
-                <option value="SPARQL">SPARQL Endpoint</option>
+                <option value="SPARQL">SPARQL Endpoint</option>section-title
                 <option value="LOCAL_FILE">Local File</option>
                 <option value="REMOTE_FILE">Remote File</option>
                 <option value="LDP">LDP Server</option>
               </select>
-              <input 
-                type="text" 
-                name="url-input" 
-                id="data-source-url-input" 
-                placeholder="https://example.com/sparql" 
-                required 
+
+              <input
+                type="text"
+                name="url-input"
+                id="data-source-url-input"
+                placeholder="https://example.com/sparql"
+                required
               />
-              <input 
-                type="file" 
-                name="file-input" 
-                id="data-source-file-input" 
-                accept=".trig, .nq, .nquads, .rdf, .ttl, .turtle, .nt, .ntriples, .n3, .json, .jsonld, .rdfxml, .owl" 
+
+              <input
+                type="file"
+                name="file-input"
+                id="data-source-file-input"
+                accept=".trig, .nq, .nquads, .rdf, .ttl, .turtle, .nt, .ntriples, .n3, .json, .jsonld, .rdfxml, .owl"
                 multiple
-                disabled 
+                disabled
               />
             </div>
-            <button type="submit">+ Add Data Source</button>
+
+            <button type="submit" class="btn-primary">
+              + Add Data Source
+            </button>
+
           </form>
-          
+
           <hr />
-          <!-- TODO: show/hide list  -->
+
           <div id="source-list"></div>
         </fieldset>
-        
-        <fieldset id="plugins-fieldset">
+
+        <!-- PLUGINS -->
+        <fieldset id="plugins-fieldset" class="section">
           <legend>Plugins</legend>
-          <form id="add-plugin-form">
+
+          <form id="add-plugin-form" class="section">
+
             <div class="flex-wrapper">
-              <select name="plugin-add-type" id="plugin-add-type-select">
+              <select
+                name="plugin-add-type"
+                id="plugin-add-type-select"
+              >
                 <option value="url">Remote File</option>
                 <option value="file">Local File</option>
               </select>
+
               <input
                 type="text"
                 placeholder="https://example.com/plugin.js"
@@ -84,29 +140,36 @@
                 name="url-input"
                 required
               />
-              <input 
-                type="file" 
-                name="file-input" 
+
+              <input
+                type="file"
+                name="file-input"
                 id="plugin-add-file-input"
-                accept=".js" 
+                accept=".js"
                 multiple
-                disabled 
+                disabled
                 required
               />
             </div>
 
-            <button type="submit" class="add-plugin">+ Add Plugin</button>
+            <button type="submit" class="btn-primary add-plugin">
+              + Add Plugin
+            </button>
+
           </form>
-          
+
           <hr />
 
-          <ol id="plugin-list">
-          </ol>
-          
+          <ol id="plugin-list"></ol>
+
         </fieldset>
+
       </div>
     </dialog>
-    <div id="results"></div>
+
+    <!-- RESULTS -->
+    <section id="results" class="layout-container"></section>
+
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
