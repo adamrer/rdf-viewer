@@ -1,7 +1,7 @@
 import {
   mergeStructuredQuads,
   StructuredQuads,
-} from "../src/fetch/fetcher";
+} from "./fetcher";
 import { test, expect } from "vitest";
 import { DataFactory } from "n3";
 

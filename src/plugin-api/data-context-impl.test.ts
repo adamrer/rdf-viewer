@@ -1,9 +1,9 @@
 import { DataFactory, Quad } from "n3";
-import { DataSource, DataSourceType, Sourced } from "../src/fetch/data-source";
-import { createDataContext, createSetupContext } from "../src/display";
+import { DataSource, DataSourceType, Sourced } from "../fetch/data-source";
+import { createDataContext, createSetupContext } from "./context-implementations";
 import { test, expect } from "vitest";
-import { Query } from "../src/query/query";
-import { queryProcessor } from "../src/query/query-processor";
+import { Query } from "../query/query";
+import { queryProcessor } from "../query/query-processor";
 
 const typePredicate = decodeURIComponent("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
 const datasetType = "https://www.w3.org/ns/dcat#Dataset"
@@ -53,9 +53,10 @@ const dataset1Iri = "https://example.com/datasets/Dataset1"
 
 test("fetch types by specifying type predicate", async () => {
     const context = createDataContext(dataSources, createSetupContext().vocabulary.getReadableVocabulary())
-    const types = await context.fetch.predicates(dataset1Iri)
+    const types = await context.fetch.quads([dataset1Iri], [typePredicate])
     expect(types).not.toBe([])
-    expect(types).toContain(typePredicate)
+    const typesIris = types.subject(dataset1Iri).predicates()
+    expect(typesIris).toContain(typePredicate)
     const typeIris = context.fetched.subject(dataset1Iri).predicate(typePredicate).map(object => object.value.value)
     expect(typeIris).toContain(datasetType)
     expect(typeIris).toContain(classType)
