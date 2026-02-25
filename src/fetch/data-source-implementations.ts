@@ -124,7 +124,9 @@ class FileDataSource implements DataSource {
       rdfParser
         .parse(stream, { path: this.file.name, baseIRI: this.identifier })
         .on("data", (quad) => {
-          this.quads?.push(quad);
+          if (!this.quads)
+            this.quads = []
+          this.quads.push(quad);
         })
         .on("error", (err) => {
           console.error("Error while parsing file", err);
@@ -132,8 +134,8 @@ class FileDataSource implements DataSource {
         })
         .on("end", async () => {
           this.fileLoaded = true;
-          resolve();
-        });
+          resolve()
+                 });
     });
   }
 
