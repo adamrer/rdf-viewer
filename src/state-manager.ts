@@ -6,7 +6,7 @@ import {
   SparqlDataSource,
 } from "./fetch/data-source-implementations";
 import { createSetupContext } from "./plugin-api/context-implementations";
-import { LabeledPlugin } from "./plugin-api/interfaces";
+import { LabeledPlugin, PluginModule } from "./plugin-api/interfaces";
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
 
@@ -30,12 +30,12 @@ interface LabeledPluginWithId extends LabeledPlugin {
  * Holds and manages data set by user in the UI for RDF display configuration. 
  * Observable Singleton class.
  */
-// TODO: persist state in localStorage 
 // TODO: rename to something more specific
 class StateManager {
   private static _instance: StateManager;
 
   private entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
+  // TODO: when empty, retrieve all languages? or retrieve only objects withou a language tag?
   private languages: Language[] = ["cs", "en"];
   private dataSources: DataSource[] = [
     new SparqlDataSource("https://data.gov.cz/sparql"),
@@ -44,6 +44,8 @@ class StateManager {
     new FileDataSource(
       "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
     ),
+    new FileDataSource("/vocabularies/data-theme-skos.rdf"),
+    new FileDataSource("/vocabularies/foaf.rdf")
   ];
   private nextPluginId = 0
   private selectedPluginIndex: number = 0;
@@ -180,22 +182,10 @@ class StateManager {
     return this.dataSources
   }
 
-  /**
-   * 
-   * @param pluginModuleUrlOrFile - URL or File of plugin module from which new plugins will be loaded
-   * @returns a list of newly loaded plugins with their IDs assigned by the StateManger
-   */
-  async addPlugins(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPluginWithId[]> {
-    let pluginModuleUrl: IRI = ""
-    if (pluginModuleUrlOrFile instanceof File){
-      const pluginModuleText = await pluginModuleUrlOrFile.text()
-      const pluginModuleBlob = new Blob([pluginModuleText], {type: "text/javascript"})
-      pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
-    }
-    else {
-      pluginModuleUrl = pluginModuleUrlOrFile
-    }
-    const pluginModule = await import(/* @vite-ignore */ pluginModuleUrl);
+  async addPluginsFromCode(code: string){
+    const pluginModuleBlob = new Blob([code], {type: "text/javascript"})
+    const pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
+    const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl)
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
     newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
 
@@ -209,7 +199,22 @@ class StateManager {
     this.plugins.push(...newPluginsWithIds);
     this.notify(["plugins"]);
 
-    return newPluginsWithIds;
+    return newPluginsWithIds
+  }
+  /**
+   * 
+   * @param pluginModuleUrlOrFile - URL or File of plugin module from which new plugins will be loaded
+   * @returns a list of newly loaded plugins with their IDs assigned by the StateManger
+   */
+  async addPluginsFromModule(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPluginWithId[]> {
+    if (pluginModuleUrlOrFile instanceof File){
+      const pluginModuleText = await pluginModuleUrlOrFile.text()
+      return this.addPluginsFromCode(pluginModuleText)
+    }
+    const pluginModuleUrl: IRI = pluginModuleUrlOrFile
+    const responseWithModule = await fetch(pluginModuleUrl)
+    const pluginModuleText = await responseWithModule.text()
+    return this.addPluginsFromCode(pluginModuleText)
   }
 
 
