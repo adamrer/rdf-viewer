@@ -184,7 +184,7 @@ function switchInput(input1: HTMLInputElement, input2: HTMLInputElement){
 }
 
 // TODO: this should be maybe somewhere closer to plugin declaration
-enum PluginType {
+enum PluginModuleImportType {
   Url = "url",
   File = "file"
 };
@@ -202,13 +202,13 @@ function setupPluginForm(){
 
   // show/hide inputs
   select.addEventListener("change", () => {
-    const pluginType: PluginType = select.value as PluginType
+    const pluginType: PluginModuleImportType = select.value as PluginModuleImportType
     switch (pluginType) {
-      case PluginType.Url:
+      case PluginModuleImportType.Url:
         if (urlInput.disabled)
           switchInput(urlInput, fileInput)      
         break;
-      case PluginType.File:
+      case PluginModuleImportType.File:
         if (fileInput.disabled)
           switchInput(urlInput, fileInput)
         break;
@@ -245,15 +245,15 @@ function setupPluginForm(){
  */
 async function addPluginsFromFormData(formData: FormData) {
   const app = StateManager.getInstance();
-  const pluginType: PluginType = formData.get("plugin-add-type") as PluginType;
+  const pluginType: PluginModuleImportType = formData.get("plugin-add-type") as PluginModuleImportType;
   switch (pluginType) {
-    case PluginType.Url: {
+    case PluginModuleImportType.Url: {
       const url = formData.get("url-input") as IRI | null;
       if (!url) 
         throw new Error("Missing plugin url");
       
       try{
-        await app.addPlugins(url);
+        await app.addPluginsFromModule(url);
       }
       catch(err){
         console.error("Error while loading plugin", err);
@@ -261,13 +261,13 @@ async function addPluginsFromFormData(formData: FormData) {
       }
       break;
     }
-    case PluginType.File: 
+    case PluginModuleImportType.File: 
       const files = formData.getAll("file-input")
       if (files.length === 0) 
         throw new Error("Missing plugin file")
 
       try{
-        const promises = files.map(file => app.addPlugins(file))
+        const promises = files.map(file => app.addPluginsFromModule(file))
         await Promise.all(promises)
       }
       catch(err){
