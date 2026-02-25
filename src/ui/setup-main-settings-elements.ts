@@ -158,7 +158,10 @@ function setupPluginSelect() {
  */
 function createPluginOption(plugin: LabeledPlugin): HTMLOptionElement {
   // TODO: ability to set priority in label languages
-  const label = Object.values(plugin.label)[0]
+  const app = StateManager.getInstance()
+  const language = app.getAppLanguage()
+
+  let label = plugin.label[language] ?? Object.values(plugin.label)[0]
   const option = document.createElement("option");
   option.value = label;
   option.textContent = label;
