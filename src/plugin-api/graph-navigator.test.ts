@@ -1,5 +1,5 @@
-import { graphNavigator } from "../src/graph-navigator";
-import { StructuredQuads } from "../src/fetch/fetcher";
+import { graphNavigator } from "./graph-navigator";
+import { StructuredQuads } from "../fetch/fetcher";
 import { DataFactory } from "n3";
 import { test, expect } from "vitest";
 
