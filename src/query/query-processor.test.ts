@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { queryProcessor } from "./query-processor";
-import { queryBuilder } from "./query-builder";
+import { NO_LANG_SPECIFIED, queryBuilder } from "./query-builder";
 import { DataFactory, Quad } from "n3";
 
 const quads: Quad[] = [
@@ -23,6 +23,11 @@ const quads: Quad[] = [
     DataFactory.namedNode("http://www.w3.org/ns/dcat#theme"),
     DataFactory.namedNode("http://www.w3.org/2000/01/rdf-schema#label"),
     DataFactory.literal("téma", "cs"),
+  ),
+  DataFactory.quad(
+    DataFactory.namedNode("http://www.w3.org/ns/dcat#theme"),
+    DataFactory.namedNode("http://www.w3.org/2000/01/rdf-schema#label"),
+    DataFactory.literal("theme"),
   ),
 ];
 
@@ -127,7 +132,7 @@ test("processes query with offset", () => {
     .build();
   const processor = queryProcessor();
   const resultQuads = processor.filter(quads, query);
-  expect(resultQuads.length).toBe(3);
+  expect(resultQuads.length).toBe(4);
   expect(resultQuads[0].object.value).toBe("hidden label");
 });
 
@@ -145,3 +150,31 @@ test("processes query with limit and offset", () => {
   expect(resultQuads.length).toBe(1);
   expect(resultQuads[0].object.value).toBe("hidden label");
 });
+
+
+test("retrieve quad with no language specified - langs used", () => {
+  const builder = queryBuilder()
+  const query = builder
+    .subjects(["http://www.w3.org/ns/dcat#theme"])
+    .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
+    .objects()
+    .langs(["en", NO_LANG_SPECIFIED])
+    .build()
+    const processor = queryProcessor()
+    const resultObjects = processor.filter(quads, query).map(quad => quad.object.value);
+    expect(resultObjects).toContain("theme")
+    
+})
+
+test("retrieve quad with no language specified - langs not used", () => {
+  const builder = queryBuilder()
+  const query = builder
+    .subjects(["http://www.w3.org/ns/dcat#theme"])
+    .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
+    .objects()
+    .build()
+    const processor = queryProcessor()
+    const resultObjects = processor.filter(quads, query).map(quad => quad.object.value);
+    expect(resultObjects).toContain("theme")
+    
+})
