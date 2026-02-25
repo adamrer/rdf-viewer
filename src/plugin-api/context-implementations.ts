@@ -3,7 +3,7 @@ import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, Query } from "../query/query-interfaces";
-import { graphNavigator } from "../graph-navigator";
+import { graphNavigator } from "./graph-navigator";
 import { notifier, NotifierService } from "../ui/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./interfaces";
 import { IRI } from "../rdf-types";
