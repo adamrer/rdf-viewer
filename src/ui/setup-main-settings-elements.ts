@@ -80,13 +80,11 @@ function setupDisplayButton() {
         notifier.notify("No plugin selected.", "error");
       }
     } catch (err) {
-      console.error("Error while displaying", err);
+      notifier.notify("Couldn't display entity", "error")
     } finally {
       displayBtn.disabled = false;
     }
   });
-
-
 }
 
 /**
@@ -101,6 +99,10 @@ function setupPluginSelect() {
   app.subscribe(() => {
     const optionElements = app.plugins.map(createPluginOption);
     pluginSelectEl.replaceChildren(...optionElements);
+    if (optionElements.length > 0){
+      const pluginId = Number(pluginSelectEl.options[pluginSelectEl.selectedIndex].value)
+      app.setSelectedPlugin(pluginId)
+    }
   }, ["plugins"], true);
   
   // handle plugin selection change
