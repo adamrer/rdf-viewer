@@ -305,3 +305,22 @@ legend {
 .u-hidden {
   display: none;
 }
+
+
+
+/* ======================================================
+   SPINNER
+====================================================== */
+
+.spinner {
+  width: var(--spinner-size, 20px);
+  height: var(--spinner-size, 20px);
+  border: 3px solid var(--spinner-bg, #e5e7eb);
+  border-top-color: var(--spinner-color, #3b82f6);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

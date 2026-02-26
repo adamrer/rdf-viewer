@@ -46,7 +46,7 @@ function setupPluginList() {
     
     onEnd: (evt) => {
       const order: number[] = Array.from(evt.to.children).map(li => li.getAttribute("data-id")).filter(id => id !== null).map(id => Number(id))
-      StateManager.getInstance().changePluginsOrder(order)
+      app.changePluginsOrder(order)
     }
   })
 }

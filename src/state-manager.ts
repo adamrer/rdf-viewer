@@ -197,7 +197,11 @@ class StateManager {
         ...plugin
       }
     })
-
+    // TODO: řadit podle priority
+    // for (let i = 0; i < this.plugins.length; i++) {
+    //   const plugin = this.plugins[i];
+    //   plugin.v1.checkCompatibility()
+    // }
     this.plugins.push(...newPluginsWithIds);
     this.notify(["plugins"]);
 
