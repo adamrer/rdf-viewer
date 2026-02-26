@@ -14,17 +14,17 @@ import { createInstanceContext, createSetupContext } from "./plugin-api/context-
  * @see PluginV1InstanceContext
  * @see PluginV1Handler
  */
-async function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): Promise<PluginV1Handler | null> {
+function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): PluginV1Handler | null {
   const app = StateManager.getInstance();
 
   const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
   const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)
   if (pluginInstance == null){
-    
     throw new Error("Failed to create plugin instance.")
     
   }
   const usedPluginElement = document.createElement("span")
+  const contentElement = document.createElement("div")
 
   if (app.getAppLanguage() in plugin.label)
     usedPluginElement.textContent = "Plugin: " + plugin.label[app.getAppLanguage()]
@@ -33,7 +33,9 @@ async function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, ele
 
   element.replaceChildren();
   element.appendChild(usedPluginElement)
-  pluginInstance.mount(element);
+  element.appendChild(contentElement)
+  pluginInstance.mount(contentElement);
+
   return {
     pluginLabel: plugin.label,
     unmount: pluginInstance.unmount

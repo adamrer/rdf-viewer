@@ -56,8 +56,21 @@ class StateManager {
   plugins: LabeledPluginWithId[] = [];
   subscriptions: Subscription[] = [];
 
-  private constructor() {}
+  private constructor() {
+    (async () => await this.loadInitialPlugins())    
+  }
 
+  /**
+   * Loads initial plugins from `/public/plugins` folder that
+   * are in `/public/plugins/plugin-list.js`
+   */
+  private async loadInitialPlugins() {
+    const pluginListResponse = await fetch("/plugins/plugin-list.json")
+    const pluginList: string[] = await pluginListResponse.json()
+    pluginList.forEach(pluginName => {
+      this.addPluginsFromModule(`/plugins/${pluginName}`)
+    });
+  }
   /**
    * 
    * @returns a new ID for a newly added plugin
