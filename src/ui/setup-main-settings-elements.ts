@@ -1,7 +1,6 @@
 import { createCompatibilityContext, createSetupContext} from "../plugin-api/context-implementations";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { notifier } from "./notifier";
-import { LabeledPlugin } from "../plugin-api/interfaces";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, StateManager } from "../state-manager";
 
@@ -106,7 +105,8 @@ function setupPluginSelect() {
   
   // handle plugin selection change
   pluginSelectEl.addEventListener("change", () => {
-    app.setSelectedPlugin(pluginSelectEl.selectedIndex);
+    const pluginId = Number(pluginSelectEl.options[pluginSelectEl.selectedIndex].value)
+    app.setSelectedPlugin(pluginId);
   });
   const compatiblePluginsBtn = document.getElementById(
     "compatible-plugins-btn",
@@ -156,14 +156,13 @@ function setupPluginSelect() {
  * @param plugin - Plugin to create option for
  * @returns the HTMLOptionElement representing the plugin
  */
-function createPluginOption(plugin: LabeledPlugin): HTMLOptionElement {
-  // TODO: ability to set priority in label languages
+function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
   const app = StateManager.getInstance()
   const language = app.getAppLanguage()
 
-  let label = plugin.label[language] ?? Object.values(plugin.label)[0]
+  const label = plugin.label[language] ?? Object.values(plugin.label)[0]
   const option = document.createElement("option");
-  option.value = label;
+  option.value = plugin.id.toString();
   option.textContent = label;
   return option;
 }

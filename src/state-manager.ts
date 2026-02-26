@@ -31,6 +31,8 @@ interface LabeledPluginWithId extends LabeledPlugin {
  * Observable Singleton class.
  */
 // TODO: rename to something more specific
+// TODO: maybe divide to more smaller state managers?
+// TODO: load initial state from some configuration file
 class StateManager {
   private static _instance: StateManager;
 
@@ -237,7 +239,6 @@ class StateManager {
    * @param order - IDs of plugins in the desired order
    */
   changePluginsOrder(order: number[]){
-
     const orderMap = new Map(order.map((id, index) => [id, index]));
     this.plugins.sort((a, b) => {
       const posA = orderMap.get(a.id) ?? Infinity;
@@ -245,6 +246,7 @@ class StateManager {
       return posA - posB;
     });
     this.setSelectedPlugin(0)
+
     this.notify(["plugins"])
   }
 
