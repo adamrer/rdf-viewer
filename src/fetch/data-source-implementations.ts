@@ -163,6 +163,7 @@ function isRdfType(contentType: string) {
     "application/n-triples",
   ].includes(contentType);
 }
+
 class LdpDataSource implements DataSource {
   type = DataSourceType.Ldp;
   identifier: IRI | string;
@@ -189,6 +190,9 @@ class LdpDataSource implements DataSource {
     const tasks = urls.map((url) =>
       limit(async () => {
         const response = await fetch(url);
+        if (!response.ok){
+          throw new Error(`Fetch failed: ${response.status} ${response.statusText}`)
+        }
         const contentType =
           response.headers.get("content-type")?.split(";")[0] ?? "";
         if (!isRdfType(contentType)) {
@@ -197,6 +201,7 @@ class LdpDataSource implements DataSource {
         const text = await response.text();
         const parser = new N3.Parser({ format: contentType, baseIRI: url });
         return parser.parse(text);
+          
       }),
     );
     const results = await Promise.allSettled(tasks);
