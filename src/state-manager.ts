@@ -57,7 +57,7 @@ class StateManager {
   subscriptions: Subscription[] = [];
 
   private constructor() {
-    (async () => await this.loadInitialPlugins())    
+    this.loadInitialPlugins()
   }
 
   /**
@@ -67,9 +67,10 @@ class StateManager {
   private async loadInitialPlugins() {
     const pluginListResponse = await fetch("/plugins/plugin-list.json")
     const pluginList: string[] = await pluginListResponse.json()
-    pluginList.forEach(pluginName => {
+    const pluginPromises = pluginList.map(pluginName => {
       this.addPluginsFromModule(`/plugins/${pluginName}`)
     });
+    await Promise.all(pluginPromises)
   }
   /**
    * 
