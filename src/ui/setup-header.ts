@@ -10,6 +10,9 @@ function setupAppLanguageSelect() {
   select.addEventListener("change", () => {
     app.setAppLanguage(select.value)
   })
+  app.subscribe(() => {
+    select.value = app.getAppLanguage()
+  }, ["appLanguage"], true)
 
 }
 

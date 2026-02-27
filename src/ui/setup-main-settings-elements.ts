@@ -173,8 +173,6 @@ function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
   return option;
 }
 
-
-
 type CompatiblePlugin = {
   plugin: LabeledPluginWithId;
   isCompatible: boolean;
