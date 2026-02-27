@@ -260,15 +260,16 @@ class LdpDataSource implements DataSource {
  * @see DataSource
  */
 function dataSourceFactory(type: DataSourceType, urlOrFile: IRI|File): DataSource {
-    
-    if (type === DataSourceType.LocalFile && !(urlOrFile instanceof File) )
-        throw new Error("Expected to get a File but got an URL")
-
     switch (type) {
         case DataSourceType.Sparql: {
             return new SparqlDataSource(urlOrFile as IRI)
         }
-        case DataSourceType.LocalFile:
+        case DataSourceType.LocalFile: {
+            if (urlOrFile instanceof File){
+              return new FileDataSource(urlOrFile as File)
+            }
+            return new FileDataSource(`${import.meta.env.BASE_URL}${urlOrFile as IRI}`)
+        }
         case DataSourceType.RemoteFile: {
             return new FileDataSource(urlOrFile)
         }

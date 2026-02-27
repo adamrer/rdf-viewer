@@ -9,8 +9,6 @@ import { LabeledPlugin, PluginModule } from "./plugin-api/plugin-api-interfaces"
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
 
-// const pluginBaseUrl = import.meta.env.VITE_PLUGIN_BASE_URL;
-
 type Listener = () => void;
 type StateMember =
   | "entityIri"
@@ -167,7 +165,8 @@ class RdfViewerState {
       const pluginModuleText = await pluginModuleUrlOrFile.text()
       return this.addPluginsFromCode(pluginModuleText)
     }
-    const pluginModuleUrl: IRI = pluginModuleUrlOrFile
+    // if http is missing, then we suppose it is a plugin from /public folder
+    const pluginModuleUrl: IRI =  pluginModuleUrlOrFile.startsWith("http") ? pluginModuleUrlOrFile : import.meta.env.BASE_URL+pluginModuleUrlOrFile
     const responseWithModule = await fetch(pluginModuleUrl)
     const pluginModuleText = await responseWithModule.text()
     return this.addPluginsFromCode(pluginModuleText)
