@@ -1,5 +1,5 @@
 
-import { LabeledPlugin, PluginV1Handler } from "./plugin-api/interfaces";
+import { LabeledPlugin, PluginV1Handler } from "./plugin-api/plugin-api-interfaces";
 import { RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
 import { createInstanceContext, createSetupContext } from "./plugin-api/context-implementations";

@@ -3,9 +3,9 @@ import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, Query } from "../query/query-interfaces";
-import { graphNavigator } from "./graph-navigator";
+import { graphNavigator } from "./graph-navigator-implementation";
 import { notifier, NotifierService } from "../ui/notifier";
-import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./interfaces";
+import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
 import { RdfViewerState } from "../rdf-viewer-state";
 
@@ -112,56 +112,12 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     const navigator = graphNavigator(await predsQuads);
     return navigator;
   }
-
-  // async labels(labelPredicates: IRI[], subjects?: IRI[], languages?: Language[]): Promise<Map<IRI, Sourced<Literal>[]>> {
-  //   let iris: IRI[] = []
-  //   if (subjects)
-  //     iris = subjects
-  //   else 
-  //     iris = this.collectIris(this.fetchedStructured)
-  //   const builder = this.fetcher.builder()
-  //   let queryStep = builder.subjects(iris).predicates(labelPredicates).objects()
-  //   if (languages)
-  //     queryStep = queryStep.langs(languages)
-  //   const query = queryStep.build()
-  //   const queryResult = await this.fetcher.fetchStructuredQuads(query)
-  //   const labelMap = new Map<IRI, Sourced<Literal>[]>()
-  //   iris.forEach(iri => {
-  //     labelPredicates.forEach(predicate => {
-  //       if (queryResult[iri][predicate]) {
-  //         labelMap.set(iri, Object.values(queryResult[iri][predicate]))
-  //       }
-  //     })
-  //   })
-
-  //   return labelMap
-
-  // }
  
   addFetched(quads: StructuredQuads){
     this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, quads)
     this.fetched = graphNavigator(this.fetchedStructured)
   }
 
-  // private collectIris(structuredQuads: StructuredQuads) {
-  //   const iris = [];
-  //   for (const subjectIri in structuredQuads) {
-  //     iris.push(subjectIri);
-  //     const predicates = structuredQuads[subjectIri];
-  //     for (const predicateIri in predicates) {
-  //       iris.push(predicateIri);
-  //       const objectKeys = predicates[predicateIri];
-  //       for (const objectKey in objectKeys) {
-  //         const object = objectKeys[objectKey].value;
-  //         if (object.termType !== "Literal") {
-  //           iris.push(object.value);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return iris;
-  // }
-  
 }
 
 class PluginV1SetupContextImpl implements PluginV1SetupContext {

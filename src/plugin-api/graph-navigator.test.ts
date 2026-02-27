@@ -1,4 +1,4 @@
-import { graphNavigator } from "./graph-navigator";
+import { graphNavigator } from "./graph-navigator-implementation";
 import { StructuredQuads } from "../fetch/fetcher";
 import { DataFactory } from "n3";
 import { test, expect } from "vitest";

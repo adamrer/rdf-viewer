@@ -2,36 +2,9 @@ import { Quad_Object } from "n3";
 import { Sourced } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
 import { StructuredQuads } from "../fetch/fetcher";
+import { GraphNavigator, SubjectNavigator } from "./plugin-api-interfaces";
 
-interface GraphNavigator {
-    /**
-     * @returns all available subjects
-     */
-    subjects: () => IRI[]
 
-    /**
-     * Retrieves the subject navigator for the given subject
-     * 
-     * @param subject - IRI of the subject
-     * @returns subject navigator for the given subject
-     */
-    subject: (subject: IRI) => SubjectNavigator
-}
-
-interface SubjectNavigator {
-    /**
-     * @returns all predicates for the given subject
-     */
-    predicates: () => IRI[]
-
-    /**
-     * Retrieves all objects for the given predicate of the subject
-     * 
-     * @param predicate - IRI of the predicate to get objects for
-     * @returns all objects for the given predicate
-     */
-    predicate: (predicate: IRI) => Sourced<Quad_Object>[]
-}
 
 
 class GraphNavigatorImpl implements GraphNavigator {

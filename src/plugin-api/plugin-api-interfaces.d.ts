@@ -1,6 +1,5 @@
 import { IRI, LanguageString } from "../rdf-types";
 import { NotifierService } from "../ui/notifier";
-import { GraphNavigator } from "./graph-navigator";
 import { Sourced } from "../fetch/data-source";
 import { Quad_Object } from "n3";
 import { Language, QueryBuilder } from "../query/query-builder";
@@ -106,6 +105,9 @@ interface PluginV1CompatibilityContext {
 
 }
 
+/**
+ * Context for the creation of the plugin instance
+ */
 interface PluginV1InstanceContext {
   
   /**
@@ -136,6 +138,9 @@ interface PluginV1InstanceContext {
   notification: NotifierService
 }
 
+/**
+ * Context for fetching data in the plugins
+ */
 interface PluginV1DataContext {
 
   /**
@@ -220,6 +225,7 @@ interface PluginV1Handler {
   unmount: () => void;
 }
 
+
 /**
  * Instance of the plugin for a specific subject
  */
@@ -235,7 +241,42 @@ interface PluginV1Instance {
   unmount: () => void;
 }
 
+/**
+ * For navigating through fetched quads
+ */
+interface GraphNavigator {
+    /**
+     * @returns all available subjects
+     */
+    subjects: () => IRI[]
 
+    /**
+     * Retrieves the subject navigator for the given subject
+     * 
+     * @param subject - IRI of the subject
+     * @returns subject navigator for the given subject
+     */
+    subject: (subject: IRI) => SubjectNavigator
+}
+
+/**
+ * Second step of the GraphNavigator. Retrieves objects of the given subject and predicates.
+ * @see GraphNavigator
+ */
+interface SubjectNavigator {
+    /**
+     * @returns all predicates for the given subject
+     */
+    predicates: () => IRI[]
+
+    /**
+     * Retrieves all objects for the given predicate of the subject
+     * 
+     * @param predicate - IRI of the predicate to get objects for
+     * @returns all objects for the given predicate
+     */
+    predicate: (predicate: IRI) => Sourced<Quad_Object>[]
+}
 
 
 export type { 
@@ -248,6 +289,8 @@ export type {
   PluginV1,
   PluginV1Handler,
   LabeledPlugin,
-  PluginV1Vocabulary
+  PluginV1Vocabulary,
+  GraphNavigator,
+  SubjectNavigator
 
 };
