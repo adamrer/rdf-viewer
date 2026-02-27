@@ -1,9 +1,9 @@
 // definitions for VSCode type hinting
-/** @typedef {import('./../../src/plugin-api/plugin-api-interfaces').PluginV1} PluginV1 */
-/** @typedef {import('./../../src/plugin-api/plugin-api-interfaces').PluginV1InstanceContext} PluginV1InstanceContext */
-/** @typedef {import('./../../src/plugin-api/plugin-api-interfaces').PluginV1CompatibilityContext} PluginV1CompatibilityContext */
-/** @typedef {import('./../../src/plugin-api/plugin-api-interfaces').LabeledPlugin} LabeledPlugin */
-/** @typedef {import('./../../src/plugin-api/plugin-api-interfaces').PluginV1Instance} PluginV1Instance */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1} PluginV1 */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1InstanceContext} PluginV1InstanceContext */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1CompatibilityContext} PluginV1CompatibilityContext */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').LabeledPlugin} LabeledPlugin */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1Instance} PluginV1Instance */
 /** @typedef {string} IRI */
 
 /**

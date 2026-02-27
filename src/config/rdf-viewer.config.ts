@@ -36,6 +36,8 @@ const rdfViewerConfig: RdfViewerConfig = {
   
   dataSources: [
     {type: DataSourceType.Sparql, url: "https://data.gov.cz/sparql"},
+
+    {type: DataSourceType.Ldp, url: "https://rero.datapod.igrant.io/"},
     
     { type: DataSourceType.RemoteFile, url: "https://www.w3.org/2009/08/skos-reference/skos.rdf"},
     { type: DataSourceType.RemoteFile, url: "https://www.w3.org/ns/dcat3.ttl"},
@@ -47,7 +49,8 @@ const rdfViewerConfig: RdfViewerConfig = {
 
   pluginModules: [
     { url: "/plugins/dcat-plugins-v1.js"},
-    { url: "/plugins/generic-plugin-v1-gemini.js"}
+    { url: "/plugins/generic-plugin-v1-gemini.js"},
+    { url: "/plugins/ldp-plugin-v1-gemini.js"}
   ],
 
   entityIri: "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010",
