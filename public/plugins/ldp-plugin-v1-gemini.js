@@ -125,7 +125,7 @@ function createLdpExplorerPlugin() {
                             subContentDiv.style.marginLeft = "20px";
                             subContentDiv.style.marginTop = "8px";
                             subContentDiv.style.borderLeft = "2px solid #ddd";
-                            
+
                             // Toggle Button (only for containers)
                             if (isSubContainer) {
                                 const toggleBtn = document.createElement("button");
@@ -176,7 +176,8 @@ function createLdpExplorerPlugin() {
                             labelArea.appendChild(icon);
 
                             const nameText = document.createElement("span");
-                            nameText.textContent = label;
+                            const labelSplit = label.split("/")
+                            nameText.textContent = labelSplit[labelSplit.length-2] ?? "" +"/"+ labelSplit[labelSplit.length-1];
                             labelArea.appendChild(nameText);
 
                             header.appendChild(labelArea);
