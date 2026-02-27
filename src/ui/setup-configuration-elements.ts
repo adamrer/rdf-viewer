@@ -38,7 +38,7 @@ function setupPluginList() {
       return createPluginEntry(plugin)
     })
     pluginListEl.replaceChildren(...listItems)
-  })
+  }, ["plugins", "appLanguage"])
 
     // create sortable plugin list
   new Sortable(pluginListEl, {

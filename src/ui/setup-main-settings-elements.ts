@@ -104,7 +104,7 @@ function setupPluginSelect() {
       const pluginId = Number(pluginSelectEl.options[pluginSelectEl.selectedIndex].value)
       app.setSelectedPlugin(pluginId)
     }
-  }, ["plugins"], true);
+  }, ["plugins", "appLanguage"], true);
   
   // handle plugin selection change
   pluginSelectEl.addEventListener("change", () => {
