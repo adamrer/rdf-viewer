@@ -1,6 +1,6 @@
 
 import { LabeledPlugin, PluginV1Handler } from "./plugin-api/interfaces";
-import { StateManager } from "./state-manager";
+import { RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
 import { createInstanceContext, createSetupContext } from "./plugin-api/context-implementations";
 
@@ -15,7 +15,7 @@ import { createInstanceContext, createSetupContext } from "./plugin-api/context-
  * @see PluginV1Handler
  */
 function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): PluginV1Handler | null {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
 
   const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
   const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)

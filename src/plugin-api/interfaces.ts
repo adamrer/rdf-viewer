@@ -127,7 +127,7 @@ interface PluginV1InstanceContext {
       /**
        * Languages preferred by the user, sorted by priority
        */
-      languages: Language[];
+      languages: readonly Language[];
   }
 
   /**

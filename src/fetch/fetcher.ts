@@ -15,7 +15,7 @@ import { IRI } from "../rdf-types";
  */
 interface Fetcher {
   /** Array of data sources to fetch from */
-  dataSources: Array<DataSource>;
+  dataSources: readonly DataSource[];
   /**
    * Fetches RDF quads from all of the specified data sources
    *
@@ -44,9 +44,9 @@ const DEFAULT_GRAPH = "default";
  * @see Fetcher
  */
 class FetcherImpl implements Fetcher {
-  dataSources: Array<DataSource>;
+  dataSources: readonly DataSource[];
 
-  constructor(dataSources: Array<DataSource>) {
+  constructor(dataSources: readonly DataSource[]) {
     this.dataSources = dataSources;
   }
 
@@ -186,7 +186,7 @@ function mergeStructuredQuads(
   return result;
 }
 
-function fetcher(dataSources: DataSource[]): Fetcher {
+function fetcher(dataSources: readonly DataSource[]): Fetcher {
   return new FetcherImpl(dataSources);
 }
 

@@ -2,7 +2,7 @@ import { createCompatibilityContext, createSetupContext} from "../plugin-api/con
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { notifier } from "./notifier";
 import { IRI } from "../rdf-types";
-import { LabeledPluginWithId, StateManager } from "../state-manager";
+import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
 import { withLoading } from "./spinner";
 
 
@@ -18,18 +18,18 @@ function setupMainSettingsElements(){
 
 
 /**
- * Binds the text input for setting the language preferences to the StateManager
- * @see StateManager
+ * Binds the text input for setting the language preferences to the RdfViewerState
+ * @see RdfViewerState
  */
 function setupLanguageInput() {
   const languagesEl = document.getElementById("languages")! as HTMLInputElement;
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
 
   app.subscribe(() => {
     languagesEl.value = app.getLanguages().join(", ");
   }, ["languages"], true);  
 
-  // bind change of languages input to StateManager
+  // bind change of languages input to RdfViewerState
   languagesEl.addEventListener("change", () => {
     const languagesText = languagesEl.value;
     const whitespacesRE: RegExp = /[\s,]+\s*/g;
@@ -39,14 +39,14 @@ function setupLanguageInput() {
 }
 
 /**
- * Binds the IRI element to the StateManager
- * @see StateManager
+ * Binds the IRI element to the RdfViewerState
+ * @see RdfViewerState
  */
 function setupIriElement(){
   const iriEl = document.getElementById("iri")! as HTMLInputElement;
-  const app = StateManager.getInstance()
+  const app = RdfViewerState.getInstance()
 
-  // bind change of IRI input to StateManager
+  // bind change of IRI input to RdfViewerState
   iriEl.addEventListener("change", () => {
     const iriText = iriEl.value;
     app.setEntityIri(iriText);
@@ -60,11 +60,11 @@ function setupIriElement(){
 
 
 /**
- * Setups the button for displaying plugin with set entity IRI in the StateManager
- * @see StateManager
+ * Setups the button for displaying plugin with set entity IRI in the RdfViewerState
+ * @see RdfViewerState
  */
 function setupDisplayButton() {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
   const displayBtn = document.getElementById("display-btn")! as HTMLButtonElement;
   const resultsEl: HTMLDivElement = document.getElementById(
     "results",
@@ -95,10 +95,10 @@ function setupPluginSelect() {
   const pluginSelectEl = document.getElementById(
     "choose-plugin",
   ) as HTMLSelectElement;
-  const app = StateManager.getInstance()
+  const app = RdfViewerState.getInstance()
   
   app.subscribe(() => {
-    const optionElements = app.plugins.map(createPluginOption);
+    const optionElements = app.getPlugins().map(createPluginOption);
     pluginSelectEl.replaceChildren(...optionElements);
     if (optionElements.length > 0){
       const pluginId = Number(pluginSelectEl.options[pluginSelectEl.selectedIndex].value)
@@ -163,7 +163,7 @@ function setupPluginSelect() {
  * @returns the HTMLOptionElement representing the plugin
  */
 function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
-  const app = StateManager.getInstance()
+  const app = RdfViewerState.getInstance()
   const language = app.getAppLanguage()
 
   const label = plugin.label[language] ?? Object.values(plugin.label)[0]
@@ -189,10 +189,10 @@ type CompatiblePlugin = {
  * @returns list of plugins with information about compatibility and sorted by their priority
  */
 async function getPluginsCompatibility(iri: IRI): Promise<CompatiblePlugin[]> {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
   const context = createCompatibilityContext(app.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
   const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
-    app.plugins.map((plugin) =>
+    app.getPlugins().map((plugin) =>
       plugin.v1.checkCompatibility(context, iri)
         .then((result) => ({ plugin, ...result }))
         .catch((err) => {

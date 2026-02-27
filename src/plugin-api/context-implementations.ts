@@ -7,18 +7,18 @@ import { graphNavigator } from "./graph-navigator";
 import { notifier, NotifierService } from "../ui/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./interfaces";
 import { IRI } from "../rdf-types";
-import { StateManager } from "../state-manager";
+import { RdfViewerState } from "../rdf-viewer-state";
 
-function createInstanceContext(app: StateManager, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
+function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
   const data = createDataContext(app.getDataSources(), vocabulary)
   return new PluginV1InstanceContextImpl(data, app.getLanguages(), notifier)
 }
 
-function createDataContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
+function createDataContext(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
   return new PluginV1DataContextImpl(dataSources, vocabulary);
 }
 
-function createCompatibilityContext(dataSources: DataSource[], vocabulary: PluginV1Vocabulary): PluginV1CompatibilityContext {
+function createCompatibilityContext(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary): PluginV1CompatibilityContext {
   return { data: createDataContext(dataSources, vocabulary) }
 } 
 
@@ -29,7 +29,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
   notification: PluginV1InstanceContext["notification"];
   interoperability: PluginV1InstanceContext["interoperability"];
 
-  constructor(dataContext: PluginV1DataContext, languages: Language[], notification: NotifierService){
+  constructor(dataContext: PluginV1DataContext, languages: readonly Language[], notification: NotifierService){
     this.data = dataContext;
     this.notification = notification;
     this.configuration = {
@@ -42,8 +42,8 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
   async renderSubject(subjectIri: IRI, element: HTMLElement): Promise<PluginV1Handler|null> {
     // find compatible plugin in order of state manager plugins and use the first one
 
-    const app = StateManager.getInstance();
-    for (const plugin of app.plugins){
+    const app = RdfViewerState.getInstance();
+    for (const plugin of app.getPlugins()){
       const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
         if (compatibility.isCompatible){
           const handler = renderEntityWithPlugin(plugin, subjectIri, element)
@@ -66,7 +66,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
   query: PluginV1DataContext["query"]
   vocabulary: PluginV1DataContext["vocabulary"];
 
-  constructor(dataSources: DataSource[], vocabulary: PluginV1Vocabulary) {
+  constructor(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary) {
     this.fetcher = fetcher(dataSources);
     this.query = {
       builder: queryBuilder,

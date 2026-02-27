@@ -4,9 +4,9 @@ import { setupHeaderElements } from "./setup-header";
 import { setupMainSettingsElements } from "./setup-main-settings-elements";
 
 /**
- * Setups all elements in UI. Adding event listeners and subscribers to StateManager 
+ * Setups all elements in UI. Adding event listeners and subscribers to RdfViewerState 
  * Should be called once on application startup.
- * @see StateManager
+ * @see RdfViewerState
  */
 function setupElements() {
   

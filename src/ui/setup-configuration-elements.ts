@@ -1,7 +1,7 @@
 import Sortable from "sortablejs";
 import { DataSourceType } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
-import { LabeledPluginWithId, StateManager } from "../state-manager";
+import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
 import { notifier } from "./notifier";
 
 function setupConfigurationElements(){
@@ -13,7 +13,7 @@ function setupConfigurationElements(){
 }
 
 function setupDatasourceList() {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
 
   const dataSourcesList = document.getElementById(
     "source-list",
@@ -27,14 +27,14 @@ function setupDatasourceList() {
 }
 
 function setupPluginList() {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
 
   const pluginListEl = document.getElementById(
     "plugin-list"
   ) as HTMLElement
 
   app.subscribe(() => {
-    const listItems = app.plugins.map((plugin) => {
+    const listItems = app.getPlugins().map((plugin) => {
       return createPluginEntry(plugin)
     })
     pluginListEl.replaceChildren(...listItems)
@@ -129,12 +129,12 @@ function setupDataSourceForm() {
 
 
 /**
- * Adds DataSource defined in formData to StateManager and UI
+ * Adds DataSource defined in formData to RdfViewerState and UI
  *
  * @param formData - FormData with information about new DataSource
  */
 function addDataSourceFromFormData(formData: FormData) {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
   const dsType: DataSourceType = formData.get("data-source-select") as DataSourceType;
   switch (dsType) {
     case DataSourceType.Sparql: {
@@ -239,12 +239,12 @@ function setupPluginForm(){
 }
 
 /**
- * Adds plugin defined in formData to StateManager and UI
+ * Adds plugin defined in formData to RdfViewerState and UI
  *
  * @param formData - FormData with information about new plugin
  */
 async function addPluginsFromFormData(formData: FormData) {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
   const pluginType: PluginModuleImportType = formData.get("plugin-add-type") as PluginModuleImportType;
   switch (pluginType) {
     case PluginModuleImportType.Url: {
@@ -294,7 +294,7 @@ function createDataSourceEntry(
   type: DataSourceType,
   identifier: IRI | string
 ): HTMLElement {
-  const app = StateManager.getInstance();
+  const app = RdfViewerState.getInstance();
   const entryEl = document.createElement("div");
   
   // add remove button for data source
@@ -337,7 +337,7 @@ function createDataSourceEntry(
 
 
 function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
-  const app = StateManager.getInstance()
+  const app = RdfViewerState.getInstance()
 
   const entryEl = document.createElement("li")
   entryEl.setAttribute("data-id", plugin.id.toString())

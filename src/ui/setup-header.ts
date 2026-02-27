@@ -1,4 +1,4 @@
-import { StateManager } from "../state-manager"
+import { RdfViewerState } from "../rdf-viewer-state"
 
 function setupHeaderElements() {
   setupAppLanguageSelect()
@@ -6,7 +6,7 @@ function setupHeaderElements() {
 
 function setupAppLanguageSelect() {
   const select = document.getElementById("app-language") as HTMLSelectElement
-  const app = StateManager.getInstance()
+  const app = RdfViewerState.getInstance()
   select.addEventListener("change", () => {
     app.setAppLanguage(select.value)
   })

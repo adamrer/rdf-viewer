@@ -1,9 +1,8 @@
+import { rdfViewerConfig } from "./config/rdf-viewer.config";
+import { dataSourceFactory } from "./fetch/data-source-factory";
 import {
   DataSource,
-  DataSourceType,
-  FileDataSource,
-  LdpDataSource,
-  SparqlDataSource,
+  DataSourceType
 } from "./fetch/data-source-implementations";
 import { createSetupContext } from "./plugin-api/context-implementations";
 import { LabeledPlugin, PluginModule } from "./plugin-api/interfaces";
@@ -30,69 +29,54 @@ interface LabeledPluginWithId extends LabeledPlugin {
  * Holds and manages data set by user in the UI for RDF display configuration. 
  * Observable Singleton class.
  */
-// TODO: rename to something more specific
-// TODO: maybe divide to more smaller state managers?
-// TODO: load initial state from some configuration file
-class StateManager {
-  private static _instance: StateManager;
+class RdfViewerState {
 
-  private entityIri: IRI = "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010";
-  // TODO: when empty, retrieve all languages? or retrieve only objects withou a language tag?
-  private languages: Language[] = ["cs", "en"];
-  private dataSources: DataSource[] = [
-    new SparqlDataSource("https://data.gov.cz/sparql"),
-    new FileDataSource("https://www.w3.org/2009/08/skos-reference/skos.rdf"),
-    new FileDataSource("https://www.w3.org/ns/dcat3.ttl"),
-    new FileDataSource(
-      "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl",
-    ),
-    new FileDataSource("/vocabularies/data-theme-skos.rdf"),
-    new FileDataSource("/vocabularies/foaf.rdf")
-  ];
-  private nextPluginId = 0
-  private selectedPluginIndex: number = 0;
-  private appLanguage: Language = "en"
-
-  plugins: LabeledPluginWithId[] = [];
+  private static _instance: RdfViewerState;
   subscriptions: Subscription[] = [];
+  
+  private plugins: LabeledPluginWithId[] = [];
+  private selectedPluginIndex: number = 0;
+  private nextPluginId = 0
+  
+  private dataSources: DataSource[] = [];
+
+  private entityIri: IRI = "";
+
+  // TODO: when empty, retrieve all languages? or retrieve only objects withou a language tag?
+  private languages: Language[] = [];
+  private appLanguage: Language = ""
+  
 
   private constructor() {
-    this.loadInitialPlugins()
+    this.loadConfiguration()
   }
 
   /**
-   * Loads initial plugins from `/public/plugins` folder that
-   * are in `/public/plugins/plugin-list.js`
+   * 
+   * @returns the instance of the RdfViewerState
+  */
+ static getInstance(): RdfViewerState {
+   if (!RdfViewerState._instance) {
+     RdfViewerState._instance = new RdfViewerState();
+    }
+    return RdfViewerState._instance;
+  }
+  
+  /**
+   * Loads the initial configuration from rdfViewerConfig
+   * @see rdfViewerConfig
    */
-  private async loadInitialPlugins() {
-    const pluginListResponse = await fetch("/plugins/plugin-list.json")
-    const pluginList: string[] = await pluginListResponse.json()
-    const pluginPromises = pluginList.map(pluginName => {
-      this.addPluginsFromModule(`/plugins/${pluginName}`)
-    });
+  private async loadConfiguration() {
+    rdfViewerConfig.dataSources.forEach(dsd => this.addDataSource(dsd.url, dsd.type))
+    const pluginPromises = rdfViewerConfig.pluginModules.map(md => this.addPluginsFromModule(md.url))
+    this.setEntityIri(rdfViewerConfig.entityIri)
+    this.setLanguages(rdfViewerConfig.languages)
+    this.setAppLanguage(rdfViewerConfig.appLanguage)
     await Promise.all(pluginPromises)
   }
-  /**
-   * 
-   * @returns a new ID for a newly added plugin
-   */
-  private getNextId(){
-    const nextId = this.nextPluginId
-    this.nextPluginId++
-    return nextId
-  }
 
-  /**
-   * 
-   * @returns the instance of the StateManager
-   */
-  static getInstance(): StateManager {
-    if (!StateManager._instance) {
-      StateManager._instance = new StateManager();
-    }
-    return StateManager._instance;
-  }
-
+  
+  
   /**
    * Subscribe to changes. Provide an array of state member keys to listen to.
    * If `keys` is empty or omitted, the listener will be notified for any change.
@@ -103,6 +87,7 @@ class StateManager {
       listener();
     }
   }
+  
 
   /**
    * Notify listeners. If `changed` is omitted, notify all listeners.
@@ -128,6 +113,9 @@ class StateManager {
     });
   }
 
+  
+  // ===  P L U G I N   S T A T E  ===
+
   /**
    * 
    * @returns the plugin that is set to be selected
@@ -137,67 +125,15 @@ class StateManager {
   }
 
   /**
-   * Sets the entity that will be displayed by a plugin
-   * @param iri - The IRI of an entity that is desired to be displayed by a plugin
-   */
-  setEntityIri(iri: IRI) {
-    this.entityIri = decodeURIComponent(iri);
-    this.notify(["entityIri"]);
-  }
-
-  /**
    * 
-   * @returns the entity IRI
+   * @returns a new ID for a newly added plugin
    */
-  getEntityIri(): IRI {
-    return this.entityIri
+  private getNextId(){
+    const nextId = this.nextPluginId
+    this.nextPluginId++
+    return nextId
   }
-
-  /**
-   * Adds a new data source to the StateManager
-   * @param source - IRI or a File of the new data source
-   * @param type - The type of the new data source 
-   */
-  addDataSource(source: IRI | File, type: DataSourceType) {
-    let ds: DataSource;
-    switch (type) {
-      case DataSourceType.Sparql:
-        ds = new SparqlDataSource(source as IRI);
-        break;
-      case DataSourceType.Ldp:
-        ds = new LdpDataSource(source as IRI);
-        break;
-      case DataSourceType.LocalFile:
-      case DataSourceType.RemoteFile:
-        ds = new FileDataSource(source);
-        break;
-      default:
-        throw new Error(`Unsupported data source type: ${type}`);
-    }
-    this.dataSources.push(ds);
-    this.notify(["dataSources"]);
-  }
-
-  /**
-   * Removes a data source with the given IRI
-   * 
-   * @param identifier - IRI of the data source to be removed from StateManager
-   */
-  removeDataSource(identifier: IRI) {
-    this.dataSources = this.dataSources.filter(
-      (ds) => ds.identifier !== identifier,
-    );
-    this.notify(["dataSources"]);
-  }
-
-  /**
-   * 
-   * @returns a list of added data sources
-   */
-  getDataSources(): DataSource[] {
-    return this.dataSources
-  }
-
+  
   async addPluginsFromCode(code: string){
     const pluginModuleBlob = new Blob([code], {type: "text/javascript"})
     const pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
@@ -239,8 +175,8 @@ class StateManager {
 
 
   /**
-   * Removes a plugin from the StateManager by it's ID
-   * @param pluginId - ID of the plugin wished to be removed from the StateManager
+   * Removes a plugin from the RdfViewerState by it's ID
+   * @param pluginId - ID of the plugin wished to be removed from the RdfViewerState
    */
   removePlugin(pluginId: number) {
     const index = this.plugins.findIndex((plugin) => plugin.id === pluginId)
@@ -248,7 +184,7 @@ class StateManager {
     this.notify(["plugins"])
   }
 
-  getPlugins(): LabeledPluginWithId[] {
+  getPlugins(): readonly LabeledPluginWithId[] {
     return this.plugins
   }
 
@@ -278,6 +214,64 @@ class StateManager {
     this.notify(["selectedPluginIndex"]);
   }
 
+
+  
+  // ===  D A T A   S O U R C E S   S T A T E  ===
+
+
+  /**
+   * Adds a new data source to the RdfViewerState
+   * @param source - IRI or a File of the new data source
+   * @param type - The type of the new data source 
+   */
+  addDataSource(source: IRI | File, type: DataSourceType) {
+    this.dataSources.push(dataSourceFactory(type, source));
+    this.notify(["dataSources"]);
+  }
+
+  /**
+   * Removes a data source with the given IRI
+   * 
+   * @param identifier - IRI of the data source to be removed from RdfViewerState
+   */
+  removeDataSource(identifier: IRI) {
+    this.dataSources = this.dataSources.filter(
+      (ds) => ds.identifier !== identifier,
+    );
+    this.notify(["dataSources"]);
+  }
+
+  /**
+   * 
+   * @returns a list of added data sources
+   */
+  getDataSources(): readonly DataSource[] {
+    return this.dataSources
+  }
+
+
+  // ===  E N T I T Y   I R I   S T A T E  ===
+
+  /**
+   * Sets the entity that will be displayed by a plugin
+   * @param iri - The IRI of an entity that is desired to be displayed by a plugin
+   */
+  setEntityIri(iri: IRI) {
+    this.entityIri = decodeURIComponent(iri);
+    this.notify(["entityIri"]);
+  }
+
+  /**
+   * 
+   * @returns the entity IRI
+   */
+  getEntityIri(): IRI {
+    return this.entityIri
+  }
+
+
+  // ===  L A N G U A G E S   S T A T E  === 
+
   /**
    * Sets the preferred languages
    * @param languages - Array of language tags
@@ -291,7 +285,7 @@ class StateManager {
    * 
    * @returns the preferred languages
    */
-  getLanguages(): Language[] {
+  getLanguages(): readonly Language[] {
     return this.languages
   }
 
@@ -316,4 +310,4 @@ class StateManager {
 
 
 export type { LabeledPluginWithId }
-export { StateManager };
+export { RdfViewerState };
