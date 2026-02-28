@@ -3,6 +3,7 @@ import { DataSourceType } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
 import { notifier } from "./notifier";
+import { withLoading } from "./spinner";
 
 function setupConfigurationElements(){
   setupDataSourceForm();
@@ -222,7 +223,7 @@ function setupPluginForm(){
   addPluginFormEl.addEventListener("submit", (event: SubmitEvent) => {
     event.preventDefault();
     const formData = new FormData(addPluginFormEl);
-    addPluginsFromFormData(formData);
+    withLoading(addPluginFormEl, () => addPluginsFromFormData(formData))
     addPluginFormEl.reset();
     // prevent refresh
     return false;

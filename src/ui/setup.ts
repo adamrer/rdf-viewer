@@ -1,7 +1,9 @@
+import { RdfViewerState } from "../rdf-viewer-state";
 import { notifier } from "./notifier";
 import { setupConfigurationElements } from "./setup-configuration-elements";
 import { setupHeaderElements } from "./setup-header";
 import { setupMainSettingsElements } from "./setup-main-settings-elements";
+import { withLoading } from "./spinner";
 
 /**
  * Setups all elements in UI. Adding event listeners and subscribers to RdfViewerState 
@@ -10,6 +12,8 @@ import { setupMainSettingsElements } from "./setup-main-settings-elements";
  */
 function setupElements() {
   
+  loadStateConfiguration();
+
   // header
   setupHeaderElements();
   
@@ -35,5 +39,17 @@ function setupNotifier(){
   notifier.setNotificationContainer(notificationContainer);
 }
 
+/**
+ * Loads the state from configuration to the RdfViewerState and shows loading spinner
+ * next to the plugin select element
+ */
+function loadStateConfiguration() {
+
+  const pluginSelectEl = document.getElementById(
+    "choose-plugin",
+  ) as HTMLSelectElement;
+
+  withLoading(pluginSelectEl, async () => RdfViewerState.getInstance().loadConfiguration())
+}
 
 export { setupElements };

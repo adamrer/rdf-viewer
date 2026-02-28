@@ -4,8 +4,8 @@ import {
   DataSource,
   DataSourceType
 } from "./fetch/data-source-implementations";
-import { createSetupContext } from "./plugin-api/context-implementations";
-import { LabeledPlugin, PluginModule } from "./plugin-api/plugin-api-interfaces";
+import { createCompatibilityContext, createSetupContext } from "./plugin-api/context-implementations";
+import { LabeledPlugin, PluginModule, PluginV1Vocabulary } from "./plugin-api/plugin-api-interfaces";
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
 
@@ -23,6 +23,10 @@ interface LabeledPluginWithId extends LabeledPlugin {
   id: number
 }
 
+interface PluginWithPriority extends LabeledPluginWithId {
+  priority: number
+}
+
 /**
  * Holds and manages data set by user in the UI for RDF display configuration. 
  * Observable Singleton class.
@@ -32,7 +36,7 @@ class RdfViewerState {
   private static _instance: RdfViewerState;
   subscriptions: Subscription[] = [];
   
-  private plugins: LabeledPluginWithId[] = [];
+  private plugins: PluginWithPriority[] = [];
   private selectedPluginIndex: number = 0;
   private nextPluginId = 0
   
@@ -46,7 +50,7 @@ class RdfViewerState {
   
 
   private constructor() {
-    this.loadConfiguration()
+    
   }
 
   /**
@@ -64,7 +68,7 @@ class RdfViewerState {
    * Loads the initial configuration from rdfViewerConfig
    * @see rdfViewerConfig
    */
-  private async loadConfiguration() {
+  async loadConfiguration() {
     rdfViewerConfig.dataSources.forEach(dsd => this.addDataSource(dsd.url, dsd.type))
     const pluginPromises = rdfViewerConfig.pluginModules.map(md => this.addPluginsFromModule(md.url))
     this.setEntityIri(rdfViewerConfig.entityIri)
@@ -139,21 +143,20 @@ class RdfViewerState {
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
     newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
 
-    const newPluginsWithIds = newPlugins.map((plugin) => {
+    const newPluginsWithIdsAndPriority = await Promise.all(newPlugins.map(async (plugin) => {
       return {
         id: this.getNextId(),
+        priority: (await plugin.v1.checkCompatibility(createCompatibilityContext(this.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary()), this.getEntityIri())).priority,
         ...plugin
       }
-    })
-    // TODO: řadit podle priority
-    // for (let i = 0; i < this.plugins.length; i++) {
-    //   const plugin = this.plugins[i];
-    //   plugin.v1.checkCompatibility()
-    // }
-    this.plugins.push(...newPluginsWithIds);
+    }))
+    
+    this.plugins.push(...newPluginsWithIdsAndPriority);
+    this.plugins.sort((a, b) => b.priority - a.priority).map(pluginWithPriority => pluginWithPriority.id)
+    
     this.notify(["plugins"]);
 
-    return newPluginsWithIds
+    return newPluginsWithIdsAndPriority
   }
   /**
    * 
