@@ -1,14 +1,14 @@
-import { DataSource } from "../fetch/data-source";
+import { DataSource, Sourced } from "../fetch/data-source";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, Query } from "../query/query-interfaces";
-import { graphNavigator } from "./graph-navigator-implementation";
 import { notifier, NotifierService } from "../ui/notifier";
-import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./plugin-api-interfaces";
+import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext, GraphNavigator, SubjectNavigator } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
 import { RdfViewerState } from "../rdf-viewer-state";
 import { createSpinner } from "../ui/spinner";
+import { Quad_Object } from "n3";
 
 function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
   const data = createDataContext(app.getDataSources(), vocabulary)
@@ -172,13 +172,73 @@ class PluginV1SetupContextImpl implements PluginV1SetupContext {
   }
 }
 
+
+class GraphNavigatorImpl implements GraphNavigator {
+    
+    data: StructuredQuads
+
+    constructor(data?: StructuredQuads){
+        if (data)
+            this.data = data
+        else
+            this.data = {}
+    }
+    
+    subjects(){
+        return Object.keys(this.data)
+    }
+    subject(subject: IRI){
+        const predicates = this.data[subject]
+        if (predicates)
+            return subjectNavigator(predicates)
+        return subjectNavigator({})
+    }
+}
+
+interface StructuredPredicates {
+    [predicateIri: IRI]: {
+      [objectValue: IRI]: Sourced<Quad_Object>;
+    };
+}
+
+class SubjectNavigatorImpl implements SubjectNavigator {
+    
+    data: StructuredPredicates
+    constructor(data?: StructuredPredicates){
+        if (data)
+            this.data = data
+        else
+            this.data = {}
+    }
+    predicates(){
+        return Object.keys(this.data)
+    }
+    predicate(predicate: IRI) {
+        const objects = this.data[predicate]
+        if (objects)
+            return Object.values(this.data[predicate])
+        return []
+    }
+}
+
+function subjectNavigator(data: StructuredPredicates): SubjectNavigator {
+    return new SubjectNavigatorImpl(data)
+}
+function graphNavigator(data: StructuredQuads): GraphNavigator {
+    return new GraphNavigatorImpl(data)
+}
+
+
 function createSetupContext(): PluginV1SetupContext {
   return new PluginV1SetupContextImpl();
 }
+
+
 
 export { 
   createCompatibilityContext,
   createSetupContext,
   createDataContext,
-  createInstanceContext
+  createInstanceContext,
+  graphNavigator
 };
