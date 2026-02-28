@@ -87,6 +87,7 @@ function createDatasetPlugin() {
                     mountedToElement = element;
                     
                     (async () => {
+                        context.html.renderLoading(element)
                         // Define which predicates we want to display and which we use for labels
                         const chosenPredicates = [dcterms.accessRights, dcterms.spatial, dcat.theme, dcat.contactPoint, foaf.page, dcterms.accrualPeriodicity]
                         const labelPredicates = [dcterms.title, rdfs.label, skos.prefLabel, vcard.fn]
@@ -110,7 +111,7 @@ function createDatasetPlugin() {
                         if (objectIrisToFetchLabelsFor.length > 0) {
                             await context.data.fetch.quads(objectIrisToFetchLabelsFor, labelPredicates, context.configuration.languages)
                         }
-
+                        element.replaceChildren()
                         // Render Title (h1)
                         const datasetLabel = getLabel(subject, [dcterms.title, skos.prefLabel, rdfs.label], context);
                         const titleElement = document.createElement("h1")

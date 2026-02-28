@@ -1,8 +1,8 @@
-/** @typedef {import('./plugin-api-interfaces').PluginV1} PluginV1 */
-/** @typedef {import('./plugin-api-interfaces').PluginV1InstanceContext} PluginV1InstanceContext */
-/** @typedef {import('./plugin-api-interfaces').PluginV1CompatibilityContext} PluginV1CompatibilityContext */
-/** @typedef {import('./plugin-api-interfaces').LabeledPlugin} LabeledPlugin */
-/** @typedef {import('./plugin-api-interfaces').PluginV1Instance} PluginV1Instance */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1} PluginV1 */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1InstanceContext} PluginV1InstanceContext */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1CompatibilityContext} PluginV1CompatibilityContext */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').LabeledPlugin} LabeledPlugin */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1Instance} PluginV1Instance */
 /** @typedef {string} IRI */
 
 // Namespace constants
@@ -72,10 +72,11 @@ function createLdpExplorerPlugin() {
                     mountedToElement = element;
                     
                     (async () => {
+                        context.html.renderLoading(element)
+
                         const rootContainer = document.createElement("div");
                         rootContainer.style.paddingLeft = "10px";
-                        element.appendChild(rootContainer);
-
+                        
                         // 1. Fetch metadata for the container
                         await context.data.fetch.quads([subject], undefined, context.configuration.languages);
                         
@@ -91,6 +92,9 @@ function createLdpExplorerPlugin() {
                                 await context.data.fetch.types(member);
                             }
                         }
+
+                        
+                        element.replaceChildren(rootContainer);
 
                         // Rendering the list of items
                         const list = document.createElement("div");

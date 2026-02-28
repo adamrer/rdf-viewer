@@ -8,6 +8,7 @@ import { notifier, NotifierService } from "../ui/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
 import { RdfViewerState } from "../rdf-viewer-state";
+import { createSpinner } from "../ui/spinner";
 
 function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
   const data = createDataContext(app.getDataSources(), vocabulary)
@@ -28,6 +29,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
   configuration: PluginV1InstanceContext["configuration"];
   notification: PluginV1InstanceContext["notification"];
   interoperability: PluginV1InstanceContext["interoperability"];
+  html: PluginV1InstanceContext["html"];
 
   constructor(dataContext: PluginV1DataContext, languages: readonly Language[], notification: NotifierService){
     this.data = dataContext;
@@ -38,6 +40,9 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
     this.interoperability = {
       renderSubject: this.renderSubject.bind(this)
     };
+    this.html = {
+      renderLoading: this.renderLoading.bind(this)
+    }
   }
   async renderSubject(subjectIri: IRI, element: HTMLElement): Promise<PluginV1Handler|null> {
     // find compatible plugin in order of state manager plugins and use the first one
@@ -51,6 +56,10 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
         }
       }
     return null;
+  }
+
+  renderLoading(element: HTMLElement) {
+    element.appendChild(createSpinner())
   }
 
 }
@@ -117,6 +126,8 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, quads)
     this.fetched = graphNavigator(this.fetchedStructured)
   }
+
+
 
 }
 

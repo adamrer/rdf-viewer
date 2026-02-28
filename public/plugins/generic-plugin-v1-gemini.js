@@ -75,10 +75,11 @@ function createGenericPlugin() {
                     mountedToElement = element;
                     
                     (async () => {
+                        context.html.renderLoading(element)
+
                         // 1. Create the main container
                         const container = document.createElement("div");
                         container.className = "generic-rdf-plugin";
-                        element.appendChild(container);
 
                         // 2. Fetch all data regarding the main subject (all predicates)
                         // undefined in the second argument means "fetch all predicates"
@@ -109,6 +110,9 @@ function createGenericPlugin() {
                         if (irisToLabel.size > 0) {
                             await context.data.fetch.quads(Array.from(irisToLabel), LABELS, context.configuration.languages);
                         }
+
+                        // remove loading state
+                        element.replaceChildren(container)
 
                         // 5. Render Header (Subject Label)
                         const subjectLabel = getLabel(subject, LABELS, context);

@@ -123,6 +123,17 @@ interface PluginV1InstanceContext {
   }
 
   /**
+   * HTML related operations
+   */
+  html: {
+    /**
+     * Renders loading state to an element
+     * @param element - Loading state will be rendered to this HTML element
+     */
+    renderLoading: (element: HTMLElement) => void
+  }
+
+  /**
    * Configuration options
    */
   configuration: {
@@ -169,15 +180,6 @@ interface PluginV1DataContext {
      */
     quads: (subjects: IRI[], predicates?: IRI[], languages?: Language[]) => Promise<GraphNavigator>
     
-    /**
-     * Loads labels for the given subjects and label predicates into the fetched data.
-     * If subjects parameter is not given, labels for all IRIs in fetched are loaded.
-     * 
-     * @param labelPredicates - Predicates to use for labels
-     * @param subjects - Subjects to get labels for. If not given, all subjects are considered.
-     * @returns map of subject IRIs to their labels
-     */
-    // labels: (labelPredicates: IRI[], subjects?: IRI[]) => Promise<Map<IRI, Sourced<Literal>[]>>
   }
 
   /**
@@ -186,7 +188,7 @@ interface PluginV1DataContext {
   query: {
     /**
      * 
-     * @returns query builder for expressing a query for data sources
+     * @returns a query builder for expressing a query for data sources
      */
     builder: () => QueryBuilder
     /**
