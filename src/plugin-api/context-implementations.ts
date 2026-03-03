@@ -2,7 +2,7 @@ import { DataSource, Sourced } from "../fetch/data-source";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
-import { Language, Query } from "../query/query-interfaces";
+import { Language, NO_LANG_SPECIFIED, Query } from "../query/query-interfaces";
 import { notifier, NotifierService } from "../ui/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext, GraphNavigator, SubjectNavigator } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
@@ -12,7 +12,7 @@ import { Quad_Object } from "n3";
 
 function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
   const data = createDataContext(app.getDataSources(), vocabulary)
-  return new PluginV1InstanceContextImpl(data, app.getLanguages(), notifier)
+  return new PluginV1InstanceContextImpl(data, [...app.getLanguages(), NO_LANG_SPECIFIED], notifier)
 }
 
 function createDataContext(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
