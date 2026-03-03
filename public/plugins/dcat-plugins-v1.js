@@ -58,7 +58,10 @@ const SKOS = "http://www.w3.org/2004/02/skos/core#"
 const skos = {
     prefLabel: SKOS+"prefLabel"
 }
-
+const SCHEMA = "http://schema.org/"
+const schema = {
+    name: SCHEMA+"name"
+}
 const VCARD = "http://www.w3.org/2006/vcard/ns#"
 const vcard = {
     fn: VCARD+"fn"
@@ -90,7 +93,7 @@ function createDatasetPlugin() {
                         context.html.renderLoading(element)
                         // Define which predicates we want to display and which we use for labels
                         const chosenPredicates = [dcterms.accessRights, dcterms.spatial, dcat.theme, dcat.contactPoint, foaf.page, dcterms.accrualPeriodicity]
-                        const labelPredicates = [dcterms.title, rdfs.label, skos.prefLabel, vcard.fn]
+                        const labelPredicates = [dcterms.title, rdfs.label, skos.prefLabel, schema.name, vcard.fn]
 
                         // Initial fetch: all data for the subject + labels for known common terms
                         await context.data.fetch.quads([subject], undefined, context.configuration.languages)
@@ -107,10 +110,11 @@ function createDatasetPlugin() {
                             })
                         })
                         
-                        // Batch fetch labels for all found object IRIs
+                        // Batch fetch labels for all found IRIs
                         if (objectIrisToFetchLabelsFor.length > 0) {
                             await context.data.fetch.quads(objectIrisToFetchLabelsFor, labelPredicates, context.configuration.languages)
                         }
+                        console.log(context.data.fetched)
                         element.replaceChildren()
                         // Render Title (h1)
                         const datasetLabel = getLabel(subject, [dcterms.title, skos.prefLabel, rdfs.label], context);
@@ -329,7 +333,7 @@ function createLinksDescriptionList(subject, linkPredicates, context){
  */
 function createPredicatesDescriptionList(subject, predicates, context){
     const descriptionList = document.createElement("dl")
-    const labelPredicates = [dcat.title, skos.prefLabel, rdfs.label, vcard.fn]
+    const labelPredicates = [dcat.title, skos.prefLabel, rdfs.label, schema.name, vcard.fn]
     const predicateTermsDefinitions = []
     
     // Preparation phase: create DT elements and their associated DD elements
