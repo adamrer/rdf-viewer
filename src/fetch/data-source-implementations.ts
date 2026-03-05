@@ -216,18 +216,17 @@ class LdpDataSource implements DataSource {
     const containerQuads = await this.loadAllResources(containerIris);
     this.quads.push(...containerQuads);
     const ldp = "http://www.w3.org/ns/ldp#";
-    const rdfType ="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
     const subResourcesQuery = queryBuilder()
       .subjects(containerIris)
-      .predicates([ldp + "contains", rdfType])
+      .predicates()
       .objects()
       .build();
     const processor = queryProcessor();
     const subResources = processor
       .filter(containerQuads, subResourcesQuery)
-      .map((quad) => quad.object) // get objects
-      .filter((object) => object.termType === "NamedNode") // that are NamedNodes
-      .map((object) => object.value); // their IRIs
+      .map((quad) => [quad.predicate, quad.object]) // get objects
+      .filter(([predicate, object]) => predicate.value === ldp+"contains" && object.termType === "NamedNode") // that are NamedNodes
+      .map(([_, object]) => object.value); // their IRIs
     if (subResources.length === 0) {
       return;
     }
