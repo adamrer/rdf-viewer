@@ -216,9 +216,10 @@ class LdpDataSource implements DataSource {
     const containerQuads = await this.loadAllResources(containerIris);
     this.quads.push(...containerQuads);
     const ldp = "http://www.w3.org/ns/ldp#";
+    const rdfType ="http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
     const subResourcesQuery = queryBuilder()
       .subjects(containerIris)
-      .predicates([ldp + "contains"])
+      .predicates([ldp + "contains", rdfType])
       .objects()
       .build();
     const processor = queryProcessor();

@@ -37,7 +37,8 @@ const dcat = {
 }
 const FOAF = "http://xmlns.com/foaf/0.1/"
 const foaf = {
-    page: FOAF+"page"
+    page: FOAF+"page",
+    name: FOAF+"name"
 }
 
 const DCTERMS = "http://purl.org/dc/terms/"
@@ -47,7 +48,8 @@ const dcterms = {
     accessRights: DCTERMS+"accessRights",
     spatial: DCTERMS+"spatial",
     accrualPeriodicity: DCTERMS+"accrualPeriodicity",
-    description: DCTERMS+"description"
+    description: DCTERMS+"description",
+    publisher: DCTERMS+"publisher"
 }
 
 const RDFS = "http://www.w3.org/2000/01/rdf-schema#"
@@ -92,8 +94,8 @@ function createDatasetPlugin() {
                     (async () => {
                         context.html.renderLoading(element)
                         // Define which predicates we want to display and which we use for labels
-                        const chosenPredicates = [dcterms.accessRights, dcterms.spatial, dcat.theme, dcat.contactPoint, foaf.page, dcterms.accrualPeriodicity]
-                        const labelPredicates = [dcterms.title, rdfs.label, skos.prefLabel, schema.name, vcard.fn]
+                        const chosenPredicates = [dcterms.publisher, dcterms.accessRights, dcterms.spatial, dcat.theme, dcat.contactPoint, foaf.page, dcterms.accrualPeriodicity]
+                        const labelPredicates = [dcterms.title, rdfs.label, skos.prefLabel, schema.name, foaf.name, vcard.fn]
 
                         // Initial fetch: all data for the subject + labels for known common terms
                         await context.data.fetch.quads([subject], undefined, context.configuration.languages)
@@ -114,7 +116,6 @@ function createDatasetPlugin() {
                         if (objectIrisToFetchLabelsFor.length > 0) {
                             await context.data.fetch.quads(objectIrisToFetchLabelsFor, labelPredicates, context.configuration.languages)
                         }
-                        console.log(context.data.fetched)
                         element.replaceChildren()
                         // Render Title (h1)
                         const datasetLabel = getLabel(subject, [dcterms.title, skos.prefLabel, rdfs.label], context);
@@ -333,7 +334,7 @@ function createLinksDescriptionList(subject, linkPredicates, context){
  */
 function createPredicatesDescriptionList(subject, predicates, context){
     const descriptionList = document.createElement("dl")
-    const labelPredicates = [dcat.title, skos.prefLabel, rdfs.label, schema.name, vcard.fn]
+    const labelPredicates = [dcat.title, skos.prefLabel, rdfs.label, schema.name, foaf.name, vcard.fn]
     const predicateTermsDefinitions = []
     
     // Preparation phase: create DT elements and their associated DD elements
