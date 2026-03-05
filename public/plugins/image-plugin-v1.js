@@ -78,8 +78,6 @@ function createImagePlugin() {
             const compatibleTypes = [image.gif, image.png, image.jpeg, image.svg, image.apng]
             // Use vocabulary service to check for semantically equivalent classes
             const imageTypeIris = compatibleTypes.flatMap(type => context.data.vocabulary.getSemanticallySimilar(type))
-            console.log("image type: ", subjectTypeValues)
-            console.log("compatible image types: ", imageTypeIris)
             return {
                 isCompatible: subjectTypeValues.some(t => imageTypeIris.includes(t)),
                 priority: 100
