@@ -19,8 +19,8 @@ class SparqlDataSource implements DataSource {
   identifier: string;
 
   constructor(endpointUrl: string) {
-    this.endpointUrl = endpointUrl;
-    this.identifier = endpointUrl;
+    this.endpointUrl = decodeURIComponent(endpointUrl);
+    this.identifier = decodeURIComponent(endpointUrl);
   }
 
   /**
@@ -80,8 +80,8 @@ class FileDataSource implements DataSource {
       this.identifier = fileOrUrl.name;
       this.type = DataSourceType.LocalFile;
     } else {
-      this.url = fileOrUrl;
-      this.identifier = fileOrUrl;
+      this.url = decodeURIComponent(fileOrUrl);
+      this.identifier = decodeURIComponent(fileOrUrl);
       this.type = DataSourceType.RemoteFile;
     }
   }
@@ -173,8 +173,8 @@ class LdpDataSource implements DataSource {
   quads: Quad[] = [];
   quadsLoaded: boolean = false;
   constructor(url: IRI) {
-    this.url = url;
-    this.identifier = url;
+    this.url = decodeURIComponent(url);
+    this.identifier = decodeURIComponent(url);
   }
 
   /**
