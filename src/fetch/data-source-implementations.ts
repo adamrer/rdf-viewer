@@ -121,8 +121,10 @@ class FileDataSource implements DataSource {
         reject(err);
         throw err;
       }
+      let fileUrl = this.identifier
+      fileUrl = new URL(this.file.name, window.location.origin).href
       rdfParser
-        .parse(stream, { path: this.file.name, baseIRI: this.identifier })
+        .parse(stream, { path: this.file.name, baseIRI: fileUrl })
         .on("data", (quad) => {
           if (!this.quads)
             this.quads = []
