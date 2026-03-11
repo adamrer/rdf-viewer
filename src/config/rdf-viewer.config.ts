@@ -44,7 +44,9 @@ const rdfViewerConfig: RdfViewerConfig = {
     { type: DataSourceType.RemoteFile, url: "https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl"},
     
     { type: DataSourceType.LocalFile, url: "vocabularies/data-theme-skos.rdf"},
-    { type: DataSourceType.LocalFile, url: "vocabularies/foaf.rdf"}
+    { type: DataSourceType.LocalFile, url: "vocabularies/foaf.rdf"},
+    { type: DataSourceType.LocalFile, url: "vocabularies/statnipokladna.jsonld"},
+    { type: DataSourceType.LocalFile, url: "vocabularies/monitor-stat-pok.jsonld"}
   ],
 
   pluginModules: [

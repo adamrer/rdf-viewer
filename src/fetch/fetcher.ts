@@ -61,7 +61,7 @@ class FetcherImpl implements Fetcher {
       if (result.status === "fulfilled") {
         successfulResults.push(...result.value);
       } else {
-        console.error(`DataSource ${index} failed:`, result.reason);
+        console.error(`DataSource ${this.dataSources[index].identifier} failed:`, result.reason);
       }
     });
 

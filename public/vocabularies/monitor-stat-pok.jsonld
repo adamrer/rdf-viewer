@@ -1,0 +1,34 @@
+{
+  "@context": "http://localhost:5173/vocabularies/statnipokladna.jsonld",
+  "iri": "https://monitor.statnipokladna.gov.cz/api/opendata/monitor/MONITOR",
+  "typ": "Datová sada",
+  "název": {
+    "cs": "MONITOR Státní pokladny",
+    "en": "State treasury MONITOR"
+  },
+  "popis": {
+    "cs": "Data z aplikace MONITOR státní pokladny. Rozpočtové a účetní informace ze všech úrovní státní správy a samosprávy.",
+    "en": "Data from the State treasury MONITOR application. Budget and accounting information from all levels of central and local government."
+  },
+  "poskytovatel": "https://rpp-opendata.egon.gov.cz/odrpp/zdroj/orgán-veřejné-moci/00006947",
+  "téma": [
+    "http://publications.europa.eu/resource/authority/data-theme/ECON",
+    "http://publications.europa.eu/resource/authority/data-theme/GOVE"
+  ],
+  "periodicita_aktualizace": "http://publications.europa.eu/resource/authority/frequency/MONTHLY",
+  "klíčové_slovo": {
+    "cs": [
+      "státní pokladna",
+      "rozpočet",
+      "účetní data"
+    ],
+    "en": [
+      "state treasury",
+      "budget",
+      "accounting data"
+    ]
+  },
+  "prvek_rúian": [
+    "https://linked.cuzk.cz/resource/ruian/stat/1"
+  ]
+}
