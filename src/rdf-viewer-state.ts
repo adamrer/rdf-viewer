@@ -23,9 +23,6 @@ interface LabeledPluginWithId extends LabeledPlugin {
   id: number
 }
 
-interface PluginWithPriority extends LabeledPluginWithId {
-  priority: number
-}
 
 /**
  * Holds and manages data set by user in the UI for RDF display configuration. 
@@ -36,7 +33,7 @@ class RdfViewerState {
   private static _instance: RdfViewerState;
   subscriptions: Subscription[] = [];
   
-  private plugins: PluginWithPriority[] = [];
+  private plugins: LabeledPluginWithId[] = [];
   private selectedPluginIndex: number = 0;
   private nextPluginId = 0
   
@@ -146,13 +143,12 @@ class RdfViewerState {
     const newPluginsWithIdsAndPriority = await Promise.all(newPlugins.map(async (plugin) => {
       return {
         id: this.getNextId(),
-        priority: (await plugin.v1.checkCompatibility(createCompatibilityContext(this.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary()), this.getEntityIri())).priority,
         ...plugin
       }
     }))
     
     this.plugins.push(...newPluginsWithIdsAndPriority);
-    this.plugins.sort((a, b) => b.priority - a.priority).map(pluginWithPriority => pluginWithPriority.id)
+    this.plugins.sort((a, b) => b.v1.priority - a.v1.priority).map(pluginWithPriority => pluginWithPriority.id)
     
     this.notify(["plugins"]);
 

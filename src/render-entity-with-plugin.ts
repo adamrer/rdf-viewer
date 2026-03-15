@@ -38,6 +38,7 @@ function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: 
 
   return {
     pluginLabel: plugin.label,
+    pluginPriority: plugin.v1.priority,
     unmount: pluginInstance.unmount
   }
 

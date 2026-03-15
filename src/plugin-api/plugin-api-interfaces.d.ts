@@ -8,7 +8,7 @@ import { Query } from "../query/query";
 
 
 /**
- * Interface representing the display plugin for displaying an RDF entity.
+ * Interface representing the JS plugin module file for registering plugins.
  */
 interface PluginModule {
   /**
@@ -52,12 +52,13 @@ interface PluginV1 {
    * @param context - context in which the compatibility is checked
    * @param subject - IRI of the subject to check compatibility for
    * @returns if given subject is compatible with the plugin and its priority.
+  */
+ isCompatible: (context: PluginV1CompatibilityContext, subject: IRI) => Promise<boolean>
+ 
+  /**
    * Priority is used when multiple plugins are compatible with the subject.
-   */
-  checkCompatibility: (context: PluginV1CompatibilityContext, subject: IRI) => Promise<{
-    isCompatible: boolean;
-    priority: PluginV1Match;
-  }>
+  */
+  priority: PluginV1Match
 
   /**
    * Creates an instance of the plugin for the given subject
@@ -119,7 +120,7 @@ interface PluginV1InstanceContext {
    * Services to use other suitable plugins in a plugin
    */
   interoperability: {
-      renderSubject: (subject: IRI, element: HTMLElement) => Promise<PluginV1Handler|null>;
+      renderSubject: (subject: IRI, element: HTMLElement, minPriority: PluginV1Match) => Promise<PluginV1Handler|null>;
   }
 
   /**
@@ -224,6 +225,7 @@ enum PluginV1Match {
 
 interface PluginV1Handler {
   pluginLabel: LanguageString
+  pluginPriority: PluginV1Match
   unmount: () => void;
 }
 

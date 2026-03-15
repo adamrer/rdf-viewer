@@ -44,17 +44,17 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
       renderLoading: this.renderLoading.bind(this)
     }
   }
-  async renderSubject(subjectIri: IRI, element: HTMLElement): Promise<PluginV1Handler|null> {
+  async renderSubject(subjectIri: IRI, element: HTMLElement, minPriority: number = 0): Promise<PluginV1Handler|null> {
     // find compatible plugin in order of state manager plugins and use the first one
 
     const app = RdfViewerState.getInstance();
     for (const plugin of app.getPlugins()){
-      const compatibility = await plugin.v1.checkCompatibility(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
-        if (compatibility.isCompatible){
-          const handler = renderEntityWithPlugin(plugin, subjectIri, element)
-          return handler;
-        }
+      const compatibility = await plugin.v1.isCompatible(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
+      if (compatibility && plugin.v1.priority >= minPriority){
+        const handler = renderEntityWithPlugin(plugin, subjectIri, element)
+        return handler;
       }
+    }
     return null;
   }
 

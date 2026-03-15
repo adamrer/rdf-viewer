@@ -36,6 +36,9 @@ const image = {
  */
 function createImagePlugin() {
     return {
+
+        priority: 100,
+
         setup(context) {
             // No global setup required for this plugin
         },
@@ -72,16 +75,13 @@ function createImagePlugin() {
         /**
          * Checks if the subject is an instance of dcat:Dataset (or similar).
          */
-        async checkCompatibility(context, subject) {
+        async isCompatible(context, subject) {
             const subjectTypes = await context.data.fetch.types(subject)
             const subjectTypeValues = subjectTypes.map(t => t.value.value)
             const compatibleTypes = [image.gif, image.png, image.jpeg, image.svg, image.apng]
             // Use vocabulary service to check for semantically equivalent classes
             const imageTypeIris = compatibleTypes.flatMap(type => context.data.vocabulary.getSemanticallySimilar(type))
-            return {
-                isCompatible: subjectTypeValues.some(t => imageTypeIris.includes(t)),
-                priority: 100
-            }
+            return subjectTypeValues.some(t => imageTypeIris.includes(t))
         }
     }
 }

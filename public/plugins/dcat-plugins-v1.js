@@ -56,6 +56,10 @@ const RDFS = "http://www.w3.org/2000/01/rdf-schema#"
 const rdfs = {
     label: RDFS+"label"
 }
+const RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+const rdf = {
+    type: RDF+"type"
+}
 const SKOS = "http://www.w3.org/2004/02/skos/core#"
 const skos = {
     prefLabel: SKOS+"prefLabel"
@@ -66,7 +70,8 @@ const schema = {
 }
 const VCARD = "http://www.w3.org/2006/vcard/ns#"
 const vcard = {
-    fn: VCARD+"fn"
+    fn: VCARD+"fn",
+    Organisation: VCARD+"Organisation"
 }
 
 /**
@@ -75,6 +80,9 @@ const vcard = {
  */
 function createDatasetPlugin() {
     return {
+                
+        priority: 1000,
+
         setup(context) {
             // No global setup required for this plugin
         },
@@ -171,15 +179,12 @@ function createDatasetPlugin() {
         /**
          * Checks if the subject is an instance of dcat:Dataset (or similar).
          */
-        async checkCompatibility(context, subject) {
+        async isCompatible(context, subject) {
             const subjectTypes = await context.data.fetch.types(subject)
             const subjectTypeValues = subjectTypes.map(t => t.value.value)
             // Use vocabulary service to check for semantically equivalent classes
             const datasetTypeIris = context.data.vocabulary.getSemanticallySimilar(dcat.Dataset)
-            return {
-                isCompatible: subjectTypeValues.some(t => datasetTypeIris.includes(t)),
-                priority: 1000
-            }
+            return subjectTypeValues.some(t => datasetTypeIris.includes(t))
         }
     }
 }
@@ -190,7 +195,11 @@ function createDatasetPlugin() {
  */
 function createDistributionPlugin() {
     return {
+        
+        priority: 1000,
+
         setup(context) {},
+
         createPluginInstance(context, subject) {
             let mountedToElement = null;
             return {
@@ -246,15 +255,12 @@ function createDistributionPlugin() {
         /**
          * Checks if the subject is an instance of dcat:Distribution (or similar).
          */
-        async checkCompatibility(context, subject) {
+        async isCompatible(context, subject) {
             const subjectTypes = await context.data.fetch.types(subject)
             const subjectTypeValues = subjectTypes.map(t => t.value.value)
             const distributionTypeIris = context.data.vocabulary.getSemanticallySimilar(dcat.Distribution)
 
-            return {
-                isCompatible: subjectTypeValues.some(t => distributionTypeIris.includes(t)),
-                priority: 1000
-            }
+            return subjectTypeValues.some(t => distributionTypeIris.includes(t))
         }
     }
 }
@@ -331,6 +337,7 @@ function createLinksDescriptionList(subject, linkPredicates, context){
 
 /**
  * Creates a <dl> for a list of RDF predicates and their corresponding values (labels).
+ * @param {PluginV1InstanceContext} context
  */
 function createPredicatesDescriptionList(subject, predicates, context){
     const descriptionList = document.createElement("dl")
@@ -347,8 +354,19 @@ function createPredicatesDescriptionList(subject, predicates, context){
             const objects = context.data.fetched.subject(subject).predicate(predicate)
             const descriptionDefinitions = objects.map(object => {
                 const dd = document.createElement("dd")
+                const minContactPointPriority = 100
+                if (predicate === dcat.contactPoint){
+                    const handlerPromise = context.interoperability.renderSubject(object.value.value, dd, minContactPointPriority)
+                    handlerPromise.then((handler) =>{
+                        if (handler === null){
+                            dd.appendChild(createLabelElement(object.value.value, getLabel(object.value.value, labelPredicates, context)))
+                        }
+                    })
+                }
+                else{
+                    dd.appendChild(createLabelElement(object.value.value, getLabel(object.value.value, labelPredicates, context)))
+                }
                 // Render the object's label if it's a NamedNode
-                dd.appendChild(createLabelElement(object.value.value, getLabel(object.value.value, labelPredicates, context)))
                 return dd    
             })
             predicateTermsDefinitions.push(descriptionDefinitions)

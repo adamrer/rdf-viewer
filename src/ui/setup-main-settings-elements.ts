@@ -190,7 +190,6 @@ function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
 type CompatiblePlugin = {
   plugin: LabeledPluginWithId;
   isCompatible: boolean;
-  priority: number;
 }
 
 /**
@@ -205,15 +204,15 @@ async function getPluginsCompatibility(iri: IRI): Promise<CompatiblePlugin[]> {
   const context = createCompatibilityContext(app.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
   const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
     app.getPlugins().map((plugin) =>
-      plugin.v1.checkCompatibility(context, iri)
-        .then((result) => ({ plugin, ...result }))
+      plugin.v1.isCompatible(context, iri)
+        .then((result) => ({ plugin, isCompatible: result }))
         .catch((err) => {
-          console.error(`Error while checking compatibility for plugin ${Object.values(plugin.label)[0]}:`, err);
-          return { plugin, isCompatible: false, priority: 0 };
+          console.error(`Error while checking compatibility for plugin ${plugin.label[app.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`, err);
+          return { plugin, isCompatible: false };
         })
     ),
   );
-  compatiblePlugins.sort((a, b) => b.priority - a.priority);
+  compatiblePlugins.sort((a, b) => b.plugin.v1.priority - a.plugin.v1.priority);
   return compatiblePlugins;
 }
 

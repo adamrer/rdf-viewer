@@ -12,6 +12,7 @@ const SKOS = "http://www.w3.org/2004/02/skos/core#"
 const DCTERMS = "http://purl.org/dc/terms/"
 const FOAF = "http://xmlns.com/foaf/0.1/"
 const SCHEMA = "http://schema.org/"
+const VCARD = "http://www.w3.org/2006/vcard/ns#fn"
 
 // Predicates used to find human-readable labels
 const LABELS = [
@@ -19,7 +20,8 @@ const LABELS = [
     RDFS + "label",
     DCTERMS + "title",
     FOAF + "name",
-    SCHEMA + "name"
+    SCHEMA + "name",
+    VCARD + "fn"
 ];
 
 /**
@@ -41,6 +43,9 @@ export function registerPlugins() {
  */
 function createGenericPlugin() {
     return {
+
+        priority: 0, // Fallback priority
+
         /**
          * Setup function - not used for generic plugin, 
          * but required by interface.
@@ -55,11 +60,8 @@ function createGenericPlugin() {
          * @param {PluginV1CompatibilityContext} context
          * @param {IRI} subject
          */
-        async checkCompatibility(context, subject) {
-            return {
-                isCompatible: true,
-                priority: 0 // Fallback priority
-            }
+        async isCompatible(context, subject) {
+            return true
         },
 
         /**

@@ -3,7 +3,7 @@ import { Language } from "../query/query-interfaces"
 import { IRI } from "../rdf-types"
 
 /**
- * The initial configuration of the StateManager
+ * The initial configuration of the RdfViewerState
  */
 interface RdfViewerConfig {
     /** Data source definitoins that will be used for fetching data */

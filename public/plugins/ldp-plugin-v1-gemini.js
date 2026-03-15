@@ -38,6 +38,9 @@ export function registerPlugins() {
  */
 function createLdpExplorerPlugin() {
     return {
+        
+        priority: 2500,
+
         setup(context) {},
 
         /**
@@ -45,7 +48,7 @@ function createLdpExplorerPlugin() {
          * @param {PluginV1CompatibilityContext} context
          * @param {IRI} subject
          */
-        async checkCompatibility(context, subject) {
+        async isCompatible(context, subject) {
             const types = await context.data.fetch.types(subject);
             const typeValues = types.map(t => t.value.value);
             const containerTypes = context.data.vocabulary.getSemanticallySimilar(ldp.Container);
@@ -54,7 +57,7 @@ function createLdpExplorerPlugin() {
                 containerTypes.includes(t) || t === ldp.BasicContainer
             );
 
-            return { isCompatible, priority: 2500 };
+            return isCompatible;
         },
 
         /**
