@@ -4,7 +4,7 @@ import {
   DataSource,
   DataSourceType
 } from "./fetch/data-source-implementations";
-import { createCompatibilityContext, createSetupContext } from "./plugin-api/context-implementations";
+import { createSetupContext } from "./plugin-api/context-implementations";
 import { LabeledPlugin, PluginModule } from "./plugin-api/plugin-api-interfaces";
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
