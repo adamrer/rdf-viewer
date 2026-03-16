@@ -1,6 +1,5 @@
 import { IRI, LanguageString } from "../rdf-types";
 import { NotifierService } from "../ui/notifier";
-import { Sourced } from "../fetch/data-source";
 import { Quad_Object } from "n3";
 import { Language, QueryBuilder } from "../query/query-builder";
 import { Query } from "../query/query";
@@ -17,6 +16,15 @@ interface PluginModule {
    * @returns List of registered plugins with their labels
    */
   registerPlugins(): LabeledPlugin[];
+}
+
+/**
+ * Sourced object with a identifier of the data source and optionaly graph
+ */
+interface Sourced<T> {
+  value: T
+  sources: IRI[]
+  graphs?: IRI[]
 }
 
 
@@ -295,6 +303,7 @@ export type {
   LabeledPlugin,
   PluginV1Vocabulary,
   GraphNavigator,
-  SubjectNavigator
+  SubjectNavigator,
+  Sourced
 
 };

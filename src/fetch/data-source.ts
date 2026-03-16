@@ -1,6 +1,7 @@
 import { Quad } from "n3";
 import { Query } from "../query/query";
 import { IRI } from "../rdf-types";
+import { Sourced } from "../plugin-api/plugin-api-interfaces";
 
 /**
  * Types of DataSource
@@ -25,11 +26,6 @@ interface DataSource {
    * @see DataSourceFetchResult
    */
   fetchQuads(query: Query): Promise<Array<Sourced<Quad>>>;
-}
-interface Sourced<T> {
-  value: T
-  sources: IRI[]
-  graphs?: IRI[]
 }
 
 

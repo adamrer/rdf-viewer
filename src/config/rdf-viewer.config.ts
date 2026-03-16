@@ -37,7 +37,7 @@ const rdfViewerConfig: RdfViewerConfig = {
   dataSources: [
     {type: DataSourceType.Sparql, url: "https://data.gov.cz/sparql"},
 
-    {type: DataSourceType.Ldp, url: "https://rero.datapod.igrant.io/"},
+    // {type: DataSourceType.Ldp, url: "https://rero.datapod.igrant.io/"},
     
     { type: DataSourceType.RemoteFile, url: "https://www.w3.org/2009/08/skos-reference/skos.rdf"},
     { type: DataSourceType.RemoteFile, url: "https://www.w3.org/ns/dcat3.ttl"},
