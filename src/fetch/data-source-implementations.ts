@@ -1,6 +1,6 @@
 import N3, { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from "n3";
 import { Readable } from "readable-stream";
-import { rdfParser } from "rdf-parse";
+import { ParseOptions, rdfParser } from "rdf-parse";
 import { queryProcessor } from "../query/query-processor";
 import pLimit from "p-limit";
 import { Query, queryBuilder } from "../query/query-builder";
@@ -123,8 +123,16 @@ class FileDataSource implements DataSource {
       }
       let fileUrl = this.identifier
       fileUrl = new URL(this.file.name, window.location.origin).href
+      const parseOptions: any = {
+        path: this.file.name,
+        baseIRI: fileUrl
+      }
+      const nameSplit = this.file.name.split('/')
+      const actualFileName = nameSplit[nameSplit.length-1]
+      if (!actualFileName.includes('.')) // includes file extension
+        parseOptions.contentType = "text/turtle"
       rdfParser
-        .parse(stream, { path: this.file.name, baseIRI: fileUrl })
+        .parse(stream, parseOptions as ParseOptions)
         .on("data", (quad) => {
           if (!this.quads)
             this.quads = []

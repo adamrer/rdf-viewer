@@ -8,6 +8,8 @@ import { Query } from "../query/query";
 
 /**
  * Interface representing the JS plugin module file for registering plugins.
+ * It is expected that the JS plugin module file will export the `registerPlugins()` 
+ * function.
  */
 interface PluginModule {
   /**

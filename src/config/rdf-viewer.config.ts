@@ -45,8 +45,8 @@ const rdfViewerConfig: RdfViewerConfig = {
     
     { type: DataSourceType.LocalFile, url: "vocabularies/data-theme-skos.rdf"},
     { type: DataSourceType.LocalFile, url: "vocabularies/foaf.rdf"},
-    { type: DataSourceType.LocalFile, url: "vocabularies/statnipokladna.jsonld"},
-    { type: DataSourceType.LocalFile, url: "vocabularies/monitor-stat-pok.jsonld"}
+    // { type: DataSourceType.LocalFile, url: "vocabularies/statnipokladna.jsonld"},
+    // { type: DataSourceType.LocalFile, url: "vocabularies/monitor-stat-pok.jsonld"}
   ],
 
   pluginModules: [
@@ -56,7 +56,7 @@ const rdfViewerConfig: RdfViewerConfig = {
     { url: "plugins/image-plugin-v1.js"}
   ],
 
-  entityIri: "https://data.gov.cz/zdroj/datové-sady/00231151/25b6ed9faca088ebbb1064a05a24d010",
+  entityIri: "",
 
   languages: ["cs", "en"],
 
