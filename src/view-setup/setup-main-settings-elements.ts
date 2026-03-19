@@ -1,7 +1,5 @@
-import { createCompatibilityContext, createSetupContext} from "../plugin-api/context-implementations";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { notifier } from "../view/notifier";
-import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
 import { withLoading } from "../view/spinner";
 
@@ -85,7 +83,7 @@ function setupCompatiblePluginsButton() {
       }
       compatiblePluginsBtn.disabled = true;
       try {
-        const pluginsWithCompatibility = await getPluginsCompatibility(iri);
+        const pluginsWithCompatibility = await app.getPluginsCompatibility(iri);
         const compatiblePlugins = pluginsWithCompatibility.filter(plugin => plugin.isCompatible)
         const nonComatiblePlugins = pluginsWithCompatibility.filter(plugin => !plugin.isCompatible)
 
@@ -93,14 +91,14 @@ function setupCompatiblePluginsButton() {
         compatibleOptGroup.label = "Compatible"
         const nonCompatibleOptGroup = document.createElement("optgroup")
         nonCompatibleOptGroup.label = "Not Compatible"
-        const compatibleOptions = compatiblePlugins.map(plugin => createPluginOption(plugin.plugin))
-        const nonCompatibleOptions = nonComatiblePlugins.map(plugin => createPluginOption(plugin.plugin))
+        const compatibleOptions = compatiblePlugins.map(plugin => createPluginOption(plugin))
+        const nonCompatibleOptions = nonComatiblePlugins.map(plugin => createPluginOption(plugin))
         
         compatibleOptGroup.replaceChildren(...compatibleOptions)
         nonCompatibleOptGroup.replaceChildren(...nonCompatibleOptions)
         
         pluginSelectEl.replaceChildren(...[compatibleOptGroup, nonCompatibleOptGroup])
-        const firstCompatiblePluginId = compatiblePlugins[0].plugin.id
+        const firstCompatiblePluginId = compatiblePlugins[0].id
         app.setSelectedPlugin(firstCompatiblePluginId)
 
         notifier.notify(`Found ${compatiblePlugins.length} compatible plugin(s).`, "success");
@@ -185,35 +183,6 @@ function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
   option.value = plugin.id.toString();
   option.textContent = label;
   return option;
-}
-
-type CompatiblePlugin = {
-  plugin: LabeledPluginWithId;
-  isCompatible: boolean;
-}
-
-/**
- * Checks compatibility of all plugins with the given IRI and returns 
- * the compatible plugins sorted by their priority.
- * 
- * @param iri - IRI of the entity to find compatible plugins for
- * @returns list of plugins with information about compatibility and sorted by their priority
- */
-async function getPluginsCompatibility(iri: IRI): Promise<CompatiblePlugin[]> {
-  const app = RdfViewerState.getInstance();
-  const context = createCompatibilityContext(app.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
-  const compatiblePlugins: CompatiblePlugin[] = await Promise.all(
-    app.getPlugins().map((plugin) =>
-      plugin.v1.isCompatible(context, iri)
-        .then((result) => ({ plugin, isCompatible: result }))
-        .catch((err) => {
-          console.error(`Error while checking compatibility for plugin ${plugin.label[app.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`, err);
-          return { plugin, isCompatible: false };
-        })
-    ),
-  );
-  compatiblePlugins.sort((a, b) => b.plugin.v1.priority - a.plugin.v1.priority);
-  return compatiblePlugins;
 }
 
 

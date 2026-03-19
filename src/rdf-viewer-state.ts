@@ -4,7 +4,7 @@ import {
   DataSource,
   DataSourceType
 } from "./fetch/data-source-implementations";
-import { createSetupContext } from "./plugin-api/context-implementations";
+import { createCompatibilityContext, createSetupContext } from "./plugin-api/context-implementations";
 import { LabeledPlugin, PluginModule } from "./plugin-api/plugin-api-interfaces";
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
@@ -21,6 +21,10 @@ type Subscription = { keys: StateMember[]; listener: Listener };
 
 interface LabeledPluginWithId extends LabeledPlugin {
   id: number
+}
+
+interface CompatibleLabeledPluginWithId extends LabeledPluginWithId{
+  isCompatible: boolean;
 }
 
 
@@ -189,6 +193,30 @@ class RdfViewerState {
   getPlugins(): readonly LabeledPluginWithId[] {
     return this.plugins
   }
+
+
+/**
+ * Checks compatibility of all plugins with the given IRI and returns 
+ * the compatible plugins sorted by their priority.
+ * 
+ * @param iri - IRI of the entity to find compatible plugins for
+ * @returns list of plugins with information about compatibility and sorted by their priority
+ */
+async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]> {
+  const context = createCompatibilityContext(this.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
+  const compatiblePlugins: CompatibleLabeledPluginWithId[] = await Promise.all(
+    this.getPlugins().map((plugin) =>
+      plugin.v1.isCompatible(context, iri)
+        .then((result) => ({ ...plugin, isCompatible: result }))
+        .catch((err) => {
+          console.error(`Error while checking compatibility for plugin ${plugin.label[this.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`, err);
+          return { ...plugin, isCompatible: false };
+        })
+    ),
+  );
+  compatiblePlugins.sort((a, b) => b.v1.priority - a.v1.priority);
+  return compatiblePlugins;
+}
 
   /**
    * Changes the order of plugins by the given order
