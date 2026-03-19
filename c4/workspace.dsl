@@ -6,8 +6,9 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
         user = person "Uživatel" {
             description "Chce si zobrazit entitu"
         }
-        pluginDev = person "Vývojář pluginů" {
-            description "Vytvoří plugin, který chce využít v aplikaci"
+        admin = person "Administrátor" {
+            description "Spravuje aplikaci"
+
         }
 
         rdfViewer = softwareSystem "Prohlížeč RDF" {
@@ -15,78 +16,137 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
                 technology "TypeScript, JavaScript, HTML, CSS"
                 description "Webová aplikace pro vizualizaci RDF dat rozšiřitelná pluginy"
                 user -> this "Používá"
+                admin -> this "Spravuje"
+                
+                
+                
+
+                group "Plugin API"{
+                    
+                    pluginModule = component "Plugin Module" {
+                        technology "JavaScript"
+                        tags ExternalComponent
+                        description "Externí rozšiřující modul pro registrování nových Pluginů za běhu"
 
 
-                fetcher = component "Fetcher" {
-                    technology "TypeScript"
-                    description "Načte data z datových zdrojů ve strukturovaném formátu"
+                    }
+                    plugin = component "Plugin" {
+                        technology "JavaScript"
+                        description "Zobrazuje RDF data"
+                        
+                        pluginModule -> this "Zaregistruje nový"
+                    }
+
+                    
+                    pluginInstanceContext = component "Plugin Instance Context" {
+                        technology "TypeScript"
+                        description ""
+
+                        plugin -> this "Vytváří zobrazení entity s pomocí"
+                    }
+                    setupContext = component "Setup Context" {
+                        technology "TypeScript"
+
+                        plugin -> this "Inicializuje se s pomocí"
+                    }
+                    compatibilityContext = component "Compatibility Context" {
+                        technology "TypeScript"
+                        description "Umožňuje funkcionalitu pro zjištění kompatibility pluginu"
+                        
+                        plugin -> this "Zjišťuje kompatibilitu s entitou s pomocí"
+                    }
+                    dataContext = component "Data Context" {
+                        technology "TypeScript"
+                        description "Umožňuje pluginu funkcionalitu pro získávání dat z datových zdrojů."
+                        
+                        pluginInstanceContext -> this "Zpřístupňuje"
+                        compatibilityContext -> this "Zpřístupňuje"
+                    }
 
                 }
-                dataSource = component "Data Source" {
-                    technology "TypeScript"
-                    description "Načte data z jednoho SPARQL endpointu/vzdáleného souboru/nahraného souboru"
-                    fetcher -> this "Získává data z"
-                }
-                queryProcessor = component "Query Processor" {
-                    technology "TypeScript"
-                    description "Zpracuje dotaz a vyfiltruje podle něj data ze souborových datových zdrojů"
-                    dataSource -> this "Zpracuje dotaz pomocí"
-                }
-                queryBuilder = component "Query Builder" {
-                    technology "TypeScript"
-                    description "Vytváří dotaz pro dotazování na datové zdroje"
-                    fetcher -> this "Zpřístupňuje"
-                }
-                query = component "Query" {
-                    technology "TypeScript"
-                    description "Reprezentuje dotaz pro získání dat z datových zdrojů"
-                    queryBuilder -> this "Vytváří"
-                    dataSource -> this "Dotazuje se pomocí"
-                    fetcher -> this "Dotazuje se pomocí"
-                }
-                display = component "Display" {
-                    technology "TypeScript"
-                    description "Načte vybraný plugin a zobrazí v UI"
+                group "Fetch" {
 
-                }
-                appState = component "App State" { 
-                    technology "TypeScript"
-                    description "Udržuje konfiguraci nastavenou uživatelem"
-                    display -> this "Získá data zadaná uživatelem z"
+                    fetcher = component "Fetcher" {
+                        technology "TypeScript"
+                        description "Načte data z datových zdrojů ve strukturovaném formátu"
 
+                        dataContext -> this "Zpřístupňuje"
+                    }
+                    dataSource = component "Data Source" {
+                        technology "TypeScript"
+                        description "Načte data z jednoho SPARQL endpointu/vzdáleného souboru/nahraného souboru"
+                        fetcher -> this "Získává data z"
+                    }
                 }
-                plugin = component "Plugin" {
-                    technology "JavaScript"
-                    description "Externí rozšiřující modul, načítaný za běhu"
-                    tags "ExternalComponent"
-                    display -> this "Načte a zobrazí RDF pomocí"
+                group "Query" {
+
+                    queryProcessor = component "Query Processor" {
+                        technology "TypeScript"
+                        description "Zpracuje dotaz a vyfiltruje podle něj data ze souborových datových zdrojů"
+                        dataSource -> this "Zpracuje dotaz pomocí"
+                    }
+                    queryBuilder = component "Query Builder" {
+                        technology "TypeScript"
+                        description "Vytváří dotaz pro dotazování na datové zdroje"
+                        fetcher -> this "Zpřístupňuje"
+                    }
+                    query = component "Query" {
+                        technology "TypeScript"
+                        description "Reprezentuje dotaz pro získání dat z datových zdrojů"
+                        
+                        queryBuilder -> this "Vytváří"
+                        dataSource -> this "Dotazuje se pomocí"
+                    }
                 }
-                renderingContext = component "Rendering Context" {
-                    technology "TypeScript"
-                    description "Seskupuje potřebné komponenty a logiku nad nimi pro plugin"
-                    fetcher -> this "Je součástí"
-                    plugin -> this "Získává data pomocí"
-                    display -> this "Vytvoří"
+                group "Jádro aplikace"{
+                    render = component "Render Entity with Plugin" {
+                        technology "TypeScript"
+                        description "Načte vybraný plugin a zobrazí ve View"
+
+                    }
+                    appState = component "RdfViewerState" { 
+                        technology "TypeScript"
+                        description "Udržuje konfiguraci aplikace"
+                        render -> this "Získá data zadaná uživatelem z"
+
+                    }
+                    
+                    
+                    viewSetup = component "View Setup"{
+                        technology "TypeScript"
+                        description "Propojuje View s logikou aplikace"
+
+                        
+
+                    }
+                    config = component "Config" {
+                        technology "TypeScript"
+                        description "Počáteční konfigurace stavu aplikace"
+
+                        appState -> this "Načítá iniciální stav z"
+                        admin -> this "Nastavuje iniciální stav v"
+                    }
                 }
-                ui = component "UI" {
+                view = component "View" {
                     technology "HTML, CSS"
                     description "Rozhraní pro uživatele"
-                    user -> this "Interaguje s"
-                    pluginDev -> this "Přidává pluginy v"
-                    renderingContext -> this "Zobrazuje výsledek pluginu do"
-                    appState -> this "Uchovává data zadaná uživatelem z"
 
+                    user -> this "Interaguje s"
+                    admin -> this "Mění vzhled"
+                    appState -> this "Uchovává data zadaná uživatelem z"
+                    render -> this "Zobrazí výsledek pluginu do"
                 }
-                queryProcessor -> dataSource "Pošle výsledek dotazu"
-                renderingContext -> queryBuilder "Má přístup k (přes Fetcher)"
-                plugin -> fetcher "Má přístup k (přes RenderingContext)"
+                view -> viewSetup "Propojí se s aplikací pomocí"
+                render -> plugin "Zobrazí RDF entitu pomocí"
+                render -> pluginInstanceContext "Vytvoří"
+                viewSetup -> appState "Propojí View s"
 
             }
         }
         dataSources = softwareSystem "Datové zdroje" {
             description "Zdroj RDF dat. Může být SPARQL endpoint, vzdálený RDF soubor, nebo soubor nahraný uživatelem"
             tags "DataSources"
-            rdfViewer.webApp -> this "Čerpá data z"
+            rdfViewer.webApp -> this "Čerpá data z" technology "HTTP"
             rdfViewer.webApp.dataSource -> this "Získává data z"
         }
 
@@ -106,28 +166,28 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
         component rdfViewer.webApp "Level3" {
             include *
         }
-
-        dynamic rdfViewer.webApp "DisplayPlugin" {
+/*
+        dynamic rdfViewer.webApp "RenderPlugin" {
             description "Popis postupu při zobrazení RDF dat"
 
-            user -> rdfViewer.webApp.ui "Zadá konfiguraci a spustí zobrazování"
-            rdfViewer.webApp.appState -> rdfViewer.webApp.ui "Uloží konfiguraci z"
-            rdfViewer.webApp.display -> rdfViewer.webApp.appState "Získá konfiguraci z"
-            rdfViewer.webApp.display -> rdfViewer.webApp.renderingContext "Vytvoří na základě konfigurace"
-            rdfViewer.webApp.display -> rdfViewer.webApp.plugin "Zašle vytvořený RenderingContext"
-            rdfViewer.webApp.plugin -> rdfViewer.webApp.renderingContext "Získá data pomocí"
-            rdfViewer.webApp.renderingContext -> rdfViewer.webApp.queryBuilder "Vytvoří dotaz pomocí"
-            rdfViewer.webApp.renderingContext -> rdfViewer.webApp.fetcher "Načte data pomocí"
+            user -> rdfViewer.webApp.view "Zadá konfiguraci a spustí zobrazování"
+            rdfViewer.webApp.appState -> rdfViewer.webApp.view "Uloží konfiguraci z"
+            rdfViewer.webApp.render -> rdfViewer.webApp.appState "Získá konfiguraci z"
+            rdfViewer.webApp.render -> rdfViewer.webApp.pluginApiContexts "Vytvoří na základě konfigurace"
+            rdfViewer.webApp.render -> rdfViewer.webApp.plugin "Zašle vytvořený pluginApiContexts"
+            rdfViewer.webApp.plugin -> rdfViewer.webApp.pluginApiContexts "Získá data pomocí"
+            rdfViewer.webApp.pluginApiContexts -> rdfViewer.webApp.queryBuilder "Vytvoří dotaz pomocí"
+            rdfViewer.webApp.pluginApiContexts -> rdfViewer.webApp.fetcher "Načte data pomocí"
             rdfViewer.webApp.fetcher -> rdfViewer.webApp.dataSource "Získá data z jednotlivých datových zdrojů"
             rdfViewer.webApp.dataSource -> dataSources "Získá data z" 
             rdfViewer.webApp.dataSource -> rdfViewer.webApp.queryProcessor "Zpracuje dotaz a získá žádaná data ze souborových datových zdrojů pomocí"
-            rdfViewer.webApp.plugin -> rdfViewer.webApp.renderingContext "Předá vytvořené HTML"
-            rdfViewer.webApp.renderingContext -> rdfViewer.webApp.ui "Přidá předané HTML do UI"
+            rdfViewer.webApp.plugin -> rdfViewer.webApp.pluginApiContexts "Předá vytvořené HTML"
+            rdfViewer.webApp.pluginApiContexts -> rdfViewer.webApp.view "Přidá předané HTML do View"
 
 
             autolayout lr
         }
-
+*/
         styles {
             element "Element" {
                 color #ffffff
