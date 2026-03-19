@@ -43,6 +43,7 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
                         description ""
 
                         plugin -> this "Vytváří zobrazení entity s pomocí"
+
                     }
                     setupContext = component "Setup Context" {
                         technology "TypeScript"
@@ -106,7 +107,7 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
                     }
                     appState = component "RdfViewerState" { 
                         technology "TypeScript"
-                        description "Udržuje konfiguraci aplikace"
+                        description "Spravuje stav aplikace"
                         render -> this "Získá data zadaná uživatelem z"
 
                     }
@@ -136,10 +137,17 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
                     appState -> this "Uchovává data zadaná uživatelem z"
                     render -> this "Zobrazí výsledek pluginu do"
                 }
+                
                 view -> viewSetup "Propojí se s aplikací pomocí"
+
                 render -> plugin "Zobrazí RDF entitu pomocí"
-                render -> pluginInstanceContext "Vytvoří"
+                render -> pluginInstanceContext "Vytváří"
+
                 viewSetup -> appState "Propojí View s"
+                viewSetup -> render "Spustí zobrazování pomocí"
+
+                appState -> setupContext "Vytváří"
+                appState -> compatibilityContext "Vytváří"
 
             }
         }

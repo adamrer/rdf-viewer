@@ -45,7 +45,6 @@ class RdfViewerState {
 
   private entityIri: IRI = "";
 
-  // TODO: when empty, retrieve all languages? or retrieve only objects withou a language tag?
   private languages: Language[] = [];
   private appLanguage: Language = ""
   
