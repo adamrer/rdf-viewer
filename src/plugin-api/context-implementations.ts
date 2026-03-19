@@ -48,11 +48,11 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
     // find compatible plugin in order of state manager plugins and use the first one
 
     const app = RdfViewerState.getInstance();
-    for (const plugin of app.getPlugins()){
-      const compatibility = await plugin.v1.isCompatible(createCompatibilityContext(app.getDataSources(), this.data.vocabulary), subjectIri)
-      if (compatibility && plugin.v1.priority >= minPriority){
-        const handler = renderEntityWithPlugin(plugin, subjectIri, element)
-        return handler;
+
+    const pluginCompatibilities = await app.getPluginsCompatibility(subjectIri)
+    for (const compatibility of pluginCompatibilities){
+      if (compatibility.isCompatible && compatibility.v1.priority >= minPriority){
+        return renderEntityWithPlugin(compatibility, subjectIri, element)
       }
     }
     return null;
