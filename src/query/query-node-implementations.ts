@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BlankNode,
+  DataFactory,
   DefaultGraph,
   Literal,
   NamedNode,
@@ -30,6 +31,7 @@ import {
   Where,
 } from "./query-interfaces";
 import toNT from "@rdfjs/to-ntriples";
+import { isLangMatches, lang } from "./query-functions";
 
 class TriplePatternImpl implements TriplePattern {
   type = "triplePattern" as const;
@@ -286,11 +288,14 @@ class BuiltInCallImpl implements BuiltInCall {
     return this.evaluation(variablesSubstitution);
   }
   toSparql(): string {
-    const args = [expressionToString(this.variable)];
-    if (this.option) {
-      args.push(expressionToString(this.option));
+    if (isLangMatches(this.func)){
+      const args = [expressionToString(lang(this.variable))];
+      if (this.option) {
+        args.push(expressionToString(DataFactory.literal(this.option)));
+      }
+      return `${this.func}(${args.join(", ")})`
     }
-    return `${this.func}(${args.join(", ")})`;
+    return `${this.func}(${expressionToString(this.variable)})`;
   }
 }
 

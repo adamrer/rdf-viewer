@@ -1,4 +1,4 @@
-import { setupElements } from "./ui/setup";
+import { setupElements } from "./view-setup/setup";
 
 window.onload = () => {
   setupElements();

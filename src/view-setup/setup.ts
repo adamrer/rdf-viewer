@@ -1,9 +1,9 @@
 import { RdfViewerState } from "../rdf-viewer-state";
-import { notifier } from "./notifier";
+import { notifier } from "../view/notifier";
 import { setupConfigurationElements } from "./setup-configuration-elements";
 import { setupHeaderElements } from "./setup-header";
 import { setupMainSettingsElements } from "./setup-main-settings-elements";
-import { withLoading } from "./spinner";
+import { withLoading } from "../view/spinner";
 
 /**
  * Setups all elements in UI. Adding event listeners and subscribers to RdfViewerState 

@@ -1,19 +1,18 @@
 // vite.config.ts
 import { defineConfig } from "vite";
+import { resolve } from "path";
 
 export default defineConfig({
   base: "./",
   build: {
     rollupOptions: {
-      input: {
-        app: './index.html',
-      },
+      input: resolve(__dirname, './index.html'),
     }
   },
-  server: {
-    open: "./index.html",
-    watch: {
-      usePolling: true
-    }
-  }
+  // server: {
+  //   open: "./view/index.html",
+  //   watch: {
+  //     usePolling: true
+  //   }
+  // }
 });

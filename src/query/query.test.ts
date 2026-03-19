@@ -12,6 +12,7 @@ import {
   isIri,
   isBlank,
   langEquality,
+  langMatches,
 } from "./query-functions";
 import { DataFactory } from "n3";
 import { NO_LANG_SPECIFIED } from "./query-interfaces";
@@ -168,6 +169,11 @@ _:b1 <http://purl.org/dc/terms/title> ?title .
 }`);
 });
 
+test("creates langMatches", () => {
+  const filter = QueryNodeFactory.filter(langMatches(DataFactory.variable("object"), "cs"))
+  expect(filter.toSparql()).toBe(`FILTER (langMatches(LANG(?object), "cs"))`)
+})
+
 test("evaluates isIri on literal", () => {
   const result = isIri(DataFactory.variable("object")).evaluate({
     object: DataFactory.literal("literal"),
@@ -317,3 +323,5 @@ test("evaluates values for value that is NOT part of the values", () => {
   );
   expect(values.evaluate(prefLabel)).toBe(false);
 });
+
+

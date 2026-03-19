@@ -1,9 +1,9 @@
 import { createCompatibilityContext, createSetupContext} from "../plugin-api/context-implementations";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
-import { notifier } from "./notifier";
+import { notifier } from "../view/notifier";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
-import { withLoading } from "./spinner";
+import { withLoading } from "../view/spinner";
 
 
 /**

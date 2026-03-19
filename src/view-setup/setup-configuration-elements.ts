@@ -2,8 +2,8 @@ import Sortable from "sortablejs";
 import { DataSourceType } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
-import { notifier } from "./notifier";
-import { withLoading } from "./spinner";
+import { notifier } from "../view/notifier";
+import { withLoading } from "../view/spinner";
 
 function setupConfigurationElements(){
   setupDataSourceForm();

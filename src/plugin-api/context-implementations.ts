@@ -3,11 +3,11 @@ import { renderEntityWithPlugin } from "../render-entity-with-plugin";
 import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, NO_LANG_SPECIFIED, Query } from "../query/query-interfaces";
-import { notifier, NotifierService } from "../ui/notifier";
+import { notifier, NotifierService } from "../view/notifier";
 import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext, GraphNavigator, SubjectNavigator } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
 import { RdfViewerState } from "../rdf-viewer-state";
-import { createSpinner } from "../ui/spinner";
+import { createSpinner } from "../view/spinner";
 import { Quad_Object } from "n3";
 
 function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {

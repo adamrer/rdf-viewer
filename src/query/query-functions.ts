@@ -1,7 +1,7 @@
 // Built-in calls
 
 import N3, { Variable, Literal, DataFactory } from "n3";
-import { Substitution, NO_LANG_SPECIFIED, Language, ANY_LANGUAGE, BuiltInCall, OperatorExpression } from "./query-interfaces";
+import { Substitution, NO_LANG_SPECIFIED, Language, ANY_LANGUAGE, BuiltInCall, OperatorExpression, BinaryFunc } from "./query-interfaces";
 import { BuiltInCallImpl, OperatorExpressionImpl } from "./query-node-implementations"
 
 // return true if 'value' has a language tag
@@ -55,6 +55,9 @@ const isNumeric = (variable: Variable) =>
     },
     variable,
   );
+function isLangMatches(value: unknown): value is BinaryFunc {
+  return value === "langMatches";
+}
 // TODO: langMatches to match all languages
 const langMatches = (
   variable: Variable,
@@ -114,11 +117,13 @@ const langEquality = (variable: Variable, language: Language) =>
 
 export {
   or,
+  lang,
   langEquality,
   isIri,
   isUri,
   isBlank,
   isLiteral,
   isNumeric,
+  isLangMatches,
   langMatches,
 };

@@ -132,7 +132,11 @@ class RdfViewerState {
     this.nextPluginId++
     return nextId
   }
-  
+  /**
+   * Adds plugins from string code of a plugin module file
+   * @param code - JS code of the plugin module file for registering new plugins
+   * @returns an array of the newly added plugins
+   */
   async addPluginsFromCode(code: string){
     const pluginModuleBlob = new Blob([code], {type: "text/javascript"})
     const pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
