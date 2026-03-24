@@ -1,10 +1,7 @@
 import { expect, test } from "vitest";
 import { fetcher } from "./fetcher";
 import { FileDataSource } from "../fetch/data-source-implementations";
-import {
-  QueryBuilder,
-  queryBuilder,
-} from "../query/query-builder";
+import { QueryBuilder, queryBuilder } from "../query/query-builder";
 
 test("fetch label for skos:prefLabel", async () => {
   const fds = new FileDataSource(

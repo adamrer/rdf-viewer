@@ -1,4 +1,11 @@
-import N3, { DataFactory, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject } from "n3";
+import N3, {
+  DataFactory,
+  Quad,
+  Quad_Graph,
+  Quad_Object,
+  Quad_Predicate,
+  Quad_Subject,
+} from "n3";
 import { Readable } from "readable-stream";
 import { ParseOptions, rdfParser } from "rdf-parse";
 import { queryProcessor } from "../query/query-processor";
@@ -24,19 +31,22 @@ class SparqlDataSource implements DataSource {
   }
 
   /**
-   * 
+   *
    * @param jsonResult - JSON response from SPARQL endpoint
    * @returns list of quads from the response
    */
-  parseSparqlJsonResult(jsonResult: any): Quad[] {
-    const parser = new SparqlJsonParser()
-    const variableBindings = parser.parseJsonResults(jsonResult)
-    const quads = variableBindings.map(quad => DataFactory.quad(
-      quad["subject"] as Quad_Subject, 
-      quad["predicate"] as Quad_Predicate, 
-      quad["object"] as Quad_Object, 
-      quad["graph"] as Quad_Graph))
-    return quads
+  parseSparqlJsonResult(jsonResult: object): Quad[] {
+    const parser = new SparqlJsonParser();
+    const variableBindings = parser.parseJsonResults(jsonResult);
+    const quads = variableBindings.map((quad) =>
+      DataFactory.quad(
+        quad["subject"] as Quad_Subject,
+        quad["predicate"] as Quad_Predicate,
+        quad["object"] as Quad_Object,
+        quad["graph"] as Quad_Graph,
+      ),
+    );
+    return quads;
   }
 
   async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
@@ -49,13 +59,13 @@ class SparqlDataSource implements DataSource {
       })
         .then((response) => response.json())
         .then((jsonResponse) => {
-          const quads = this.parseSparqlJsonResult(jsonResponse)
-          const result: Array<Sourced<Quad>> = quads.map(quad => {
+          const quads = this.parseSparqlJsonResult(jsonResponse);
+          const result: Array<Sourced<Quad>> = quads.map((quad) => {
             return {
-              value: quad, 
-              sources: [this.endpointUrl.toString()]
-            }
-          })
+              value: quad,
+              sources: [this.endpointUrl.toString()],
+            };
+          });
           resolve(result);
         })
         .catch((error) => {
@@ -121,21 +131,22 @@ class FileDataSource implements DataSource {
         reject(err);
         throw err;
       }
-      let fileUrl = this.identifier
-      fileUrl = new URL(this.file.name, window.location.origin).href
-      const parseOptions: any = {
+      let fileUrl = this.identifier;
+      fileUrl = new URL(this.file.name, window.location.origin).href;
+      const parseOptions = {
         path: this.file.name,
-        baseIRI: fileUrl
-      }
-      const nameSplit = this.file.name.split('/')
-      const actualFileName = nameSplit[nameSplit.length-1]
-      if (!actualFileName.includes('.')) // includes file extension
-        parseOptions.contentType = "text/turtle"
+        baseIRI: fileUrl,
+        contentType: ""
+      };
+      const nameSplit = this.file.name.split("/");
+      const actualFileName = nameSplit[nameSplit.length - 1];
+      if (!actualFileName.includes("."))
+        // includes file extension
+        parseOptions.contentType = "text/turtle";
       rdfParser
         .parse(stream, parseOptions as ParseOptions)
         .on("data", (quad) => {
-          if (!this.quads)
-            this.quads = []
+          if (!this.quads) this.quads = [];
           this.quads.push(quad);
         })
         .on("error", (err) => {
@@ -144,8 +155,8 @@ class FileDataSource implements DataSource {
         })
         .on("end", async () => {
           this.fileLoaded = true;
-          resolve()
-                 });
+          resolve();
+        });
     });
   }
 
@@ -156,12 +167,12 @@ class FileDataSource implements DataSource {
     }
     const processor = queryProcessor();
     const filteredQuads: Quad[] = processor.filter(this.quads, query);
-    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map(quad => {
+    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map((quad) => {
       return {
         value: quad,
-        sources: [this.file!.name]
-      }
-    })
+        sources: [this.file!.name],
+      };
+    });
     return sourcedQuads;
   }
 }
@@ -200,8 +211,10 @@ class LdpDataSource implements DataSource {
     const tasks = urls.map((url) =>
       limit(async () => {
         const response = await fetch(url);
-        if (!response.ok){
-          throw new Error(`Fetch failed: ${response.status} ${response.statusText}`)
+        if (!response.ok) {
+          throw new Error(
+            `Fetch failed: ${response.status} ${response.statusText}`,
+          );
         }
         const contentType =
           response.headers.get("content-type")?.split(";")[0] ?? "";
@@ -211,7 +224,6 @@ class LdpDataSource implements DataSource {
         const text = await response.text();
         const parser = new N3.Parser({ format: contentType, baseIRI: url });
         return parser.parse(text);
-          
       }),
     );
     const results = await Promise.allSettled(tasks);
@@ -235,7 +247,11 @@ class LdpDataSource implements DataSource {
     const subResources = processor
       .filter(containerQuads, subResourcesQuery)
       .map((quad) => [quad.predicate, quad.object]) // get objects
-      .filter(([predicate, object]) => predicate.value === ldp+"contains" && object.termType === "NamedNode") // that are NamedNodes
+      .filter(
+        ([predicate, object]) =>
+          predicate.value === ldp + "contains" &&
+          object.termType === "NamedNode",
+      ) // that are NamedNodes
       .map(([_, object]) => object.value); // their IRIs
     if (subResources.length === 0) {
       return;
@@ -249,60 +265,59 @@ class LdpDataSource implements DataSource {
     }
     const processor = queryProcessor();
     const filteredQuads: Quad[] = processor.filter(this.quads, query);
-    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map(quad =>{
+    const sourcedQuads: Array<Sourced<Quad>> = filteredQuads.map((quad) => {
       return {
         value: quad,
-        sources: [this.url]
-      }
-    })
+        sources: [this.url],
+      };
+    });
     return sourcedQuads;
   }
 }
 
-
-
 /**
  * Creates a data source of the given type from the given URL or File
- * 
+ *
  * @param type - The type of the data source
  * @param urlOrFile - The URL or File of the data source
  * @returns the created data source
  * @see DataSource
  */
-function dataSourceFactory(type: DataSourceType, urlOrFile: IRI|File): DataSource {
-    switch (type) {
-        case DataSourceType.Sparql: {
-            return new SparqlDataSource(urlOrFile as IRI)
-        }
-        case DataSourceType.LocalFile: {
-            if (urlOrFile instanceof File){
-              return new FileDataSource(urlOrFile as File)
-            }
-            return new FileDataSource(`${import.meta.env.BASE_URL}${urlOrFile as IRI}`)
-        }
-        case DataSourceType.RemoteFile: {
-            return new FileDataSource(urlOrFile)
-        }
-        
-        case DataSourceType.Ldp: {
-            return new LdpDataSource(urlOrFile as IRI)
-        }
+function dataSourceFactory(
+  type: DataSourceType,
+  urlOrFile: IRI | File,
+): DataSource {
+  switch (type) {
+    case DataSourceType.Sparql: {
+      return new SparqlDataSource(urlOrFile as IRI);
+    }
+    case DataSourceType.LocalFile: {
+      if (urlOrFile instanceof File) {
+        return new FileDataSource(urlOrFile as File);
+      }
+      return new FileDataSource(
+        `${import.meta.env.BASE_URL}${urlOrFile as IRI}`,
+      );
+    }
+    case DataSourceType.RemoteFile: {
+      return new FileDataSource(urlOrFile);
+    }
 
-        default:
-            throw new Error(`Unsupported data source type: ${type}`);
+    case DataSourceType.Ldp: {
+      return new LdpDataSource(urlOrFile as IRI);
+    }
+
+    default:
+      throw new Error(`Unsupported data source type: ${type}`);
   }
 }
 
+export type { DataSource };
 
-
-export type { 
-  DataSource, 
-};
-
-export { 
-  DataSourceType, 
-  SparqlDataSource, 
-  FileDataSource, 
+export {
+  DataSourceType,
+  SparqlDataSource,
+  FileDataSource,
   LdpDataSource,
-  dataSourceFactory
+  dataSourceFactory,
 };

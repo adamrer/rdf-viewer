@@ -28,12 +28,5 @@ interface DataSource {
   fetchQuads(query: Query): Promise<Array<Sourced<Quad>>>;
 }
 
-
-export type {
-    DataSource,
-    Sourced
-    
-}
-export {
-    DataSourceType
-}
+export type { DataSource, Sourced };
+export { DataSourceType };

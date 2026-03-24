@@ -2,10 +2,16 @@ import { rdfViewerConfig } from "./config/rdf-viewer.config";
 import { dataSourceFactory } from "./fetch/data-source-implementations";
 import {
   DataSource,
-  DataSourceType
+  DataSourceType,
 } from "./fetch/data-source-implementations";
-import { createCompatibilityContext, createSetupContext } from "./plugin-api/context-implementations";
-import { LabeledPlugin, PluginModule } from "./plugin-api/plugin-api-interfaces";
+import {
+  createCompatibilityContext,
+  createSetupContext,
+} from "./plugin-api/context-implementations";
+import {
+  LabeledPlugin,
+  PluginModule,
+} from "./plugin-api/plugin-api-interfaces";
 import { Language } from "./query/query-interfaces";
 import { IRI } from "./rdf-types";
 
@@ -20,76 +26,76 @@ type StateMember =
 type Subscription = { keys: StateMember[]; listener: Listener };
 
 interface LabeledPluginWithId extends LabeledPlugin {
-  id: number
+  id: number;
 }
 
-interface CompatibleLabeledPluginWithId extends LabeledPluginWithId{
+interface CompatibleLabeledPluginWithId extends LabeledPluginWithId {
   isCompatible: boolean;
 }
 
-
 /**
- * Holds and manages data set by user in the UI for RDF display configuration. 
+ * Holds and manages data set by user in the UI for RDF display configuration.
  * Observable Singleton class.
  */
 class RdfViewerState {
-
   private static _instance: RdfViewerState;
   subscriptions: Subscription[] = [];
-  
+
   private plugins: LabeledPluginWithId[] = [];
   private selectedPluginIndex: number = 0;
-  private nextPluginId = 0
-  
+  private nextPluginId = 0;
+
   private dataSources: DataSource[] = [];
 
   private entityIri: IRI = "";
 
   private languages: Language[] = [];
-  private appLanguage: Language = ""
-  
+  private appLanguage: Language = "";
 
-  private constructor() {
-    
-  }
+  private constructor() {}
 
   /**
-   * 
+   *
    * @returns the instance of the RdfViewerState
-  */
- static getInstance(): RdfViewerState {
-   if (!RdfViewerState._instance) {
-     RdfViewerState._instance = new RdfViewerState();
+   */
+  static getInstance(): RdfViewerState {
+    if (!RdfViewerState._instance) {
+      RdfViewerState._instance = new RdfViewerState();
     }
     return RdfViewerState._instance;
   }
-  
+
   /**
    * Loads the initial configuration from rdfViewerConfig
    * @see rdfViewerConfig
    */
   async loadConfiguration() {
-    rdfViewerConfig.dataSources.forEach(dsd => this.addDataSource(dsd.url, dsd.type))
-    const pluginPromises = rdfViewerConfig.pluginModules.map(md => this.addPluginsFromModule(md.url))
-    this.setEntityIri(rdfViewerConfig.entityIri)
-    this.setLanguages(rdfViewerConfig.languages)
-    this.setAppLanguage(rdfViewerConfig.appLanguage)
-    await Promise.all(pluginPromises)
+    rdfViewerConfig.dataSources.forEach((dsd) =>
+      this.addDataSource(dsd.url, dsd.type),
+    );
+    const pluginPromises = rdfViewerConfig.pluginModules.map((md) =>
+      this.addPluginsFromModule(md.url),
+    );
+    this.setEntityIri(rdfViewerConfig.entityIri);
+    this.setLanguages(rdfViewerConfig.languages);
+    this.setAppLanguage(rdfViewerConfig.appLanguage);
+    await Promise.all(pluginPromises);
   }
 
-  
-  
   /**
    * Subscribe to changes. Provide an array of state member keys to listen to.
    * If `keys` is empty or omitted, the listener will be notified for any change.
    */
-  subscribe(listener: Listener, keys?: StateMember[], notifyImmediately = false) {
+  subscribe(
+    listener: Listener,
+    keys?: StateMember[],
+    notifyImmediately = false,
+  ) {
     this.subscriptions.push({ keys: keys ?? [], listener });
     if (notifyImmediately) {
       listener();
     }
   }
-  
 
   /**
    * Notify listeners. If `changed` is omitted, notify all listeners.
@@ -115,11 +121,10 @@ class RdfViewerState {
     });
   }
 
-  
   // ===  P L U G I N   S T A T E  ===
 
   /**
-   * 
+   *
    * @returns the plugin that is set to be selected
    */
   getSelectedPlugin(): LabeledPluginWithId {
@@ -127,110 +132,128 @@ class RdfViewerState {
   }
 
   /**
-   * 
+   *
    * @returns a new ID for a newly added plugin
    */
-  private getNextId(){
-    const nextId = this.nextPluginId
-    this.nextPluginId++
-    return nextId
+  private getNextId() {
+    const nextId = this.nextPluginId;
+    this.nextPluginId++;
+    return nextId;
   }
   /**
    * Adds plugins from string code of a plugin module file
    * @param code - JS code of the plugin module file for registering new plugins
    * @returns an array of the newly added plugins
    */
-  async addPluginsFromCode(code: string){
-    const pluginModuleBlob = new Blob([code], {type: "text/javascript"})
-    const pluginModuleUrl = URL.createObjectURL(pluginModuleBlob)
-    const pluginModule: PluginModule = await import(/* @vite-ignore */ pluginModuleUrl)
+  async addPluginsFromCode(code: string) {
+    const pluginModuleBlob = new Blob([code], { type: "text/javascript" });
+    const pluginModuleUrl = URL.createObjectURL(pluginModuleBlob);
+    const pluginModule: PluginModule = await import(
+      /* @vite-ignore */ pluginModuleUrl
+    );
     const newPlugins: LabeledPlugin[] = pluginModule.registerPlugins();
-    newPlugins.forEach(plugin => plugin.v1.setup(createSetupContext()))
+    newPlugins.forEach((plugin) => plugin.v1.setup(createSetupContext()));
 
-    const newPluginsWithIdsAndPriority = await Promise.all(newPlugins.map(async (plugin) => {
-      return {
-        id: this.getNextId(),
-        ...plugin
-      }
-    }))
-    
+    const newPluginsWithIdsAndPriority = await Promise.all(
+      newPlugins.map(async (plugin) => {
+        return {
+          id: this.getNextId(),
+          ...plugin,
+        };
+      }),
+    );
+
     this.plugins.push(...newPluginsWithIdsAndPriority);
-    this.plugins.sort((a, b) => b.v1.priority - a.v1.priority).map(pluginWithPriority => pluginWithPriority.id)
-    
+    this.plugins
+      .sort((a, b) => b.v1.priority - a.v1.priority)
+      .map((pluginWithPriority) => pluginWithPriority.id);
+
     this.notify(["plugins"]);
 
-    return newPluginsWithIdsAndPriority
+    return newPluginsWithIdsAndPriority;
   }
   /**
-   * 
+   *
    * @param pluginModuleUrlOrFile - URL or File of plugin module from which new plugins will be loaded
    * @returns a list of newly loaded plugins with their IDs assigned by the StateManger
    */
-  async addPluginsFromModule(pluginModuleUrlOrFile: IRI|File): Promise<LabeledPluginWithId[]> {
-    if (pluginModuleUrlOrFile instanceof File){
-      const pluginModuleText = await pluginModuleUrlOrFile.text()
-      return this.addPluginsFromCode(pluginModuleText)
+  async addPluginsFromModule(
+    pluginModuleUrlOrFile: IRI | File,
+  ): Promise<LabeledPluginWithId[]> {
+    if (pluginModuleUrlOrFile instanceof File) {
+      const pluginModuleText = await pluginModuleUrlOrFile.text();
+      return this.addPluginsFromCode(pluginModuleText);
     }
     // if http is missing, then we suppose it is a plugin from /public folder
-    const pluginModuleUrl: IRI =  pluginModuleUrlOrFile.startsWith("http") ? pluginModuleUrlOrFile : import.meta.env.BASE_URL+pluginModuleUrlOrFile
-    const responseWithModule = await fetch(pluginModuleUrl)
-    const pluginModuleText = await responseWithModule.text()
-    return this.addPluginsFromCode(pluginModuleText)
+    const pluginModuleUrl: IRI = pluginModuleUrlOrFile.startsWith("http")
+      ? pluginModuleUrlOrFile
+      : import.meta.env.BASE_URL + pluginModuleUrlOrFile;
+    const responseWithModule = await fetch(pluginModuleUrl);
+    const pluginModuleText = await responseWithModule.text();
+    return this.addPluginsFromCode(pluginModuleText);
   }
-
 
   /**
    * Removes a plugin from the RdfViewerState by it's ID
    * @param pluginId - ID of the plugin wished to be removed from the RdfViewerState
    */
   removePlugin(pluginId: number) {
-    const index = this.plugins.findIndex((plugin) => plugin.id === pluginId)
-    this.plugins.splice(index, 1)
-    this.notify(["plugins"])
+    const index = this.plugins.findIndex((plugin) => plugin.id === pluginId);
+    this.plugins.splice(index, 1);
+    this.notify(["plugins"]);
   }
 
   getPlugins(): readonly LabeledPluginWithId[] {
-    return this.plugins
+    return this.plugins;
   }
 
-
-/**
- * Checks compatibility of all plugins with the given IRI and returns 
- * the compatible plugins sorted by their priority.
- * 
- * @param iri - IRI of the entity to find compatible plugins for
- * @returns list of plugins with information about compatibility and sorted by their priority
- */
-async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]> {
-  const context = createCompatibilityContext(this.getDataSources(), createSetupContext().vocabulary.getReadableVocabulary());
-  const compatiblePlugins: CompatibleLabeledPluginWithId[] = await Promise.all(
-    this.getPlugins().map((plugin) =>
-      plugin.v1.isCompatible(context, iri)
-        .then((result) => ({ ...plugin, isCompatible: result }))
-        .catch((err) => {
-          console.error(`Error while checking compatibility for plugin ${plugin.label[this.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`, err);
-          return { ...plugin, isCompatible: false };
-        })
-    ),
-  );
-  compatiblePlugins.sort((a, b) => b.v1.priority - a.v1.priority);
-  return compatiblePlugins;
-}
+  /**
+   * Checks compatibility of all plugins with the given IRI and returns
+   * the compatible plugins sorted by their priority.
+   *
+   * @param iri - IRI of the entity to find compatible plugins for
+   * @returns list of plugins with information about compatibility and sorted by their priority
+   */
+  async getPluginsCompatibility(
+    iri: IRI,
+  ): Promise<CompatibleLabeledPluginWithId[]> {
+    const context = createCompatibilityContext(
+      this.getDataSources(),
+      createSetupContext().vocabulary.getReadableVocabulary(),
+    );
+    const compatiblePlugins: CompatibleLabeledPluginWithId[] =
+      await Promise.all(
+        this.getPlugins().map((plugin) =>
+          plugin.v1
+            .isCompatible(context, iri)
+            .then((result) => ({ ...plugin, isCompatible: result }))
+            .catch((err) => {
+              console.error(
+                `Error while checking compatibility for plugin ${plugin.label[this.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`,
+                err,
+              );
+              return { ...plugin, isCompatible: false };
+            }),
+        ),
+      );
+    compatiblePlugins.sort((a, b) => b.v1.priority - a.v1.priority);
+    return compatiblePlugins;
+  }
 
   /**
    * Changes the order of plugins by the given order
    * @param order - IDs of plugins in the desired order
    */
-  changePluginsOrder(order: number[]){
+  changePluginsOrder(order: number[]) {
     const orderMap = new Map(order.map((id, index) => [id, index]));
     this.plugins.sort((a, b) => {
       const posA = orderMap.get(a.id) ?? Infinity;
       const posB = orderMap.get(b.id) ?? Infinity;
       return posA - posB;
     });
-    this.setSelectedPlugin(0)
+    this.setSelectedPlugin(0);
 
-    this.notify(["plugins"])
+    this.notify(["plugins"]);
   }
 
   /**
@@ -238,20 +261,17 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
    * @param pluginId - ID of the plugin wished to be selected for displaying the entity
    */
   setSelectedPlugin(pluginId: number) {
-    const index = this.plugins.findIndex((plugin) => plugin.id == pluginId)
-    this.selectedPluginIndex = index
+    const index = this.plugins.findIndex((plugin) => plugin.id == pluginId);
+    this.selectedPluginIndex = index;
     this.notify(["selectedPluginIndex"]);
   }
 
-
-  
   // ===  D A T A   S O U R C E S   S T A T E  ===
-
 
   /**
    * Adds a new data source to the RdfViewerState
    * @param source - IRI or a File of the new data source
-   * @param type - The type of the new data source 
+   * @param type - The type of the new data source
    */
   addDataSource(source: IRI | File, type: DataSourceType) {
     this.dataSources.push(dataSourceFactory(type, source));
@@ -260,7 +280,7 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
 
   /**
    * Removes a data source with the given IRI
-   * 
+   *
    * @param identifier - IRI of the data source to be removed from RdfViewerState
    */
   removeDataSource(identifier: IRI) {
@@ -271,13 +291,12 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
   }
 
   /**
-   * 
+   *
    * @returns a list of added data sources
    */
   getDataSources(): readonly DataSource[] {
-    return this.dataSources
+    return this.dataSources;
   }
-
 
   // ===  E N T I T Y   I R I   S T A T E  ===
 
@@ -291,15 +310,14 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
   }
 
   /**
-   * 
+   *
    * @returns the entity IRI
    */
   getEntityIri(): IRI {
-    return this.entityIri
+    return this.entityIri;
   }
 
-
-  // ===  L A N G U A G E S   S T A T E  === 
+  // ===  L A N G U A G E S   S T A T E  ===
 
   /**
    * Sets the preferred languages
@@ -311,19 +329,19 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
   }
 
   /**
-   * 
+   *
    * @returns the preferred languages
    */
   getLanguages(): readonly Language[] {
-    return this.languages
+    return this.languages;
   }
 
   /**
-   * 
+   *
    * @returns the language of the app
    */
   getAppLanguage(): Language {
-    return this.appLanguage
+    return this.appLanguage;
   }
 
   /**
@@ -331,12 +349,10 @@ async getPluginsCompatibility(iri: IRI): Promise<CompatibleLabeledPluginWithId[]
    * @param language - Language tag to set the app language to
    */
   setAppLanguage(language: Language) {
-    this.appLanguage = language
-    this.notify(["appLanguage"])
-
+    this.appLanguage = language;
+    this.notify(["appLanguage"]);
   }
 }
 
-
-export type { LabeledPluginWithId }
+export type { LabeledPluginWithId };
 export { RdfViewerState };

@@ -1,13 +1,9 @@
 import { NamedNode, Term, Variable } from "n3";
-import {
-  DataBlockValue,
-  Expression,
-  GraphPattern,
-} from "./query-interfaces";
+import { DataBlockValue, Expression, GraphPattern } from "./query-interfaces";
 import QueryNodeFactory from "./query-node-factory";
 
 /**
- * Builder for building graph patterns in Query inspired by SPARQL 
+ * Builder for building graph patterns in Query inspired by SPARQL
  * @see Query
  */
 interface GraphPatternBuilder {

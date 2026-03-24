@@ -108,8 +108,6 @@ function isAllSelector(value: SelectVariables): boolean {
   return value === "*";
 }
 
-
-
 class ValuesImpl implements Values {
   type = "values" as const;
   values: DataBlockValue[];
@@ -288,12 +286,12 @@ class BuiltInCallImpl implements BuiltInCall {
     return this.evaluation(variablesSubstitution);
   }
   toSparql(): string {
-    if (isLangMatches(this.func)){
+    if (isLangMatches(this.func)) {
       const args = [expressionToString(lang(this.variable))];
       if (this.option) {
         args.push(expressionToString(DataFactory.literal(this.option)));
       }
-      return `${this.func}(${args.join(", ")})`
+      return `${this.func}(${args.join(", ")})`;
     }
     return `${this.func}(${expressionToString(this.variable)})`;
   }
@@ -319,7 +317,6 @@ class ExpressionListImpl implements ExpressionList {
   }
 }
 
-
 export {
   TriplePatternImpl,
   UnionImpl,
@@ -332,5 +329,5 @@ export {
   BuiltInCallImpl,
   WhereImpl,
   ExpressionListImpl,
-  isAllSelector
-}
+  isAllSelector,
+};

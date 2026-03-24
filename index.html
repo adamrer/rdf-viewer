@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RDF Viewer</title>
     <link rel="stylesheet" href="./src/view/styles.css" />
-
   </head>
 
   <body>
@@ -25,7 +24,6 @@
 
     <!-- MAIN APP -->
     <main class="layout-container">
-
       <section class="section">
         <h1 class="section-title">RDF Viewer</h1>
       </section>
@@ -44,7 +42,6 @@
 
       <!-- PLUGIN + LANGUAGE -->
       <section class="section section-surface">
-
         <div class="form-group">
           <label for="choose-plugin">Plugin</label>
           <select id="choose-plugin"></select>
@@ -52,30 +49,19 @@
 
         <div class="form-group">
           <label for="languages">Languages</label>
-          <input
-            type="text"
-            id="languages"
-            placeholder="en, cs, fr, ..."
-          />
+          <input type="text" id="languages" placeholder="en, cs, fr, ..." />
         </div>
 
         <div id="buttons">
-          <button id="display-btn" class="btn-primary">
-            Display
-          </button>
-          <button id="show-config-btn" class="btn-icon">
-            ⚙️
-          </button>
+          <button id="display-btn" class="btn-primary">Display</button>
+          <button id="show-config-btn" class="btn-icon">⚙️</button>
         </div>
-
       </section>
-
     </main>
 
     <!-- CONFIG MODAL -->
     <dialog id="config-modal">
       <div id="config-content">
-
         <h2 class="section-title">Configuration</h2>
 
         <!-- DATA SOURCES -->
@@ -83,10 +69,10 @@
           <legend>Data Sources</legend>
 
           <form id="add-source-form" class="section">
-
             <div class="flex-wrapper">
               <select name="data-source-select" id="data-source-select">
-                <option value="SPARQL">SPARQL Endpoint</option>section-title
+                <option value="SPARQL">SPARQL Endpoint</option>
+                section-title
                 <option value="LOCAL_FILE">Local File</option>
                 <option value="REMOTE_FILE">Remote File</option>
                 <option value="LDP">LDP Server</option>
@@ -110,10 +96,7 @@
               />
             </div>
 
-            <button type="submit" class="btn-primary">
-              + Add Data Source
-            </button>
-
+            <button type="submit" class="btn-primary">+ Add Data Source</button>
           </form>
 
           <hr />
@@ -126,12 +109,8 @@
           <legend>Plugins</legend>
 
           <form id="add-plugin-form" class="section">
-
             <div class="flex-wrapper">
-              <select
-                name="plugin-add-type"
-                id="plugin-add-type-select"
-              >
+              <select name="plugin-add-type" id="plugin-add-type-select">
                 <option value="url">Remote File</option>
                 <option value="file">Local File</option>
               </select>
@@ -158,15 +137,12 @@
             <button type="submit" class="btn-primary add-plugin">
               + Add Plugin
             </button>
-
           </form>
 
           <hr />
 
           <ol id="plugin-list"></ol>
-
         </fieldset>
-
       </div>
     </dialog>
 

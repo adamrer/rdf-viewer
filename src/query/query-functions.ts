@@ -1,8 +1,19 @@
 // Built-in calls
 
 import N3, { Variable, Literal, DataFactory } from "n3";
-import { Substitution, NO_LANG_SPECIFIED, Language, ANY_LANGUAGE, BuiltInCall, OperatorExpression, BinaryFunc } from "./query-interfaces";
-import { BuiltInCallImpl, OperatorExpressionImpl } from "./query-node-implementations"
+import {
+  Substitution,
+  NO_LANG_SPECIFIED,
+  Language,
+  ANY_LANGUAGE,
+  BuiltInCall,
+  OperatorExpression,
+  BinaryFunc,
+} from "./query-interfaces";
+import {
+  BuiltInCallImpl,
+  OperatorExpressionImpl,
+} from "./query-node-implementations";
 
 // return true if 'value' has a language tag
 const lang = (variable: Variable) =>
@@ -113,7 +124,6 @@ const langEquality = (variable: Variable, language: Language) =>
       return literal.language.toLowerCase() === language.toLowerCase();
     },
   );
-
 
 export {
   or,

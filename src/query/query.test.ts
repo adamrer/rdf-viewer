@@ -1,12 +1,6 @@
 import { expect, test } from "vitest";
-import {
-  BuiltInCall,
-  Filter,
-  Graph,
-  Select,
-  Where,
-} from "./query-interfaces";
-import QueryNodeFactory from "./query-node-factory"
+import { BuiltInCall, Filter, Graph, Select, Where } from "./query-interfaces";
+import QueryNodeFactory from "./query-node-factory";
 import {
   or,
   isIri,
@@ -170,9 +164,11 @@ _:b1 <http://purl.org/dc/terms/title> ?title .
 });
 
 test("creates langMatches", () => {
-  const filter = QueryNodeFactory.filter(langMatches(DataFactory.variable("object"), "cs"))
-  expect(filter.toSparql()).toBe(`FILTER (langMatches(LANG(?object), "cs"))`)
-})
+  const filter = QueryNodeFactory.filter(
+    langMatches(DataFactory.variable("object"), "cs"),
+  );
+  expect(filter.toSparql()).toBe(`FILTER (langMatches(LANG(?object), "cs"))`);
+});
 
 test("evaluates isIri on literal", () => {
   const result = isIri(DataFactory.variable("object")).evaluate({
@@ -323,5 +319,3 @@ test("evaluates values for value that is NOT part of the values", () => {
   );
   expect(values.evaluate(prefLabel)).toBe(false);
 });
-
-

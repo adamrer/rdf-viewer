@@ -40,19 +40,20 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
                     
                     pluginInstanceContext = component "Plugin Instance Context" {
                         technology "TypeScript"
-                        description ""
+                        description "Zpřístupňuje funkcionalitu pro vytváření instance pluginu"
 
                         plugin -> this "Vytváří zobrazení entity s pomocí"
 
                     }
                     setupContext = component "Setup Context" {
                         technology "TypeScript"
+                        description "Zpřístupňuje funkcionalitu pro inicializaci pluginu"
 
                         plugin -> this "Inicializuje se s pomocí"
                     }
                     compatibilityContext = component "Compatibility Context" {
                         technology "TypeScript"
-                        description "Umožňuje funkcionalitu pro zjištění kompatibility pluginu"
+                        description "Zpřístupňuje funkcionalitu pro zjištění kompatibility pluginu"
                         
                         plugin -> this "Zjišťuje kompatibilitu s entitou s pomocí"
                     }
@@ -148,6 +149,7 @@ workspace "Prohlížeč RDF" "Toto je C4 System Context diagram systému Prohlí
 
                 appState -> setupContext "Vytváří"
                 appState -> compatibilityContext "Vytváří"
+                appState -> pluginModule "Načte"
 
             }
         }

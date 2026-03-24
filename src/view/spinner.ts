@@ -5,12 +5,9 @@ function createSpinner(size = 20): HTMLElement {
   return el;
 }
 
-async function withLoading(
-  container: HTMLElement,
-  task: () => Promise<void>
-) {
+async function withLoading(container: HTMLElement, task: () => Promise<void>) {
   const spinner = createSpinner();
-  container.after(spinner)
+  container.after(spinner);
 
   try {
     await task();
@@ -19,7 +16,4 @@ async function withLoading(
   }
 }
 
-export {
-    withLoading,
-    createSpinner
-}
+export { withLoading, createSpinner };

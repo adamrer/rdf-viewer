@@ -266,7 +266,7 @@ export type {
   Filter,
   Graph,
   GraphPatternClause,
-  BinaryFunc
+  BinaryFunc,
 };
 
 export { NO_LANG_SPECIFIED, ANY_LANGUAGE };

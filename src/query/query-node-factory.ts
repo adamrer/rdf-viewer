@@ -1,6 +1,33 @@
 import { Term, NamedNode, Variable } from "n3";
-import { SelectVariables, Where, Select, GraphPattern, TriplePattern, Expression, ExpressionList, DataBlockValue, Values, Filter, Graph, Bind, Union, Optional, BuiltInCall, OperatorExpression } from "./query-interfaces";
-import { WhereImpl, TriplePatternImpl, ExpressionListImpl, ValuesImpl, BindImpl, UnionImpl, OptionalImpl, FilterImpl, GraphImpl } from "./query-node-implementations";
+import {
+  SelectVariables,
+  Where,
+  Select,
+  GraphPattern,
+  TriplePattern,
+  Expression,
+  ExpressionList,
+  DataBlockValue,
+  Values,
+  Filter,
+  Graph,
+  Bind,
+  Union,
+  Optional,
+  BuiltInCall,
+  OperatorExpression,
+} from "./query-interfaces";
+import {
+  WhereImpl,
+  TriplePatternImpl,
+  ExpressionListImpl,
+  ValuesImpl,
+  BindImpl,
+  UnionImpl,
+  OptionalImpl,
+  FilterImpl,
+  GraphImpl,
+} from "./query-node-implementations";
 import { SelectImpl } from "./query";
 
 /**

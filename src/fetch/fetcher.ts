@@ -1,9 +1,5 @@
 import { Quad, Quad_Object } from "n3";
-import {
-  Query,
-  QueryBuilder,
-  queryBuilder,
-} from "../query/query-builder";
+import { Query, QueryBuilder, queryBuilder } from "../query/query-builder";
 import { DataSource } from "./data-source-implementations";
 import { Sourced } from "./data-source";
 import { IRI } from "../rdf-types";
@@ -61,7 +57,10 @@ class FetcherImpl implements Fetcher {
       if (result.status === "fulfilled") {
         successfulResults.push(...result.value);
       } else {
-        console.error(`DataSource ${this.dataSources[index].identifier} failed:`, result.reason);
+        console.error(
+          `DataSource ${this.dataSources[index].identifier} failed:`,
+          result.reason,
+        );
       }
     });
 
@@ -90,7 +89,7 @@ class FetcherImpl implements Fetcher {
       }
       const existing = result[subjectIri][predicateIri][object.value];
       if (existing) {
-        for (const source of sources){
+        for (const source of sources) {
           if (!existing.sources.includes(source)) {
             existing.sources.push(source);
           }
@@ -116,7 +115,6 @@ class FetcherImpl implements Fetcher {
   }
 }
 
-
 /**
  * Interface for quads fetched from data sources.
  * Hierarchical structure, deduplicated quads.
@@ -124,7 +122,7 @@ class FetcherImpl implements Fetcher {
 interface StructuredQuads {
   [subjectIri: IRI]: {
     [predicateIri: IRI]: {
-      [objectValue: IRI|string]: Sourced<Quad_Object>;
+      [objectValue: IRI | string]: Sourced<Quad_Object>;
     };
   };
 }
@@ -169,11 +167,9 @@ function mergeStructuredQuads(
           );
 
           // Merge graphs
-          const graphs = []
-          if (objA.graphs)
-            graphs.push(...objA.graphs)
-          if (objB.graphs)
-            graphs.push(...objB.graphs)
+          const graphs = [];
+          if (objA.graphs) graphs.push(...objA.graphs);
+          if (objB.graphs) graphs.push(...objB.graphs);
 
           objA.graphs = Array.from(new Set(graphs));
         } else {

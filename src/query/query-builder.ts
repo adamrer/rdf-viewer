@@ -1,13 +1,8 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3";
 import { Query } from "./query-interfaces";
 import { Select, Language, NO_LANG_SPECIFIED } from "./query-interfaces";
-import QueryNodeFactory from "./query-node-factory"
-import {
-  isBlank,
-  isIri,
-  or,
-  langEquality,
-} from "./query-functions";
+import QueryNodeFactory from "./query-node-factory";
+import { isBlank, isIri, or, langEquality } from "./query-functions";
 import {
   GraphPatternBuilder,
   graphPatternBuilder,
@@ -80,7 +75,7 @@ interface PredicateStep {
  */
 interface LiteralCreationHelper {
   value: string;
-  languageOrDatatype?: IRI|string;
+  languageOrDatatype?: IRI | string;
 }
 /**
  * Fourth build step of the SimpleStepQueryBuilder for setting the first object and
@@ -170,7 +165,7 @@ interface ObjectBuildingHelper extends PredicateBuildingHelper {
 /**
  * Implementation of the SubjectStep
  * Builds a simpler SPARQL query where the variables in select clause are
- * ?graph, ?subject, ?predicate, ?object 
+ * ?graph, ?subject, ?predicate, ?object
  * @see SubjectStep
  * @see Query
  */
@@ -193,7 +188,9 @@ class SubjectStepImpl implements SubjectStep {
   }
 
   subjects(iris: readonly IRI[] = ALL_SUBJECTS): PredicateStep {
-    const subjectValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
+    const subjectValues = iris.map((iri) =>
+      DataFactory.namedNode(decodeURIComponent(iri)),
+    );
     if (iris !== ALL_SUBJECTS) {
       this.graphPatternBuilder.values(this.subjectVar, subjectValues);
     }
@@ -213,7 +210,9 @@ class SimpleStepQueryBuilderImpl
   implements GraphStepProvider
 {
   graphs(iris: readonly IRI[] = ALL_GRAPHS): SubjectStep {
-    this.graphValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
+    this.graphValues = iris.map((iri) =>
+      DataFactory.namedNode(decodeURIComponent(iri)),
+    );
     return new SubjectStepImpl(this.graphValues);
   }
 }
@@ -226,7 +225,9 @@ class PredicateStepImpl implements PredicateStep {
   }
 
   predicates(iris: readonly IRI[] = ALL_PREDICATES): ObjectStep {
-    const predicateValues = iris.map((iri) => DataFactory.namedNode(decodeURIComponent(iri)));
+    const predicateValues = iris.map((iri) =>
+      DataFactory.namedNode(decodeURIComponent(iri)),
+    );
     if (iris.length !== 0) {
       this.buildingHelper.graphPatternBuilder.values(
         this.buildingHelper.predicateVar,

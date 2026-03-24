@@ -1,12 +1,17 @@
-
-import { LabeledPlugin, PluginV1Handler } from "./plugin-api/plugin-api-interfaces";
+import {
+  LabeledPlugin,
+  PluginV1Handler,
+} from "./plugin-api/plugin-api-interfaces";
 import { RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
-import { createInstanceContext, createSetupContext } from "./plugin-api/context-implementations";
+import {
+  createInstanceContext,
+  createSetupContext,
+} from "./plugin-api/context-implementations";
 
 /**
  * Is responsible for displaying the entity with a plugin to the user.
- * 
+ *
  * @param plugin - plugin to use
  * @param entityIri - IRI of the entity to display
  * @param element - HTML element to display the entity in
@@ -14,36 +19,42 @@ import { createInstanceContext, createSetupContext } from "./plugin-api/context-
  * @see PluginV1InstanceContext
  * @see PluginV1Handler
  */
-function renderEntityWithPlugin(plugin: LabeledPlugin, entityIri: IRI, element: HTMLElement): PluginV1Handler | null {
+function renderEntityWithPlugin(
+  plugin: LabeledPlugin,
+  entityIri: IRI,
+  element: HTMLElement,
+): PluginV1Handler | null {
   const app = RdfViewerState.getInstance();
 
-  const instanceContext = createInstanceContext(app, createSetupContext().vocabulary.getReadableVocabulary());
-  const pluginInstance = plugin.v1.createPluginInstance(instanceContext, entityIri)
-  if (pluginInstance == null){
-    throw new Error("Failed to create plugin instance.")
-    
+  const instanceContext = createInstanceContext(
+    app,
+    createSetupContext().vocabulary.getReadableVocabulary(),
+  );
+  const pluginInstance = plugin.v1.createPluginInstance(
+    instanceContext,
+    entityIri,
+  );
+  if (pluginInstance == null) {
+    throw new Error("Failed to create plugin instance.");
   }
-  const usedPluginElement = document.createElement("span")
-  const contentElement = document.createElement("div")
+  const usedPluginElement = document.createElement("span");
+  const contentElement = document.createElement("div");
 
   if (app.getAppLanguage() in plugin.label)
-    usedPluginElement.textContent = "Plugin: " + plugin.label[app.getAppLanguage()]
-  else
-    usedPluginElement.textContent = Object.values(plugin.label)[0]
+    usedPluginElement.textContent =
+      "Plugin: " + plugin.label[app.getAppLanguage()];
+  else usedPluginElement.textContent = Object.values(plugin.label)[0];
 
   element.replaceChildren();
-  element.appendChild(usedPluginElement)
-  element.appendChild(contentElement)
+  element.appendChild(usedPluginElement);
+  element.appendChild(contentElement);
   pluginInstance.mount(contentElement);
 
   return {
     pluginLabel: plugin.label,
     pluginPriority: plugin.v1.priority,
-    unmount: pluginInstance.unmount
-  }
-
+    unmount: pluginInstance.unmount,
+  };
 }
 
-export { 
-  renderEntityWithPlugin
-};
+export { renderEntityWithPlugin };

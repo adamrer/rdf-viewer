@@ -151,30 +151,31 @@ test("processes query with limit and offset", () => {
   expect(resultQuads[0].object.value).toBe("hidden label");
 });
 
-
 test("retrieve quad with no language specified - langs used", () => {
-  const builder = queryBuilder()
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/ns/dcat#theme"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
     .objects()
     .langs(["en", NO_LANG_SPECIFIED])
-    .build()
-    const processor = queryProcessor()
-    const resultObjects = processor.filter(quads, query).map(quad => quad.object.value);
-    expect(resultObjects).toContain("theme")
-    
-})
+    .build();
+  const processor = queryProcessor();
+  const resultObjects = processor
+    .filter(quads, query)
+    .map((quad) => quad.object.value);
+  expect(resultObjects).toContain("theme");
+});
 
 test("retrieve quad with no language specified - langs not used", () => {
-  const builder = queryBuilder()
+  const builder = queryBuilder();
   const query = builder
     .subjects(["http://www.w3.org/ns/dcat#theme"])
     .predicates(["http://www.w3.org/2000/01/rdf-schema#label"])
     .objects()
-    .build()
-    const processor = queryProcessor()
-    const resultObjects = processor.filter(quads, query).map(quad => quad.object.value);
-    expect(resultObjects).toContain("theme")
-    
-})
+    .build();
+  const processor = queryProcessor();
+  const resultObjects = processor
+    .filter(quads, query)
+    .map((quad) => quad.object.value);
+  expect(resultObjects).toContain("theme");
+});

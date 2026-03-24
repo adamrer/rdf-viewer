@@ -4,11 +4,9 @@ import { Quad_Object } from "n3";
 import { Language, QueryBuilder } from "../query/query-builder";
 import { Query } from "../query/query";
 
-
-
 /**
  * Interface representing the JS plugin module file for registering plugins.
- * It is expected that the JS plugin module file will export the `registerPlugins()` 
+ * It is expected that the JS plugin module file will export the `registerPlugins()`
  * function.
  */
 interface PluginModule {
@@ -24,11 +22,10 @@ interface PluginModule {
  * Sourced object with a identifier of the data source and optionaly graph
  */
 interface Sourced<T> {
-  value: T
-  sources: IRI[]
-  graphs?: IRI[]
+  value: T;
+  sources: IRI[];
+  graphs?: IRI[];
 }
-
 
 /**
  * Plugin with label information.
@@ -41,15 +38,14 @@ interface LabeledPlugin {
   /**
    * Version 1 interface.
    */
-  v1: PluginV1,
+  v1: PluginV1;
 }
 
 /**
  * Representation of the plugin
- * 
+ *
  */
 interface PluginV1 {
-
   /**
    * Setup the plugin (e.g., register vocabulary terms)
    * @param context - context for setting up the plugin
@@ -58,28 +54,31 @@ interface PluginV1 {
 
   /**
    * Checks whether the given subject is compatible with the plugin
-   * 
+   *
    * @param context - context in which the compatibility is checked
    * @param subject - IRI of the subject to check compatibility for
    * @returns if given subject is compatible with the plugin and its priority.
-  */
- isCompatible: (context: PluginV1CompatibilityContext, subject: IRI) => Promise<boolean>
- 
+   */
+  isCompatible: (
+    context: PluginV1CompatibilityContext,
+    subject: IRI,
+  ) => Promise<boolean>;
+
   /**
    * Priority is used when multiple plugins are compatible with the subject.
-  */
-  priority: PluginV1Match
+   */
+  priority: PluginV1Match;
 
   /**
    * Creates an instance of the plugin for the given subject
-   * 
+   *
    * @param context - context in which the plugin instance is created
    * @param subject - IRI of the subject to create the instance for
    * @returns the instance. If null, then the plugin can't be created
    */
   createPluginInstance: (
-    context: PluginV1InstanceContext, 
-    subject: IRI
+    context: PluginV1InstanceContext,
+    subject: IRI,
   ) => PluginV1Instance | null;
 }
 
@@ -87,12 +86,10 @@ interface PluginV1 {
  * Context for setting up the plugin
  */
 interface PluginV1SetupContext {
-
   /**
    * Writable interface, plugins should perform all modifications on load.
    */
   vocabulary: {
-
     /**
      * Add information that given IRI is semantically similar to the
      * original IRI, thus can be used instead of the original.
@@ -101,26 +98,22 @@ interface PluginV1SetupContext {
 
     getReadableVocabulary(): PluginV1Vocabulary;
   };
-
 }
 
 /**
  * Context for checking compatibility of a plugin with a subject
  */
 interface PluginV1CompatibilityContext {
-  
   /**
    * Data access and query capabilities
    */
   data: PluginV1DataContext;
-
 }
 
 /**
  * Context for the creation of the plugin instance
  */
 interface PluginV1InstanceContext {
-  
   /**
    * Data access and query capabilities
    */
@@ -130,8 +123,12 @@ interface PluginV1InstanceContext {
    * Services to use other suitable plugins in a plugin
    */
   interoperability: {
-      renderSubject: (subject: IRI, element: HTMLElement, minPriority: PluginV1Match) => Promise<PluginV1Handler|null>;
-  }
+    renderSubject: (
+      subject: IRI,
+      element: HTMLElement,
+      minPriority: PluginV1Match,
+    ) => Promise<PluginV1Handler | null>;
+  };
 
   /**
    * HTML related operations
@@ -141,30 +138,29 @@ interface PluginV1InstanceContext {
      * Renders loading state to an element
      * @param element - Loading state will be rendered to this HTML element
      */
-    renderLoading: (element: HTMLElement) => void
-  }
+    renderLoading: (element: HTMLElement) => void;
+  };
 
   /**
    * Configuration options
    */
   configuration: {
-      /**
-       * Languages preferred by the user, sorted by priority
-       */
-      languages: readonly Language[];
-  }
+    /**
+     * Languages preferred by the user, sorted by priority
+     */
+    languages: readonly Language[];
+  };
 
   /**
    * Notification service to notify the user
    */
-  notification: NotifierService
+  notification: NotifierService;
 }
 
 /**
  * Context for fetching data in the plugins
  */
 interface PluginV1DataContext {
-
   /**
    * Already fetched data from the data sources
    */
@@ -175,52 +171,53 @@ interface PluginV1DataContext {
    */
   fetch: {
     /**
-     * 
+     *
      * @param subject - IRI of the subject
      * @returns list of types for the given subject
      */
-    types: (subject: IRI) => Promise<Sourced<Quad_Object>[]>
+    types: (subject: IRI) => Promise<Sourced<Quad_Object>[]>;
     /**
      * Loads quads with the given subjects and predicates into the fetched data.
      * If predicates are not set, then fetch all quads
-     * 
+     *
      * @param subject - IRI of the subject
      * @param predicates - IRIs of the predicates
      * @returns Graph navigator of the newly fetched quads
      * @see GraphNavigator
      */
-    quads: (subjects: IRI[], predicates?: IRI[], languages?: Language[]) => Promise<GraphNavigator>
-    
-  }
+    quads: (
+      subjects: IRI[],
+      predicates?: IRI[],
+      languages?: Language[],
+    ) => Promise<GraphNavigator>;
+  };
 
   /**
    * Querying interface for fetching data from data sources
    */
   query: {
     /**
-     * 
+     *
      * @returns a query builder for expressing a query for data sources
      */
-    builder: () => QueryBuilder
+    builder: () => QueryBuilder;
     /**
-     * 
+     *
      * @param query - query to evaluate on data sources
      * @returns queried data
      */
-    execute: (query: Query) => Promise<GraphNavigator>
-  }
+    execute: (query: Query) => Promise<GraphNavigator>;
+  };
 
   vocabulary: PluginV1Vocabulary;
 }
 
 interface PluginV1Vocabulary {
-
   /**
    * Return list of registered similar predicates.
    * Always return the given IRI as the first item.
    */
   getSemanticallySimilar(original: IRI): IRI[];
-
 }
 
 /**
@@ -234,11 +231,10 @@ enum PluginV1Match {
 }
 
 interface PluginV1Handler {
-  pluginLabel: LanguageString
-  pluginPriority: PluginV1Match
+  pluginLabel: LanguageString;
+  pluginPriority: PluginV1Match;
   unmount: () => void;
 }
-
 
 /**
  * Instance of the plugin for a specific subject
@@ -259,18 +255,18 @@ interface PluginV1Instance {
  * For navigating through fetched quads
  */
 interface GraphNavigator {
-    /**
-     * @returns all available subjects
-     */
-    subjects: () => IRI[]
+  /**
+   * @returns all available subjects
+   */
+  subjects: () => IRI[];
 
-    /**
-     * Retrieves the subject navigator for the given subject
-     * 
-     * @param subject - IRI of the subject
-     * @returns subject navigator for the given subject
-     */
-    subject: (subject: IRI) => SubjectNavigator
+  /**
+   * Retrieves the subject navigator for the given subject
+   *
+   * @param subject - IRI of the subject
+   * @returns subject navigator for the given subject
+   */
+  subject: (subject: IRI) => SubjectNavigator;
 }
 
 /**
@@ -278,22 +274,21 @@ interface GraphNavigator {
  * @see GraphNavigator
  */
 interface SubjectNavigator {
-    /**
-     * @returns all predicates for the given subject
-     */
-    predicates: () => IRI[]
+  /**
+   * @returns all predicates for the given subject
+   */
+  predicates: () => IRI[];
 
-    /**
-     * Retrieves all objects for the given predicate of the subject
-     * 
-     * @param predicate - IRI of the predicate to get objects for
-     * @returns all objects for the given predicate
-     */
-    predicate: (predicate: IRI) => Sourced<Quad_Object>[]
+  /**
+   * Retrieves all objects for the given predicate of the subject
+   *
+   * @param predicate - IRI of the predicate to get objects for
+   * @returns all objects for the given predicate
+   */
+  predicate: (predicate: IRI) => Sourced<Quad_Object>[];
 }
 
-
-export type { 
+export type {
   PluginModule,
   PluginV1InstanceContext,
   PluginV1DataContext,
@@ -306,6 +301,5 @@ export type {
   PluginV1Vocabulary,
   GraphNavigator,
   SubjectNavigator,
-  Sourced
-
+  Sourced,
 };

@@ -1,5 +1,3 @@
-
-
 /**
  * Type of the notification
  */
@@ -10,7 +8,7 @@ type NotificationType = "info" | "success" | "warning" | "error";
  */
 interface NotifierService {
   /**
-   * 
+   *
    * @param message - Text content of the notification
    * @param type - Type of the notification
    * @param duration - Duration in milliseconds for which the notification is shown
@@ -18,7 +16,7 @@ interface NotifierService {
   notify(message: string, type: NotificationType, duration?: number): void;
 
   /**
-   * 
+   *
    * @param promise - Promise to be tracked
    * @param messages - Messages to be shown for different states of the promise
    */
@@ -28,16 +26,14 @@ interface NotifierService {
   ): Promise<T>;
 }
 
-
 /**
  * Implementation of the NotifierService interface
  */
 class NotifierServiceImpl implements NotifierService {
+  notificationContainer: HTMLElement | null = null;
 
-  notificationContainer: HTMLElement|null = null
-
-  setNotificationContainer(container: HTMLElement){
-    this.notificationContainer = container
+  setNotificationContainer(container: HTMLElement) {
+    this.notificationContainer = container;
   }
 
   notify(message: string, type: NotificationType) {

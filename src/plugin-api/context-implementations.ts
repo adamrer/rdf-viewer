@@ -1,157 +1,193 @@
 import { DataSource, Sourced } from "../fetch/data-source";
 import { renderEntityWithPlugin } from "../render-entity-with-plugin";
-import { StructuredQuads, Fetcher, fetcher, mergeStructuredQuads } from "../fetch/fetcher";
+import {
+  StructuredQuads,
+  Fetcher,
+  fetcher,
+  mergeStructuredQuads,
+} from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
 import { Language, NO_LANG_SPECIFIED, Query } from "../query/query-interfaces";
 import { notifier, NotifierService } from "../view/notifier";
-import { PluginV1Vocabulary, PluginV1InstanceContext, PluginV1DataContext, PluginV1CompatibilityContext, PluginV1Handler, PluginV1SetupContext, GraphNavigator, SubjectNavigator } from "./plugin-api-interfaces";
+import {
+  PluginV1Vocabulary,
+  PluginV1InstanceContext,
+  PluginV1DataContext,
+  PluginV1CompatibilityContext,
+  PluginV1Handler,
+  PluginV1SetupContext,
+  GraphNavigator,
+  SubjectNavigator,
+} from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
 import { RdfViewerState } from "../rdf-viewer-state";
 import { createSpinner } from "../view/spinner";
 import { Quad_Object } from "n3";
 
-function createInstanceContext(app: RdfViewerState, vocabulary: PluginV1Vocabulary): PluginV1InstanceContext {
-  const data = createDataContext(app.getDataSources(), vocabulary)
-  return new PluginV1InstanceContextImpl(data, [...app.getLanguages(), NO_LANG_SPECIFIED], notifier)
+function createInstanceContext(
+  app: RdfViewerState,
+  vocabulary: PluginV1Vocabulary,
+): PluginV1InstanceContext {
+  const data = createDataContext(app.getDataSources(), vocabulary);
+  return new PluginV1InstanceContextImpl(
+    data,
+    [...app.getLanguages(), NO_LANG_SPECIFIED],
+    notifier,
+  );
 }
 
-function createDataContext(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary): PluginV1DataContext {
+function createDataContext(
+  dataSources: readonly DataSource[],
+  vocabulary: PluginV1Vocabulary,
+): PluginV1DataContext {
   return new PluginV1DataContextImpl(dataSources, vocabulary);
 }
 
-function createCompatibilityContext(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary): PluginV1CompatibilityContext {
-  return { data: createDataContext(dataSources, vocabulary) }
-} 
+function createCompatibilityContext(
+  dataSources: readonly DataSource[],
+  vocabulary: PluginV1Vocabulary,
+): PluginV1CompatibilityContext {
+  return { data: createDataContext(dataSources, vocabulary) };
+}
 
 class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
-
   data: PluginV1InstanceContext["data"];
   configuration: PluginV1InstanceContext["configuration"];
   notification: PluginV1InstanceContext["notification"];
   interoperability: PluginV1InstanceContext["interoperability"];
   html: PluginV1InstanceContext["html"];
 
-  constructor(dataContext: PluginV1DataContext, languages: readonly Language[], notification: NotifierService){
+  constructor(
+    dataContext: PluginV1DataContext,
+    languages: readonly Language[],
+    notification: NotifierService,
+  ) {
     this.data = dataContext;
     this.notification = notification;
     this.configuration = {
-      languages: languages
-    }
+      languages: languages,
+    };
     this.interoperability = {
-      renderSubject: this.renderSubject.bind(this)
+      renderSubject: this.renderSubject.bind(this),
     };
     this.html = {
-      renderLoading: this.renderLoading.bind(this)
-    }
+      renderLoading: this.renderLoading.bind(this),
+    };
   }
-  async renderSubject(subjectIri: IRI, element: HTMLElement, minPriority: number = 0): Promise<PluginV1Handler|null> {
+  async renderSubject(
+    subjectIri: IRI,
+    element: HTMLElement,
+    minPriority: number = 0,
+  ): Promise<PluginV1Handler | null> {
     // find compatible plugin in order of state manager plugins and use the first one
 
     const app = RdfViewerState.getInstance();
 
-    const pluginCompatibilities = await app.getPluginsCompatibility(subjectIri)
-    for (const compatibility of pluginCompatibilities){
-      if (compatibility.isCompatible && compatibility.v1.priority >= minPriority){
-        return renderEntityWithPlugin(compatibility, subjectIri, element)
+    const pluginCompatibilities = await app.getPluginsCompatibility(subjectIri);
+    for (const compatibility of pluginCompatibilities) {
+      if (
+        compatibility.isCompatible &&
+        compatibility.v1.priority >= minPriority
+      ) {
+        return renderEntityWithPlugin(compatibility, subjectIri, element);
       }
     }
     return null;
   }
 
   renderLoading(element: HTMLElement) {
-    element.appendChild(createSpinner())
+    element.appendChild(createSpinner());
   }
-
 }
 
 class PluginV1DataContextImpl implements PluginV1DataContext {
-
   private fetchedStructured: StructuredQuads = {};
   private fetcher: Fetcher;
-  
+
   fetched = graphNavigator(this.fetchedStructured);
-  
-  fetch: PluginV1DataContext["fetch"]
-  query: PluginV1DataContext["query"]
+
+  fetch: PluginV1DataContext["fetch"];
+  query: PluginV1DataContext["query"];
   vocabulary: PluginV1DataContext["vocabulary"];
 
-  constructor(dataSources: readonly DataSource[], vocabulary: PluginV1Vocabulary) {
+  constructor(
+    dataSources: readonly DataSource[],
+    vocabulary: PluginV1Vocabulary,
+  ) {
     this.fetcher = fetcher(dataSources);
     this.query = {
       builder: queryBuilder,
-      execute: this.execute.bind(this)
-    }
+      execute: this.execute.bind(this),
+    };
     this.fetch = {
       types: this.types.bind(this),
       quads: this.quads.bind(this),
       // labels: this.labels.bind(this)
- 
-    }
+    };
     this.vocabulary = vocabulary;
-    
   }
   async execute(query: Query) {
     const structuredQuads = await this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(structuredQuads)
+    this.addFetched(structuredQuads);
     const navigator = graphNavigator(structuredQuads);
-    return navigator
+    return navigator;
   }
-  
+
   async types(subject: IRI) {
     const typePredicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 
-    const builder = this.fetcher.builder()
-    const query = builder.subjects([subject]).predicates([typePredicate]).objects().build();
+    const builder = this.fetcher.builder();
+    const query = builder
+      .subjects([subject])
+      .predicates([typePredicate])
+      .objects()
+      .build();
     const typesQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await typesQuads)
+    this.addFetched(await typesQuads);
     const navigator = graphNavigator(await typesQuads);
     return navigator.subject(subject).predicate(typePredicate);
   }
   async quads(subjects: IRI[], predicates?: IRI[], languages?: Language[]) {
     if (subjects.length === 0)
-      throw new Error("Subject for fetching data is not set")
-    const builder = this.fetcher.builder()
+      throw new Error("Subject for fetching data is not set");
+    const builder = this.fetcher.builder();
     let queryStep = builder.subjects(subjects).predicates(predicates).objects();
-    if (languages)
-      queryStep = queryStep.langs(languages)
-    const query = queryStep.build()
+    if (languages) queryStep = queryStep.langs(languages);
+    const query = queryStep.build();
 
     const predsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await predsQuads)
+    this.addFetched(await predsQuads);
     const navigator = graphNavigator(await predsQuads);
     return navigator;
   }
- 
-  addFetched(quads: StructuredQuads){
-    this.fetchedStructured = mergeStructuredQuads(this.fetchedStructured, quads)
-    this.fetched = graphNavigator(this.fetchedStructured)
+
+  addFetched(quads: StructuredQuads) {
+    this.fetchedStructured = mergeStructuredQuads(
+      this.fetchedStructured,
+      quads,
+    );
+    this.fetched = graphNavigator(this.fetchedStructured);
   }
-
-
-
 }
 
 class PluginV1SetupContextImpl implements PluginV1SetupContext {
-  
   data: Map<IRI, Set<IRI>> = new Map();
-  
-  vocabulary: PluginV1SetupContext["vocabulary"];
 
+  vocabulary: PluginV1SetupContext["vocabulary"];
 
   constructor() {
     this.vocabulary = {
       addSemanticallySimilar: this.addSemanticallySimilar.bind(this),
-      getReadableVocabulary: this.getReadableVocabulary.bind(this)
-    }
+      getReadableVocabulary: this.getReadableVocabulary.bind(this),
+    };
   }
 
   addSemanticallySimilar(original: IRI, ...similar: IRI[]) {
-    if (this.data.has(original)){
+    if (this.data.has(original)) {
       const existing = this.data.get(original);
-      if (existing){
-        similar.forEach(iri => existing.add(iri));
-      }
-      else{
+      if (existing) {
+        similar.forEach((iri) => existing.add(iri));
+      } else {
         this.data.set(original, new Set(similar));
       }
     }
@@ -161,84 +197,72 @@ class PluginV1SetupContextImpl implements PluginV1SetupContext {
     return {
       getSemanticallySimilar: (original: IRI) => {
         const similarSet = this.data.get(original);
-        if (similarSet){
-          const similarArray = Array.from(similarSet)
-          similarArray.push(original)
+        if (similarSet) {
+          const similarArray = Array.from(similarSet);
+          similarArray.push(original);
           return similarArray;
         }
-        return [original]
-      }
-    }
+        return [original];
+      },
+    };
   }
 }
 
-
 class GraphNavigatorImpl implements GraphNavigator {
-    
-    data: StructuredQuads
+  data: StructuredQuads;
 
-    constructor(data?: StructuredQuads){
-        if (data)
-            this.data = data
-        else
-            this.data = {}
-    }
-    
-    subjects(){
-        return Object.keys(this.data)
-    }
-    subject(subject: IRI){
-        const predicates = this.data[subject]
-        if (predicates)
-            return subjectNavigator(predicates)
-        return subjectNavigator({})
-    }
+  constructor(data?: StructuredQuads) {
+    if (data) this.data = data;
+    else this.data = {};
+  }
+
+  subjects() {
+    return Object.keys(this.data);
+  }
+  subject(subject: IRI) {
+    const predicates = this.data[subject];
+    if (predicates) return subjectNavigator(predicates);
+    return subjectNavigator({});
+  }
 }
 
 interface StructuredPredicates {
-    [predicateIri: IRI]: {
-      [objectValue: IRI]: Sourced<Quad_Object>;
-    };
+  [predicateIri: IRI]: {
+    [objectValue: IRI]: Sourced<Quad_Object>;
+  };
 }
 
 class SubjectNavigatorImpl implements SubjectNavigator {
-    
-    data: StructuredPredicates
-    constructor(data?: StructuredPredicates){
-        if (data)
-            this.data = data
-        else
-            this.data = {}
-    }
-    predicates(){
-        return Object.keys(this.data)
-    }
-    predicate(predicate: IRI) {
-        const objects = this.data[predicate]
-        if (objects)
-            return Object.values(this.data[predicate])
-        return []
-    }
+  data: StructuredPredicates;
+  constructor(data?: StructuredPredicates) {
+    if (data) this.data = data;
+    else this.data = {};
+  }
+  predicates() {
+    return Object.keys(this.data);
+  }
+  predicate(predicate: IRI) {
+    const objects = this.data[predicate];
+    if (objects) return Object.values(this.data[predicate]);
+    return [];
+  }
 }
 
 function subjectNavigator(data: StructuredPredicates): SubjectNavigator {
-    return new SubjectNavigatorImpl(data)
+  return new SubjectNavigatorImpl(data);
 }
 function graphNavigator(data: StructuredQuads): GraphNavigator {
-    return new GraphNavigatorImpl(data)
+  return new GraphNavigatorImpl(data);
 }
-
 
 function createSetupContext(): PluginV1SetupContext {
   return new PluginV1SetupContextImpl();
 }
 
-
-
-export { 
+export {
   createCompatibilityContext,
   createSetupContext,
   createDataContext,
   createInstanceContext,
-  graphNavigator
+  graphNavigator,
 };

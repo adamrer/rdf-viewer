@@ -11,81 +11,86 @@
  * @returns {LabeledPlugin[]}
  */
 export function registerPlugins() {
-    return [
-        {
-            label: {"en": "Image Plugin", "cs": "Obrázek"},
-            v1: createImagePlugin()
-        }
-    ]
+  return [
+    {
+      label: { en: "Image Plugin", cs: "Obrázek" },
+      v1: createImagePlugin(),
+    },
+  ];
 }
 
-const IANA_TYPES = "http://www.w3.org/ns/iana/media-types/"
-const IMAGE = IANA_TYPES+"image/"
+const IANA_TYPES = "http://www.w3.org/ns/iana/media-types/";
+const IMAGE = IANA_TYPES + "image/";
 const image = {
-    jpeg: IMAGE+"jpeg#Resource",
-    png: IMAGE+"png#Resource",
-    apng: IMAGE+"apng#Resource",
-    svg: IMAGE+"svg#Resource",
-    gif: IMAGE+"gif#Resource"
-}
-
+  jpeg: IMAGE + "jpeg#Resource",
+  png: IMAGE + "png#Resource",
+  apng: IMAGE + "apng#Resource",
+  svg: IMAGE + "svg#Resource",
+  gif: IMAGE + "gif#Resource",
+};
 
 /**
  * Logic for the dcat:Dataset viewer.
  * @returns {PluginV1}
  */
 function createImagePlugin() {
-    return {
+  return {
+    priority: 100,
 
-        priority: 100,
+    setup(_context) {
+      // No global setup required for this plugin
+    },
 
-        setup(context) {
-            // No global setup required for this plugin
+    /**
+     * Creates a visual representation of a Dataset.
+     * @param {PluginV1InstanceContext} context
+     * @param {IRI} subject
+     * @returns {PluginV1Instance}
+     */
+    createPluginInstance(context, subject) {
+      let mountedToElement = null;
+      return {
+        mount(element) {
+          mountedToElement = element;
+          (async () => {
+            context.html.renderLoading(element);
+            const canvas = document.createElement("canvas");
+            const imgData = await loadImageData(subject);
+            element.replaceChildren();
+            displayImageData(imgData, canvas);
+            element.appendChild(canvas);
+          })();
         },
-
-        /**
-         * Creates a visual representation of a Dataset.
-         * @param {PluginV1InstanceContext} context 
-         * @param {IRI} subject 
-         * @returns {PluginV1Instance}
-         */
-        createPluginInstance(context, subject) {
-            let mountedToElement = null;
-            return {
-                mount(element) {
-                    mountedToElement = element;
-                    (async () => {
-                        context.html.renderLoading(element)
-                        const canvas = document.createElement("canvas")
-                        const imgData = await loadImageData(subject);
-                        element.replaceChildren()
-                        displayImageData(imgData, canvas);
-                        element.appendChild(canvas)
-                    })();
-                },
-                unmount() {
-                    if (mountedToElement !== null) {
-                        mountedToElement.replaceChildren();
-                        mountedToElement = null;
-                    }
-                }
-            }
+        unmount() {
+          if (mountedToElement !== null) {
+            mountedToElement.replaceChildren();
+            mountedToElement = null;
+          }
         },
+      };
+    },
 
-        /**
-         * Checks if the subject is an instance of dcat:Dataset (or similar).
-         */
-        async isCompatible(context, subject) {
-            const subjectTypes = await context.data.fetch.types(subject)
-            const subjectTypeValues = subjectTypes.map(t => t.value.value)
-            const compatibleTypes = [image.gif, image.png, image.jpeg, image.svg, image.apng]
-            // Use vocabulary service to check for semantically equivalent classes
-            const imageTypeIris = compatibleTypes.flatMap(type => context.data.vocabulary.getSemanticallySimilar(type))
-            return subjectTypeValues.some(t => imageTypeIris.includes(t))
-        }
-    }
+    /**
+     * Checks if the subject is an instance of dcat:Dataset (or similar).
+     */
+    async isCompatible(context, subject) {
+      const subjectTypes = await context.data.fetch.types(subject);
+      const subjectTypeValues = subjectTypes.map((t) => t.value.value);
+      const compatibleTypes = [
+        image.gif,
+        image.png,
+        image.jpeg,
+        image.svg,
+        image.apng,
+      ];
+      // Use vocabulary service to check for semantically equivalent classes
+      const imageTypeIris = compatibleTypes.flatMap((type) =>
+        context.data.vocabulary.getSemanticallySimilar(type),
+      );
+      return subjectTypeValues.some((t) => imageTypeIris.includes(t));
+    },
+  };
 }
-
 
 // ---- Helper Functions ----
 

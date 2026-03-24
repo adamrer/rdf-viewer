@@ -21,8 +21,6 @@ interface Query {
   toSparql(): string;
 }
 
-
-
 /**
  * Character for all selector in Query of a type Select
  */
@@ -48,7 +46,6 @@ interface Select extends Node, Query {
   setWhere(where: Where): Select;
   addVariables(variables: Variable[]): Select;
 }
-
 
 class SelectImpl implements Select {
   type = "select" as const;
@@ -119,10 +116,5 @@ class SelectImpl implements Select {
   }
 }
 
-export {
-    SelectImpl
-}
-export type {
-    Select,
-    Query
-}
+export { SelectImpl };
+export type { Select, Query };
