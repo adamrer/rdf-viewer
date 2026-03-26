@@ -10,7 +10,6 @@ COPY . .
 # install dependencies from package-lock.json
 RUN npm ci
  
-
 # build the application
 RUN npm run build
 
@@ -18,7 +17,6 @@ RUN npm run build
 # --- Deployment
 
 FROM nginx:1.28.3
-
 
 # copy the built application to the web server
 COPY --from=build ./opt/vite/dist /usr/share/nginx/html
