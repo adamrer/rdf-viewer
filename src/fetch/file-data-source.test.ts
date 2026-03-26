@@ -3,6 +3,11 @@ import { fetcher } from "./fetcher";
 import { FileDataSource } from "../fetch/data-source-implementations";
 import { QueryBuilder, queryBuilder } from "../query/query-builder";
 
+global.window = {
+  location: { origin: "http://test.local" }
+} as any;
+
+
 test("fetch label for skos:prefLabel", async () => {
   const fds = new FileDataSource(
     "https://www.w3.org/2009/08/skos-reference/skos.rdf",

@@ -141,7 +141,7 @@ class FileDataSource implements DataSource {
       const nameSplit = this.file.name.split("/");
       const actualFileName = nameSplit[nameSplit.length - 1];
       if (!actualFileName.includes("."))
-        // includes file extension
+        // doesn't include file extension
         parseOptions.contentType = "text/turtle";
       rdfParser
         .parse(stream, parseOptions as ParseOptions)
