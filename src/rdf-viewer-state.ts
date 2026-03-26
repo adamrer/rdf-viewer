@@ -1,4 +1,4 @@
-import { rdfViewerConfig } from "./config/rdf-viewer.config";
+import { rdfViewerConfig } from "../rdf-viewer.config";
 import { dataSourceFactory } from "./fetch/data-source-implementations";
 import {
   DataSource,
