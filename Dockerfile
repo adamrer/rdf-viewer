@@ -7,12 +7,8 @@ WORKDIR /opt/vite
 # copy the project
 COPY . .
 
-# install dependencies from package-lock.json
-RUN npm ci
- 
 # build the application
-RUN npm run build
-
+RUN make build
 
 # --- Deployment
 
