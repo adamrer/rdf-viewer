@@ -9,4 +9,3 @@ build:
 # build a docker image
 docker:
 	docker build -t rdf-viewer .
-
