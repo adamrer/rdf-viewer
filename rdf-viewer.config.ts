@@ -9,8 +9,6 @@ const rdfViewerConfig: RdfViewerConfig = {
   dataSources: [
     { type: DataSourceType.Sparql, url: "https://data.gov.cz/sparql" },
 
-    // {type: DataSourceType.Ldp, url: "https://rero.datapod.igrant.io/"},
-
     {
       type: DataSourceType.RemoteFile,
       url: "https://www.w3.org/2009/08/skos-reference/skos.rdf",
@@ -23,8 +21,6 @@ const rdfViewerConfig: RdfViewerConfig = {
 
     { type: DataSourceType.LocalFile, url: "vocabularies/data-theme-skos.rdf" },
     { type: DataSourceType.LocalFile, url: "vocabularies/foaf.rdf" },
-    // { type: DataSourceType.LocalFile, url: "vocabularies/statnipokladna.jsonld"},
-    // { type: DataSourceType.LocalFile, url: "vocabularies/monitor-stat-pok.jsonld"}
   ],
 
   pluginModules: [
