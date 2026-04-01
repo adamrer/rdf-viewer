@@ -1,5 +1,7 @@
 # RDF Viewer
 
+You can try RDF Viewer (here)[https://adamrer.github.io/rdf-viewer/].
+
 # Build
 
 You will need `git`, `npm` and `make`.
