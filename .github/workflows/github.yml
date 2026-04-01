@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: github
+name: deployment
 
 on:
   # Runs on pushes targeting the default branch
@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
+  # Deploy the web application
   deploy:
     environment:
       name: github-pages
