@@ -103,11 +103,11 @@ function createDatasetPlugin() {
             // Define which predicates we want to display and which we use for labels
             const chosenPredicates = [
               dcterms.publisher,
-              dcterms.accessRights,
               dcterms.spatial,
               dcat.theme,
-              dcat.contactPoint,
               foaf.page,
+              dcterms.accessRights,
+              dcat.contactPoint,
               dcterms.accrualPeriodicity,
             ];
             const labelPredicates = [
@@ -173,12 +173,20 @@ function createDatasetPlugin() {
             element.appendChild(descriptionElement);
 
             // Render main metadata table (Description List)
-            const dl = createPredicatesDescriptionList(
+            const dl1 = createPredicatesDescriptionList(
               subject,
-              chosenPredicates,
+              chosenPredicates.slice(0, 4),
               context,
             );
-            element.appendChild(dl);
+            const dl2 = createPredicatesDescriptionList(
+              subject,
+              chosenPredicates.slice(4, chosenPredicates.length),
+              context,
+            );
+            const dlContainer = document.createElement("div");
+            dlContainer.replaceChildren(dl1, dl2);
+            dlContainer.classList.add("flex-wrapper");
+            element.appendChild(dlContainer);
 
             // Header for Distributions
             const distributionTitle = document.createElement("h2");
