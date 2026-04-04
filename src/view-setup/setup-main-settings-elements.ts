@@ -11,7 +11,7 @@ function setupMainSettingsElements() {
   setupCompatiblePluginsButton();
   setupPluginSelect();
   setupLanguageInput();
-  setupDisplayButton();
+  setupDisplayButton(document.getElementById("results") as HTMLDivElement);
 }
 
 /**
@@ -19,7 +19,10 @@ function setupMainSettingsElements() {
  * @see RdfViewerState
  */
 function setupLanguageInput() {
-  const languagesEl = document.getElementById("languages")! as HTMLInputElement;
+  const languagesEl = document.getElementById("languages") as HTMLInputElement;
+  if (languagesEl === null) {
+    return;
+  }
   const app = RdfViewerState.getInstance();
 
   app.subscribe(
@@ -44,7 +47,10 @@ function setupLanguageInput() {
  * @see RdfViewerState
  */
 function setupIriElement() {
-  const iriEl = document.getElementById("iri")! as HTMLInputElement;
+  const iriEl = document.getElementById("iri") as HTMLInputElement;
+  if (iriEl === null) {
+    return;
+  }
   const app = RdfViewerState.getInstance();
 
   // bind change of IRI input to RdfViewerState
@@ -75,6 +81,10 @@ function setupCompatiblePluginsButton() {
   const pluginSelectEl = document.getElementById(
     "choose-plugin",
   ) as HTMLSelectElement;
+
+  if (compatiblePluginsBtn === null || pluginSelectEl === null) {
+    return;
+  }
 
   // setup compatible plugins button
   compatiblePluginsBtn.addEventListener("click", async () => {
@@ -136,16 +146,20 @@ function setupCompatiblePluginsButton() {
 
 /**
  * Setups the button for displaying plugin with set entity IRI in the RdfViewerState
+ * @param resultsEl - the element where the plugin should render the entity
  * @see RdfViewerState
  */
-function setupDisplayButton() {
-  const app = RdfViewerState.getInstance();
+function setupDisplayButton(resultsEl: HTMLDivElement) {
   const displayBtn = document.getElementById(
     "display-btn",
-  )! as HTMLButtonElement;
-  const resultsEl: HTMLDivElement = document.getElementById(
-    "results",
-  ) as HTMLDivElement;
+  ) as HTMLButtonElement;
+  
+  if (displayBtn=== null) {
+    return;
+  }
+  
+  const app = RdfViewerState.getInstance();
+
   // handle display button click
   displayBtn.addEventListener("click", () => {
     displayBtn.disabled = true;
@@ -171,6 +185,9 @@ function setupPluginSelect() {
   const pluginSelectEl = document.getElementById(
     "choose-plugin",
   ) as HTMLSelectElement;
+  if (pluginSelectEl === null) {
+    return;
+  }
   const app = RdfViewerState.getInstance();
 
   app.subscribe(

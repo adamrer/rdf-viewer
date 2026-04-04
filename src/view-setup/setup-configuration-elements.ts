@@ -17,6 +17,9 @@ function setupDatasourceList() {
   const app = RdfViewerState.getInstance();
 
   const dataSourcesList = document.getElementById("source-list") as HTMLElement;
+  if (dataSourcesList === null) {
+    return;
+  }
   app.subscribe(
     () => {
       const dataSourcesElements = app.getDataSources().map((ds) => {
@@ -33,6 +36,9 @@ function setupPluginList() {
   const app = RdfViewerState.getInstance();
 
   const pluginListEl = document.getElementById("plugin-list") as HTMLElement;
+  if (pluginListEl === null) {
+    return;
+  }
 
   app.subscribe(() => {
     const listItems = app.getPlugins().map((plugin) => {
@@ -62,7 +68,9 @@ function setupConfigModal() {
   const configModal = document.getElementById(
     "config-modal",
   ) as HTMLDialogElement;
-
+  if (configModal === null || configBtn === null) {
+    return;
+  }
   // show configuration modal on button click
   configBtn.addEventListener("click", () => {
     configModal.showModal();
@@ -91,6 +99,9 @@ function setupDataSourceForm() {
   const fileInput = addSourceFormEl.querySelector(
     "#data-source-file-input",
   ) as HTMLInputElement;
+  if (addSourceFormEl === null || select === null || urlTextInput === null || fileInput === null) {
+    return;
+  }
   fileInput.style.display = "none";
   select.addEventListener("change", () => {
     const dataSourceType: DataSourceType = select.value as DataSourceType;
@@ -185,7 +196,6 @@ function switchInput(input1: HTMLInputElement, input2: HTMLInputElement) {
   }
 }
 
-// TODO: this should be maybe somewhere closer to plugin declaration
 enum PluginModuleImportType {
   Url = "url",
   File = "file",
@@ -204,8 +214,10 @@ function setupPluginForm() {
   const fileInput = addPluginFormEl.querySelector(
     "#plugin-add-file-input",
   ) as HTMLInputElement;
+  if (addPluginFormEl === null || select === null || urlInput === null || fileInput === null) {
+    return;
+  }
   fileInput.style.display = "none";
-
   // show/hide inputs
   select.addEventListener("change", () => {
     const pluginType: PluginModuleImportType =

@@ -6,6 +6,9 @@ function setupHeaderElements() {
 
 function setupAppLanguageSelect() {
   const select = document.getElementById("app-language") as HTMLSelectElement;
+  if (select === null) {
+    return;
+  }
   const app = RdfViewerState.getInstance();
   select.addEventListener("change", () => {
     app.setAppLanguage(select.value);
