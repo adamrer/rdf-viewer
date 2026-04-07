@@ -28,7 +28,7 @@ import {
   FilterImpl,
   GraphImpl,
 } from "./query-node-implementations";
-import { SelectImpl } from "./query-select-implementation";
+import { SelectImpl } from "./query-select";
 
 /**
  * Factory for creating node of Query

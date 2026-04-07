@@ -16,7 +16,7 @@ type SelectVariables = Variable[] | AllSelector;
 /**
  * Represents a Select Query
  */
-interface Select extends Node, Query {
+interface Select extends Query {
   type: "select";
   where: Where;
   distinct: boolean;
@@ -100,4 +100,4 @@ class SelectImpl implements Select {
 }
 
 export { SelectImpl };
-export type { Select, Query };
+export type { Select, SelectVariables, AllSelector };

@@ -1,4 +1,5 @@
 import { Literal, NamedNode, Term, Variable } from "n3";
+import { Select } from "./query-select";
 
 // inspired by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
@@ -41,7 +42,7 @@ type GraphPatternClauseType = "where" | "optional" | "graph";
 /**
  * Interface inspired by SPARQL representing the query for querying quads on data sources
  */
-interface Query {
+interface Query extends Node {
   /**
    * Type of the query
    */
@@ -126,31 +127,6 @@ interface Union extends Node {
   rightChildren: GraphPattern[];
 }
 
-/**
- * Character for all selector in Query of a type Select
- */
-type AllSelector = "*";
-
-/**
- * Type for variables in Select
- */
-type SelectVariables = Variable[] | AllSelector;
-/**
- * Represents a Select Query
- */
-interface Select extends Node, Query {
-  type: "select";
-  where: Where;
-  distinct: boolean;
-  variables: SelectVariables;
-  limit?: number;
-  offset?: number;
-
-  setLimit(value: number): Select;
-  setOffset(value: number): Select;
-  setWhere(where: Where): Select;
-  addVariables(variables: Variable[]): Select;
-}
 type DataBlockValue = NamedNode | Literal;
 /**
  * Represents Values clause in query.
@@ -233,7 +209,7 @@ interface ExpressionList extends Node {
   expressions: Expression[];
 }
 /**
- * Represents a Where clause of a query.
+ * Represents a Where clause of a SPARQL query.
  * Holds all the constraints of the query.
  */
 interface Where extends GraphPatternClause {
@@ -246,7 +222,6 @@ export type {
   QueryType,
   Query,
   Substitution,
-  SelectVariables,
   Expression,
   DataBlockValue,
   GraphPattern,
