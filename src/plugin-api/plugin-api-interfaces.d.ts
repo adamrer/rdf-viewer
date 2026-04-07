@@ -2,7 +2,7 @@ import { IRI, LanguageString } from "../rdf-types";
 import { NotifierService } from "../view/notifier";
 import { Quad_Object } from "n3";
 import { Language, QueryBuilder } from "../query/query-builder";
-import { Query } from "../query/query";
+import { Query } from "../query/query-select-implementation";
 
 /**
  * Interface representing the JS plugin module file for registering plugins.

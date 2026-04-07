@@ -5,9 +5,10 @@
 /** @typedef {import('../../src/plugin-api/plugin-api-interfaces').LabeledPlugin} LabeledPlugin */
 /** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginV1Instance} PluginV1Instance */
 /** @typedef {string} IRI */
+/** @typedef {import('../../src/plugin-api/plugin-api-interfaces').PluginModule.registerPlugins} */
 
 /**
- * Registers DCAT-specific plugins for Datasets and Distributions.
+ * Registers image plugin for image resources.
  * @returns {LabeledPlugin[]}
  */
 export function registerPlugins() {
@@ -30,7 +31,7 @@ const image = {
 };
 
 /**
- * Logic for the dcat:Dataset viewer.
+ * Logic for the image plugin.
  * @returns {PluginV1}
  */
 function createImagePlugin() {
@@ -42,7 +43,7 @@ function createImagePlugin() {
     },
 
     /**
-     * Creates a visual representation of a Dataset.
+     * Creates an instance of the image plugin.
      * @param {PluginV1InstanceContext} context
      * @param {IRI} subject
      * @returns {PluginV1Instance}
@@ -71,7 +72,7 @@ function createImagePlugin() {
     },
 
     /**
-     * Checks if the subject is an instance of dcat:Dataset (or similar).
+     * Checks if the subject is an instance of any supported image type.
      */
     async isCompatible(context, subject) {
       const subjectTypes = await context.data.fetch.types(subject);

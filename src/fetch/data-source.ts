@@ -1,5 +1,5 @@
 import { Quad } from "n3";
-import { Query } from "../query/query";
+import { Query } from "../query/query-select-implementation";
 import { IRI } from "../rdf-types";
 import { Sourced } from "../plugin-api/plugin-api-interfaces";
 

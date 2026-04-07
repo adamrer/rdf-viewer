@@ -53,10 +53,13 @@ interface GraphPatternBuilder {
 }
 
 class GraphPatternBuilderImpl implements GraphPatternBuilder {
+
   patterns: GraphPattern[];
+
   constructor(patterns: GraphPattern[] = []) {
     this.patterns = patterns;
   }
+  
   triple(
     subject: Term,
     predicate: NamedNode | Variable,

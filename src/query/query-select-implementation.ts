@@ -1,25 +1,8 @@
 import { Variable } from "n3";
-import { QueryType, Where, Node } from "./query-interfaces";
+import { Where, Node, Query } from "./query-interfaces";
 import toNT from "@rdfjs/to-ntriples";
 import { isAllSelector, WhereImpl } from "./query-node-implementations";
 
-/**
- * Interface inspired by SPARQL representing the query for querying quads on data sources
- */
-interface Query {
-  /**
-   * Type of the query
-   */
-  type: QueryType;
-  /**
-   * Where clause
-   */
-  where: Where;
-  /**
-   * Serializes the query to SPARQL
-   */
-  toSparql(): string;
-}
 
 /**
  * Character for all selector in Query of a type Select

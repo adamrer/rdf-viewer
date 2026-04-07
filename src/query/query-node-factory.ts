@@ -28,7 +28,7 @@ import {
   FilterImpl,
   GraphImpl,
 } from "./query-node-implementations";
-import { SelectImpl } from "./query";
+import { SelectImpl } from "./query-select-implementation";
 
 /**
  * Factory for creating node of Query
@@ -96,7 +96,7 @@ interface QueryNodeFactory {
    * @param children - children GraphPattern nodes of the clause
    */
   graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph;
-  // TODO: order by (https://www.w3.org/TR/2013/REC-sparql11-query-20130321/#modOffset)
+  
   // bind(expression: Expression, variable: Variable): Bind
   // union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union
   // optional(children?: GraphPattern[]): Optional
