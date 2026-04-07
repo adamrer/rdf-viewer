@@ -5,7 +5,7 @@ import {
   createSetupContext,
 } from "./context-implementations";
 import { test, expect } from "vitest";
-import { Query } from "../query/query-select";
+import { Query } from "../query/query";
 import { queryProcessor } from "../query/query-processor";
 
 const typePredicate = decodeURIComponent(
