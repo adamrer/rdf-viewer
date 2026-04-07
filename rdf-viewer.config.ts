@@ -1,7 +1,6 @@
 import { RdfViewerConfig } from "./src/config/config-interfaces";
 import { DataSourceType } from "./src/fetch/data-source";
 
-
 /**
  * The initial configuration of the RDF Viewer
  */

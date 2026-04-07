@@ -1,6 +1,7 @@
 import { NamedNode, Term, Variable } from "n3";
-import { DataBlockValue, Expression, GraphPattern } from "./query-interfaces";
 import QueryNodeFactory from "./query-node-factory";
+import { Expression } from "./query-functions";
+import { DataBlockValue, GraphPattern } from "./graph-pattern";
 
 /**
  * Builder for building graph patterns in Query inspired by SPARQL
@@ -53,13 +54,12 @@ interface GraphPatternBuilder {
 }
 
 class GraphPatternBuilderImpl implements GraphPatternBuilder {
-
   patterns: GraphPattern[];
 
   constructor(patterns: GraphPattern[] = []) {
     this.patterns = patterns;
   }
-  
+
   triple(
     subject: Term,
     predicate: NamedNode | Variable,

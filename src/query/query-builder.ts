@@ -1,13 +1,13 @@
 import { DataFactory, Literal, NamedNode, Variable } from "n3";
-import { Query } from "./query-interfaces";
-import { Select, Language, NO_LANG_SPECIFIED } from "./query-interfaces";
+import { Query } from "./query";
+import { Select, Language, NO_LANG_SPECIFIED } from "./query";
 import QueryNodeFactory from "./query-node-factory";
-import { isBlank, isIri, or, langEquality } from "./query-functions";
 import {
   GraphPatternBuilder,
   graphPatternBuilder,
 } from "./graph-pattern-builder";
 import { IRI } from "../rdf-types";
+import { langEquality, or, isIri, isBlank } from "./query-functions-factories";
 
 /**
  * Interface for query step builder for a subset of SPARQL where you can specify

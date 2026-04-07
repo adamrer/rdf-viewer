@@ -273,7 +273,6 @@ async function addPluginsFromFormData(formData: FormData) {
       break;
     }
     case PluginModuleImportType.File: {
-
       const files = formData.getAll("file-input");
       if (files.length === 0) throw new Error("Missing plugin file");
 

@@ -1,34 +1,32 @@
 import { Term, NamedNode, Variable } from "n3";
 import {
-  SelectVariables,
-  Where,
-  Select,
-  GraphPattern,
-  TriplePattern,
-  Expression,
-  ExpressionList,
-  DataBlockValue,
-  Values,
-  Filter,
-  Graph,
-  Bind,
-  Union,
-  Optional,
-  BuiltInCall,
-  OperatorExpression,
-} from "./query-interfaces";
-import {
   WhereImpl,
   TriplePatternImpl,
-  ExpressionListImpl,
   ValuesImpl,
   BindImpl,
   UnionImpl,
   OptionalImpl,
   FilterImpl,
   GraphImpl,
-} from "./query-node-implementations";
-import { SelectImpl } from "./query-select";
+  Bind,
+  DataBlockValue,
+  Filter,
+  Graph,
+  GraphPattern,
+  Optional,
+  TriplePattern,
+  Union,
+  Values,
+  Where,
+} from "./graph-pattern";
+import { Select, SelectImpl, SelectVariables } from "./query";
+import {
+  BuiltInCall,
+  Expression,
+  ExpressionList,
+  ExpressionListImpl,
+  OperatorExpression,
+} from "./query-functions";
 
 /**
  * Factory for creating node of Query
@@ -96,7 +94,7 @@ interface QueryNodeFactory {
    * @param children - children GraphPattern nodes of the clause
    */
   graph(graph: Variable | NamedNode, children?: GraphPattern[]): Graph;
-  
+
   // bind(expression: Expression, variable: Variable): Bind
   // union(leftChildren: GraphPattern[], rightChildren: GraphPattern[]): Union
   // optional(children?: GraphPattern[]): Optional

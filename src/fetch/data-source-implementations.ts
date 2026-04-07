@@ -136,7 +136,7 @@ class FileDataSource implements DataSource {
       const parseOptions = {
         path: this.file.name,
         baseIRI: fileUrl,
-        contentType: ""
+        contentType: "",
       };
       const nameSplit = this.file.name.split("/");
       const actualFileName = nameSplit[nameSplit.length - 1];

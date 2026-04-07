@@ -1,14 +1,8 @@
 import { Quad } from "n3";
-import {
-  Filter,
-  Graph,
-  Query,
-  TriplePattern,
-  Values,
-  Node,
-  Substitution,
-  Select,
-} from "./query-interfaces";
+import { Query, Node } from "./query";
+import { Substitution } from "./query-functions";
+import { Select } from "./query";
+import { TriplePattern, Values, Filter, Graph } from "./graph-pattern";
 
 /**
  * Type of a function that evaluates a constraint with given variable substitution

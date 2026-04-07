@@ -4,9 +4,8 @@ import { FileDataSource } from "../fetch/data-source-implementations";
 import { QueryBuilder, queryBuilder } from "../query/query-builder";
 
 global.window = {
-  location: { origin: "http://test.local" }
+  location: { origin: "http://test.local" },
 } as any;
-
 
 test("fetch label for skos:prefLabel", async () => {
   const fds = new FileDataSource(

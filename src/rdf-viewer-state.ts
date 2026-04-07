@@ -12,7 +12,7 @@ import {
   LabeledPlugin,
   PluginModule,
 } from "./plugin-api/plugin-api-interfaces";
-import { Language } from "./query/query-interfaces";
+import { Language } from "./query/query";
 import { IRI } from "./rdf-types";
 
 type Listener = () => void;

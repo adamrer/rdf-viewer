@@ -1,13 +1,80 @@
-import { Variable } from "n3";
-import { Where, Node, Query } from "./query-interfaces";
-import toNT from "@rdfjs/to-ntriples";
-import { isAllSelector, WhereImpl } from "./query-node-implementations";
+// inspired by sparql grammar https://www.w3.org/TR/sparql11-query/#sparqlGrammar
 
+import toNT from "@rdfjs/to-ntriples";
+import { Variable } from "n3";
+import { GraphPatternClauseType, Where, WhereImpl } from "./graph-pattern";
+
+/**
+ * Interface inspired by SPARQL representing the query for querying quads on data sources
+ */
+interface Query extends Node {
+  /**
+   * Type of the query
+   */
+  type: QueryType;
+  /**
+   * Where clause
+   */
+  where: Where;
+  /**
+   * Serializes the query to SPARQL
+   */
+  toSparql(): string;
+}
+
+/**
+ * Interface representing a node of a Query
+ */
+interface Node {
+  /**
+   * Type of the node
+   */
+  type: NodeType;
+  /**
+   * Serializes the node to SPARQL
+   */
+  toSparql(): string;
+}
+
+/**
+ * Represents no language tag specified for a literal
+ */
+const NO_LANG_SPECIFIED = "";
+
+const ANY_LANGUAGE = "*";
+
+/**
+ * Type representing a language tag of a literal
+ */
+type Language = typeof NO_LANG_SPECIFIED | string;
+
+/**
+ * Types of the Query
+ */
+type QueryType = "select"; // |'construct'|'ask'|'describe'
+/**
+ * Types of the Node
+ */
+type NodeType =
+  | "select"
+  | "triplePattern"
+  | "operatorExpression"
+  | "values"
+  | "builtInCall"
+  | "filter"
+  | "expressionList"
+  | "bind"
+  | "union"
+  | GraphPatternClauseType;
 
 /**
  * Character for all selector in Query of a type Select
  */
 type AllSelector = "*";
+
+function isAllSelector(value: SelectVariables): boolean {
+  return value === "*";
+}
 
 /**
  * Type for variables in Select
@@ -99,5 +166,14 @@ class SelectImpl implements Select {
   }
 }
 
-export { SelectImpl };
-export type { Select, SelectVariables, AllSelector };
+export type {
+  Language,
+  Node,
+  QueryType,
+  Query,
+  Select,
+  SelectVariables,
+  AllSelector,
+};
+
+export { NO_LANG_SPECIFIED, ANY_LANGUAGE, SelectImpl, isAllSelector };

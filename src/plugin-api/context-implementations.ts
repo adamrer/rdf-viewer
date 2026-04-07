@@ -7,7 +7,7 @@ import {
   mergeStructuredQuads,
 } from "../fetch/fetcher";
 import { queryBuilder } from "../query/query-builder";
-import { Language, NO_LANG_SPECIFIED, Query } from "../query/query-interfaces";
+import { Language, NO_LANG_SPECIFIED, Query } from "../query/query";
 import { notifier, NotifierService } from "../view/notifier";
 import {
   PluginV1Vocabulary,

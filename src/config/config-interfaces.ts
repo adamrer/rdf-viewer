@@ -1,5 +1,5 @@
 import { DataSourceType } from "../fetch/data-source";
-import { Language } from "../query/query-interfaces";
+import { Language } from "../query/query";
 import { IRI } from "../rdf-types";
 
 /**
@@ -27,6 +27,4 @@ interface PluginModuleDefinition {
   url: IRI;
 }
 
-export type {
-    RdfViewerConfig
-}
+export type { RdfViewerConfig };

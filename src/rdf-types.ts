@@ -1,4 +1,4 @@
-import { Language } from "./query/query-interfaces";
+import { Language } from "./query/query";
 
 type IRI = string;
 

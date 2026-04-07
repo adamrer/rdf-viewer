@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 
 import { queryBuilder } from "./query-builder";
-import { Select } from "./query-interfaces";
-import { NO_LANG_SPECIFIED } from "./query-interfaces";
+import { Select } from "./query";
+import { NO_LANG_SPECIFIED } from "./query";
 
 test("creates basic SPOG query", () => {
   const builder = queryBuilder();
