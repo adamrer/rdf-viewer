@@ -4,7 +4,13 @@ import { BuiltInCall } from "./query-functions";
 import { DataFactory } from "n3";
 import { NO_LANG_SPECIFIED, Select } from "./query";
 import { Filter, Graph, Where } from "./graph-pattern";
-import { or, isIri, isBlank, langEquality, langMatches } from "./query-functions-factories";
+import {
+  or,
+  isIri,
+  isBlank,
+  langEquality,
+  langMatches,
+} from "./query-functions-factories";
 
 test("creates select with empty where", () => {
   const select: Select = QueryNodeFactory.select(

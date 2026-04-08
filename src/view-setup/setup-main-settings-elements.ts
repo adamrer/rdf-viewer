@@ -153,11 +153,11 @@ function setupDisplayButton(resultsEl: HTMLDivElement) {
   const displayBtn = document.getElementById(
     "display-btn",
   ) as HTMLButtonElement;
-  
-  if (displayBtn=== null) {
+
+  if (displayBtn === null) {
     return;
   }
-  
+
   const app = RdfViewerState.getInstance();
 
   // handle display button click

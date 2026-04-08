@@ -5,6 +5,19 @@ import { Select } from "./query";
 import { TriplePattern, Values, Filter, Graph } from "./graph-pattern";
 
 /**
+ * Processes a Query instance and filters given quads according to the Query
+ */
+interface QueryProcessor {
+  /**
+   * Filters given quads based on the given query
+   *
+   * @param quads - quads to query on
+   * @param query - the query to filter the quads
+   */
+  filter(quads: Quad[], query: Query): Quad[];
+}
+
+/**
  * Type of a function that evaluates a constraint with given variable substitution
  */
 type ConstraintFunction = (variablesSubstitution: Substitution) => boolean;
@@ -32,18 +45,7 @@ interface QuadsConstraintsHelper {
   objectVar?: string;
   graphVar?: string;
 }
-/**
- * Processes a Query instance and filters given quads according to the Query
- */
-interface QueryProcessor {
-  /**
-   * Filters given quads based on the given query
-   *
-   * @param quads - quads to query on
-   * @param query - the query to filter the quads
-   */
-  filter(quads: Quad[], query: Query): Quad[];
-}
+
 /**
  * Implementation of the QueryProcessor interface
  * @see QueryProcessor

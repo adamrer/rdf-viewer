@@ -11,7 +11,6 @@ import {
 
 // BUILT-IN CALLS FACTORIES //
 
-
 const langMatches = (
   variable: Variable,
   language: Language | typeof ANY_LANGUAGE,
@@ -34,7 +33,7 @@ const langMatches = (
     variable,
     language,
   );
-  
+
 function isLangMatches(value: unknown): value is BinaryFunc {
   return value === "langMatches";
 }

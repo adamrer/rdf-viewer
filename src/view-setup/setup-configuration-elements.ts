@@ -99,7 +99,12 @@ function setupDataSourceForm() {
   const fileInput = addSourceFormEl.querySelector(
     "#data-source-file-input",
   ) as HTMLInputElement;
-  if (addSourceFormEl === null || select === null || urlTextInput === null || fileInput === null) {
+  if (
+    addSourceFormEl === null ||
+    select === null ||
+    urlTextInput === null ||
+    fileInput === null
+  ) {
     return;
   }
   fileInput.style.display = "none";
@@ -214,7 +219,12 @@ function setupPluginForm() {
   const fileInput = addPluginFormEl.querySelector(
     "#plugin-add-file-input",
   ) as HTMLInputElement;
-  if (addPluginFormEl === null || select === null || urlInput === null || fileInput === null) {
+  if (
+    addPluginFormEl === null ||
+    select === null ||
+    urlInput === null ||
+    fileInput === null
+  ) {
     return;
   }
   fileInput.style.display = "none";
