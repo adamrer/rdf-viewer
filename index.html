@@ -28,27 +28,47 @@
         <h1 class="section-title">RDF Viewer</h1>
       </section>
 
-      <!-- ENTITY INPUT -->
+      <!-- ENTITY INPUT + COMPATIBLE PLUGINS -->
       <section class="section section-surface">
         <div class="form-group">
-          <label for="iri">Entity IRI</label>
+          <div title="
+Entity IRI is the unique identifier
+for the RDF entity you want to view." 
+          class="flex-wrapper">
+            <label class="u-help" for="iri">Entity IRI &#9432;</label>
+          </div>
           <input type="text" id="iri" placeholder="Enter entity IRI" />
         </div>
 
         <div class="flex-wrapper">
-          <button id="compatible-plugins-btn">Compatible plugins</button>
+          <div title="
+Compatible plugins are those 
+that support the current entity." 
+          class="flex-wrapper" id="compatible-plugins-wrapper">
+            <button id="compatible-plugins-btn">Compatible plugins</button>
+            <span class="u-help">&#9432;</span>
+          </div>
         </div>
       </section>
 
       <!-- PLUGIN + LANGUAGE -->
       <section class="section section-surface">
         <div class="form-group">
-          <label for="choose-plugin">Plugin</label>
+          <label for="choose-plugin" class="u-help" title="
+Plugin sets the way the
+entity will be displayed.">
+            Plugin &#9432;
+          </label>
           <select id="choose-plugin"></select>
         </div>
 
         <div class="form-group">
-          <label for="languages">Languages</label>
+          <label for="languages" class="u-help" title="
+Define the preferred languages for the 
+entity display. The first one is the 
+most preferred.">
+            Languages &#9432;
+          </label>
           <input type="text" id="languages" placeholder="en, cs, fr, ..." />
         </div>
 
@@ -66,13 +86,22 @@
 
         <!-- DATA SOURCES -->
         <fieldset id="sources-fieldset" class="section">
-          <legend>Data Sources</legend>
+          <legend>
+            Data Sources
+          </legend>
 
+          <label for="add-source-form" class="u-help" title="
+Data Sources are the locations 
+from which the RDF data about 
+the entity and its properties 
+will be retrieved."
+            >
+            Data Source &#9432;
+          </label>
           <form id="add-source-form" class="section">
             <div class="flex-wrapper">
               <select name="data-source-select" id="data-source-select">
                 <option value="SPARQL">SPARQL Endpoint</option>
-                section-title
                 <option value="LOCAL_FILE">Local File</option>
                 <option value="REMOTE_FILE">Remote File</option>
                 <option value="LDP">LDP Server</option>
@@ -107,6 +136,12 @@
         <!-- PLUGINS -->
         <fieldset id="plugins-fieldset" class="section">
           <legend>Plugins</legend>
+          
+          <label for="add-plugin-form" class="u-help" title="
+Plugin Module is JavaScript file 
+that will register a plugin(s)">
+            Plugin Module &#9432;
+          </label>
 
           <form id="add-plugin-form" class="section">
             <div class="flex-wrapper">
@@ -135,7 +170,7 @@
             </div>
 
             <button type="submit" class="btn-primary add-plugin">
-              + Add Plugin
+              + Add Plugin Module
             </button>
           </form>
 

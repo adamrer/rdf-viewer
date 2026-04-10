@@ -74,6 +74,9 @@ function setupIriElement() {
 function setupCompatiblePluginsButton() {
   const app = RdfViewerState.getInstance();
 
+  const compatiblePluginsWrapper = document.getElementById(
+    "compatible-plugins-wrapper",
+  ) as HTMLDivElement;
   const compatiblePluginsBtn = document.getElementById(
     "compatible-plugins-btn",
   ) as HTMLButtonElement;
@@ -82,13 +85,13 @@ function setupCompatiblePluginsButton() {
     "choose-plugin",
   ) as HTMLSelectElement;
 
-  if (compatiblePluginsBtn === null || pluginSelectEl === null) {
+  if (compatiblePluginsBtn === null || pluginSelectEl === null || compatiblePluginsWrapper === null) {
     return;
   }
 
   // setup compatible plugins button
   compatiblePluginsBtn.addEventListener("click", async () => {
-    withLoading(compatiblePluginsBtn, async () => {
+    withLoading(compatiblePluginsWrapper, async () => {
       const iri = app.getEntityIri();
       if (!iri) {
         notifier.notify(
