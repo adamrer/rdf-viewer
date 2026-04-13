@@ -79,3 +79,12 @@ test("get predicates for non-existing subject", () => {
     .predicates();
   expect(result).toEqual([]);
 });
+
+test("isEmpty returns false for non-empty quads", () => {
+  expect(navigator.isEmpty()).toBe(false);
+});
+
+test("isEmpty returns true for empty quads", () => {
+  const emptyNavigator = graphNavigator({});
+  expect(emptyNavigator.isEmpty()).toBe(true);
+});

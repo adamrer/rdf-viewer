@@ -244,7 +244,7 @@ interface PluginV1Instance {
    * Mounts the plugin instance into the given HTML element
    * @param element - HTML element where to mount the plugin
    */
-  mount: (element: HTMLElement) => void;
+  mount: (element: HTMLElement) => Promise<void>;
   /**
    * Unmounts the plugin instance and frees resources
    */
@@ -267,6 +267,19 @@ interface GraphNavigator {
    * @returns subject navigator for the given subject
    */
   subject: (subject: IRI) => SubjectNavigator;
+
+  /**
+   * 
+   * @returns true if there are no quads present
+   */
+  isEmpty: () => boolean;
+
+  /**
+   * Checks if there are any quads available for the given subject
+   * @param subject - IRI of the subject
+   * @returns true if there are quads available for the subject, false otherwise
+   */
+  hasQuadsForSubject: (subject: IRI) => boolean;
 }
 
 /**

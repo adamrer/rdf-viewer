@@ -224,6 +224,13 @@ class GraphNavigatorImpl implements GraphNavigator {
     if (predicates) return subjectNavigator(predicates);
     return subjectNavigator({});
   }
+  isEmpty() {
+    return this.subjects().length === 0;
+  }
+  hasQuadsForSubject(subject: IRI) {
+    return !!this.data[subject];
+  };
+
 }
 
 interface StructuredPredicates {

@@ -1,6 +1,7 @@
 import {
   LabeledPlugin,
   PluginV1Handler,
+  PluginV1Instance,
 } from "./plugin-api/plugin-api-interfaces";
 import { RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
@@ -8,6 +9,7 @@ import {
   createInstanceContext,
   createSetupContext,
 } from "./plugin-api/context-implementations";
+import { withLoading } from "./view/spinner";
 
 /**
  * Is responsible for displaying the entity with a plugin to the user.
@@ -19,37 +21,48 @@ import {
  * @see PluginV1InstanceContext
  * @see PluginV1Handler
  */
-function renderEntityWithPlugin(
+async function renderEntityWithPlugin(
   plugin: LabeledPlugin,
   entityIri: IRI,
   element: HTMLElement,
-): PluginV1Handler | null {
+): Promise<PluginV1Handler | null> {
   const app = RdfViewerState.getInstance();
 
   const instanceContext = createInstanceContext(
     app,
     createSetupContext().vocabulary.getReadableVocabulary(),
   );
+  
+  const usedPluginElement = document.createElement("span");
+  const contentElement = document.createElement("div");
+  
+  element.replaceChildren();
   const pluginInstance = plugin.v1.createPluginInstance(
     instanceContext,
     entityIri,
   );
-  if (pluginInstance == null) {
-    throw new Error("Failed to create plugin instance.");
+  if (pluginInstance == null){
+    return null;
   }
-  const usedPluginElement = document.createElement("span");
-  const contentElement = document.createElement("div");
-
+  usedPluginElement.textContent = "Plugin: "
   if (app.getAppLanguage() in plugin.label)
-    usedPluginElement.textContent =
-      "Plugin: " + plugin.label[app.getAppLanguage()];
+    usedPluginElement.textContent += plugin.label[app.getAppLanguage()];
   else usedPluginElement.textContent = Object.values(plugin.label)[0];
-
-  element.replaceChildren();
+  
   element.appendChild(usedPluginElement);
   element.appendChild(contentElement);
-  pluginInstance.mount(contentElement);
 
+  await withLoading(contentElement, async () => {
+    await pluginInstance.mount(contentElement);
+  })
+
+  if (!instanceContext.data.fetched.hasQuadsForSubject(entityIri)) {
+    const noDataElement = document.createElement("div");
+    noDataElement.textContent =
+      "No data available for this entity. Some Data Source may be missing or the entity IRI may be incorrect.";
+    contentElement.replaceChildren(noDataElement);
+  }
+  
   return {
     pluginLabel: plugin.label,
     pluginPriority: plugin.v1.priority,
