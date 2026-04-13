@@ -134,6 +134,7 @@ function setupDataSourceForm() {
     event.preventDefault();
     const formData = new FormData(addSourceFormEl);
     addDataSourceFromFormData(formData);
+    notifier.notify("Data source added", "success");
     addSourceFormEl.reset();
     // prevent refresh
     return false;
@@ -249,6 +250,7 @@ function setupPluginForm() {
     event.preventDefault();
     const formData = new FormData(addPluginFormEl);
     withLoading(addPluginFormEl, () => addPluginsFromFormData(formData));
+    notifier.notify("Plugin(s) added", "success");
     addPluginFormEl.reset();
     // prevent refresh
     return false;
@@ -323,6 +325,7 @@ function createDataSourceEntry(
   removeButton.addEventListener("click", () => {
     entryEl.remove();
     app.removeDataSource(identifier);
+    notifier.notify("Data source removed", "success");
   });
   entryEl.appendChild(removeButton);
 
@@ -371,6 +374,7 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
 
       entryEl.remove();
       app.removePlugin(pluginId);
+      notifier.notify("Plugin removed", "success");
     }
   });
 
