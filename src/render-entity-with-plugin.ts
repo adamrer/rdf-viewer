@@ -1,7 +1,6 @@
 import {
   LabeledPlugin,
   PluginV1Handler,
-  PluginV1Instance,
 } from "./plugin-api/plugin-api-interfaces";
 import { RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
@@ -56,12 +55,6 @@ async function renderEntityWithPlugin(
     await pluginInstance.mount(contentElement);
   })
 
-  if (!instanceContext.data.fetched.hasQuadsForSubject(entityIri)) {
-    const noDataElement = document.createElement("div");
-    noDataElement.textContent =
-      "No data available for this entity. Some Data Source may be missing or the entity IRI may be incorrect.";
-    contentElement.replaceChildren(noDataElement);
-  }
   
   return {
     pluginLabel: plugin.label,
