@@ -23,13 +23,22 @@ const rdfViewerConfig: RdfViewerConfig = {
   ],
 
   pluginModules: [
-    { url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/dcat-plugins-v1.js" },
-    { url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/generic-plugin-v1-gemini.js" },
-    { url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/ldp-plugin-v1-gemini.js" },
-    { url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/image-plugin-v1.js" },
+    {
+      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/dcat-plugins-v1.js",
+    },
+    {
+      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/generic-plugin-v1-gemini.js",
+    },
+    {
+      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/ldp-plugin-v1-gemini.js",
+    },
+    {
+      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/image-plugin-v1.js",
+    },
   ],
 
-  entityIri: "https://data.gov.cz/zdroj/datové-sady/00025593/79eea1096761baa84f3677d8e3d64fe4",
+  entityIri:
+    "https://data.gov.cz/zdroj/datové-sady/00025593/79eea1096761baa84f3677d8e3d64fe4",
 
   languages: ["cs", "en"],
 

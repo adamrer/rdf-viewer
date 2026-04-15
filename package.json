@@ -34,6 +34,7 @@
     "rdf-parse": "^4.0.0",
     "readable-stream": "^4.7.0",
     "sortablejs": "^1.15.7",
-    "sparqljson-parse": "^3.3.0"
+    "sparqljson-parse": "^3.3.0",
+    "validate-iri": "^1.0.1"
   }
 }

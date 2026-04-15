@@ -1,7 +1,8 @@
-import { renderEntityWithPlugin } from "../render-entity-with-plugin";
+import { renderEntityWithPlugin } from "../core/render-entity-with-plugin";
 import { notifier } from "../view/notifier";
-import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
+import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { withLoading } from "../view/spinner";
+import { DataSourcesError } from "../fetch/fetcher";
 
 /**
  * Setups the HTML elements that are in the main settings of the UI
@@ -56,7 +57,13 @@ function setupIriElement() {
   // bind change of IRI input to RdfViewerState
   iriEl.addEventListener("change", () => {
     const iriText = iriEl.value;
-    app.setEntityIri(iriText);
+    const errorElement = document.getElementById("invalid-iri-error");
+    try {
+      errorElement?.classList.add("u-hidden");
+      app.setEntityIri(iriText);
+    } catch {
+      errorElement?.classList.remove("u-hidden");
+    }
   });
 
   app.subscribe(
@@ -85,7 +92,11 @@ function setupCompatiblePluginsButton() {
     "choose-plugin",
   ) as HTMLSelectElement;
 
-  if (compatiblePluginsBtn === null || pluginSelectEl === null || compatiblePluginsWrapper === null) {
+  if (
+    compatiblePluginsBtn === null ||
+    pluginSelectEl === null ||
+    compatiblePluginsWrapper === null
+  ) {
     return;
   }
 
@@ -98,6 +109,13 @@ function setupCompatiblePluginsButton() {
           "Please enter an IRI to find compatible plugins.",
           "error",
         );
+        return;
+      }
+      const isInvalidIri = !document
+        .getElementById("invalid-iri-error")
+        ?.classList.contains("u-hidden");
+      if (isInvalidIri) {
+        notifier.notify("Please enter a valid IRI.", "error");
         return;
       }
       compatiblePluginsBtn.disabled = true;
@@ -164,17 +182,33 @@ function setupDisplayButton(resultsEl: HTMLDivElement) {
   const app = RdfViewerState.getInstance();
 
   // handle display button click
-  displayBtn.addEventListener("click", () => {
+  displayBtn.addEventListener("click", async () => {
     displayBtn.disabled = true;
     const selectedPlugin = app.getSelectedPlugin();
+    const invalidIriElement = document.getElementById("invalid-iri-error");
+    const iriIsInvalid = !invalidIriElement?.classList.contains("u-hidden");
     try {
       if (selectedPlugin) {
-        renderEntityWithPlugin(selectedPlugin, app.getEntityIri(), resultsEl);
+        if (!iriIsInvalid) {
+          await renderEntityWithPlugin(
+            selectedPlugin,
+            app.getEntityIri(),
+            resultsEl,
+          );
+        } else {
+          notifier.notify("Please enter a valid IRI.", "error");
+        }
       } else {
         notifier.notify("No plugin selected.", "error");
       }
-    } catch {
-      notifier.notify("Couldn't display entity", "error");
+    } catch (error) {
+      if (error instanceof DataSourcesError) {
+        error.errors.forEach((err) => {
+          notifier.notify(err.message, "error");
+        });
+      } else {
+        notifier.notify("Couldn't display entity", "error");
+      }
     } finally {
       displayBtn.disabled = false;
     }

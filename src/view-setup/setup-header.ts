@@ -1,4 +1,4 @@
-import { RdfViewerState } from "../rdf-viewer-state";
+import { RdfViewerState } from "../core/rdf-viewer-state";
 
 function setupHeaderElements() {
   setupAppLanguageSelect();

@@ -26,6 +26,11 @@
   --spacing-md: 1rem;
   --spacing-lg: 2rem;
 
+  /* Notification colors */
+  --error-color: #991b1b;
+  --info-color: #0369a1;
+  --success-color: #166534;
+  --warning-color: #92400e;
   --max-width: 900px;
 }
 
@@ -178,6 +183,45 @@ button:hover {
 }
 
 /* ======================================================
+   TABS
+====================================================== */
+
+.tabs {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  background-color: #f1f1f1;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.tabs button {
+  background-color: inherit;
+  border: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+.tabs button:hover {
+  background-color: var(--color-accent-hover);
+  color: white;
+}
+
+.tabs button.active {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+}
+
+/* ======================================================
    MODAL
 ====================================================== */
 
@@ -195,9 +239,11 @@ dialog {
 
 fieldset {
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: 0 0 var(--radius) var(--radius);
   padding: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  margin-left: 0;
+  margin-right: 0;
 }
 
 legend {
@@ -215,12 +261,22 @@ legend {
   padding-left: 1.2rem;
 }
 
+#source-list li {
+  margin-bottom: var(--spacing-xs);
+}
+
 #plugin-list li {
   margin-bottom: var(--spacing-xs);
 }
 
 #plugin-list li:hover {
   cursor: grab;
+}
+
+#plugin-list li button,
+#source-list div button {
+  margin-bottom: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
 }
 
 /* ======================================================
@@ -258,26 +314,34 @@ legend {
 
 .notification.info {
   background-color: #e0f2fe;
-  color: #0369a1;
+  color: var(--info-color);
   border: 1px solid #bae6fd;
 }
 
 .notification.success {
   background-color: #dcfce7;
-  color: #166534;
+  color: var(--success-color);
   border: 1px solid #bbf7d0;
 }
 
 .notification.warning {
   background-color: #fef9c3;
-  color: #92400e;
+  color: var(--warning-color);
   border: 1px solid #fde68a;
 }
 
 .notification.error {
   background-color: #fee2e2;
-  color: #991b1b;
+  color: var(--error-color);
   border: 1px solid #fecaca;
+}
+
+.error-box {
+  color: var(--error-color);
+  background-color: #fee2e2;
+  padding: var(--spacing-xs);
+  border: 1px solid var(--error-color);
+  border-radius: var(--radius);
 }
 
 /* ======================================================
@@ -317,4 +381,14 @@ legend {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ======================================================
+   ICONS
+====================================================== */
+
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
 }

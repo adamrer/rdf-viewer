@@ -1,4 +1,4 @@
-import { RdfViewerState } from "../rdf-viewer-state";
+import { RdfViewerState } from "../core/rdf-viewer-state";
 import { notifier } from "../view/notifier";
 import { setupConfigurationElements } from "./setup-configuration-elements";
 import { setupHeaderElements } from "./setup-header";
@@ -19,7 +19,7 @@ function setupElements() {
   // main display settings
   setupMainSettingsElements();
 
-  // config
+  // configuration
   setupConfigurationElements();
 
   // notifier

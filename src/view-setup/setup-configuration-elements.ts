@@ -1,9 +1,10 @@
 import Sortable from "sortablejs";
 import { DataSourceType } from "../fetch/data-source";
 import { IRI } from "../rdf-types";
-import { LabeledPluginWithId, RdfViewerState } from "../rdf-viewer-state";
+import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { notifier } from "../view/notifier";
 import { withLoading } from "../view/spinner";
+import { getIcon } from "../view/get-icon";
 
 function setupConfigurationElements() {
   setupDataSourceForm();
@@ -11,6 +12,26 @@ function setupConfigurationElements() {
   setupPluginForm();
   setupPluginList();
   setupConfigModal();
+  setupConfigTabs();
+}
+
+function setupConfigTabs() {
+  const tabs = document.querySelectorAll(".tabs button");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      tabContents.forEach((tc) => tc.classList.remove("active"));
+
+      tab.classList.add("active");
+      const contentId = tab.id.replace("-tab", "-tab-content");
+      const content = document.getElementById(contentId);
+      if (content) {
+        content.classList.add("active");
+      }
+    });
+  });
 }
 
 function setupDatasourceList() {
@@ -320,8 +341,7 @@ function createDataSourceEntry(
 
   // add remove button for data source
   const removeButton = document.createElement("button");
-  removeButton.className = "remove-btn";
-  removeButton.textContent = "×";
+  removeButton.appendChild(getIcon("bin-icon"));
   removeButton.addEventListener("click", () => {
     entryEl.remove();
     app.removeDataSource(identifier);
@@ -364,8 +384,7 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
   entryEl.setAttribute("data-id", plugin.id.toString());
 
   const removeButton = document.createElement("button");
-  removeButton.className = "remove-btn";
-  removeButton.textContent = "×";
+  removeButton.appendChild(getIcon("bin-icon"));
   entryEl.appendChild(removeButton);
   removeButton.addEventListener("click", () => {
     const listElement = entryEl.parentElement;
