@@ -2,7 +2,7 @@ import { Quad, Quad_Object } from "n3";
 import { Query, QueryBuilder, queryBuilder } from "../query/query-builder";
 import { DataSource } from "./data-source-implementations";
 import { Sourced } from "./data-source";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 
 /**
  * Interface for fetching quads from multiple data sources
