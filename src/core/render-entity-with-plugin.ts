@@ -1,14 +1,14 @@
 import {
   LabeledPlugin,
   PluginV1Handler,
-} from "./plugin-api/plugin-api-interfaces";
+} from "../plugin-api/plugin-api-interfaces";
 import { RdfViewerState } from "./rdf-viewer-state";
-import { IRI } from "./rdf-types";
+import { IRI } from "../rdf-types";
 import {
   createInstanceContext,
   createSetupContext,
-} from "./plugin-api/context-implementations";
-import { withLoading } from "./view/spinner";
+} from "../plugin-api/context-implementations";
+import { withLoading } from "../view/spinner";
 
 /**
  * Is responsible for displaying the entity with a plugin to the user.
@@ -31,31 +31,30 @@ async function renderEntityWithPlugin(
     app,
     createSetupContext().vocabulary.getReadableVocabulary(),
   );
-  
+
   const usedPluginElement = document.createElement("span");
   const contentElement = document.createElement("div");
-  
+
   element.replaceChildren();
   const pluginInstance = plugin.v1.createPluginInstance(
     instanceContext,
     entityIri,
   );
-  if (pluginInstance == null){
+  if (pluginInstance == null) {
     return null;
   }
-  usedPluginElement.textContent = "Plugin: "
+  usedPluginElement.textContent = "Plugin: ";
   if (app.getAppLanguage() in plugin.label)
     usedPluginElement.textContent += plugin.label[app.getAppLanguage()];
   else usedPluginElement.textContent = Object.values(plugin.label)[0];
-  
+
   element.appendChild(usedPluginElement);
   element.appendChild(contentElement);
 
   await withLoading(contentElement, async () => {
     await pluginInstance.mount(contentElement);
-  })
+  });
 
-  
   return {
     pluginLabel: plugin.label,
     pluginPriority: plugin.v1.priority,

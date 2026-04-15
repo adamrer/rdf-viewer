@@ -34,6 +34,14 @@ interface Fetcher {
 }
 
 const DEFAULT_GRAPH = "default";
+
+class DataSourcesError extends AggregateError {
+  constructor(errors: Error[]) {
+    super(errors, "One or more data sources failed to fetch quads");
+    this.name = "DataSourcesError";
+  }
+}
+
 /**
  * Class implementing the QuadsFetcher interface.
  *
@@ -52,17 +60,21 @@ class FetcherImpl implements Fetcher {
     );
 
     const successfulResults: Array<Sourced<Quad>> = [];
+    const errors: Error[] = [];
 
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
         successfulResults.push(...result.value);
       } else {
-        console.error(
-          `DataSource ${this.dataSources[index].identifier} failed:`,
-          result.reason,
+        errors.push(
+          new Error(`DataSource ${this.dataSources[index].identifier} failed.`),
         );
       }
     });
+
+    if (errors.length > 0) {
+      throw new DataSourcesError(errors);
+    }
 
     return successfulResults;
   }
@@ -188,4 +200,4 @@ function fetcher(dataSources: readonly DataSource[]): Fetcher {
 
 export type { Fetcher, StructuredQuads };
 
-export { fetcher, mergeStructuredQuads };
+export { fetcher, mergeStructuredQuads, DataSourcesError };

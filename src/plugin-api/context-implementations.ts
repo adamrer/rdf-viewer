@@ -1,5 +1,5 @@
 import { DataSource, Sourced } from "../fetch/data-source";
-import { renderEntityWithPlugin } from "../render-entity-with-plugin";
+import { renderEntityWithPlugin } from "../core/render-entity-with-plugin";
 import {
   StructuredQuads,
   Fetcher,
@@ -20,7 +20,7 @@ import {
   SubjectNavigator,
 } from "./plugin-api-interfaces";
 import { IRI } from "../rdf-types";
-import { RdfViewerState } from "../rdf-viewer-state";
+import { RdfViewerState } from "../core/rdf-viewer-state";
 import { createSpinner } from "../view/spinner";
 import { Quad_Object } from "n3";
 
@@ -229,8 +229,7 @@ class GraphNavigatorImpl implements GraphNavigator {
   }
   hasQuadsForSubject(subject: IRI) {
     return !!this.data[subject];
-  };
-
+  }
 }
 
 interface StructuredPredicates {

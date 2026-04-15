@@ -269,7 +269,7 @@ interface GraphNavigator {
   subject: (subject: IRI) => SubjectNavigator;
 
   /**
-   * 
+   *
    * @returns true if there are no quads present
    */
   isEmpty: () => boolean;
