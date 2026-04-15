@@ -217,11 +217,15 @@ class RdfViewerState {
    */
   async getPluginsCompatibility(
     iri: IRI,
-  ): Promise<CompatibleLabeledPluginWithId[]> {
+  ): Promise<{
+    compatibilities: CompatibleLabeledPluginWithId[];
+    errors: Error[];
+  }> {
     const context = createCompatibilityContext(
       this.getDataSources(),
       createSetupContext().vocabulary.getReadableVocabulary(),
     );
+    const errors: Error[] = [];
     const compatiblePlugins: CompatibleLabeledPluginWithId[] =
       await Promise.all(
         this.getPlugins().map((plugin) =>
@@ -233,12 +237,24 @@ class RdfViewerState {
                 `Error while checking compatibility for plugin ${plugin.label[this.getAppLanguage()] ?? Object.values(plugin.label)[0]}:`,
                 err,
               );
+              if (err instanceof AggregateError) {
+                errors.push(...err.errors);
+              } else {
+                errors.push(err);
+              }
+
               return { ...plugin, isCompatible: false };
             }),
         ),
       );
     compatiblePlugins.sort((a, b) => b.v1.priority - a.v1.priority);
-    return compatiblePlugins;
+    const uniqueErrors = Array.from(
+      new Map(errors.map((e) => [e.message, e])).values(),
+    );
+    return {
+      compatibilities: compatiblePlugins,
+      errors: uniqueErrors,
+    };
   }
 
   /**
@@ -362,5 +378,5 @@ class RdfViewerState {
   }
 }
 
-export type { LabeledPluginWithId };
+export type { LabeledPluginWithId, CompatibleLabeledPluginWithId };
 export { RdfViewerState };

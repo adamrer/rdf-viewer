@@ -67,7 +67,7 @@ class FetcherImpl implements Fetcher {
         successfulResults.push(...result.value);
       } else {
         errors.push(
-          new Error(`DataSource ${this.dataSources[index].identifier} failed.`),
+          new Error(`DataSource ${this.dataSources[index].identifier} failed to fetch.`),
         );
       }
     });

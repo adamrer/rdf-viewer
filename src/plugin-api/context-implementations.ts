@@ -84,7 +84,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
     const app = RdfViewerState.getInstance();
 
     const pluginCompatibilities = await app.getPluginsCompatibility(subjectIri);
-    for (const compatibility of pluginCompatibilities) {
+    for (const compatibility of pluginCompatibilities.compatibilities) {
       if (
         compatibility.isCompatible &&
         compatibility.v1.priority >= minPriority

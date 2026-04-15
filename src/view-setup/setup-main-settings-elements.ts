@@ -103,6 +103,7 @@ function setupCompatiblePluginsButton() {
   // setup compatible plugins button
   compatiblePluginsBtn.addEventListener("click", async () => {
     withLoading(compatiblePluginsWrapper, async () => {
+      // IRI validation
       const iri = app.getEntityIri();
       if (!iri) {
         notifier.notify(
@@ -118,49 +119,56 @@ function setupCompatiblePluginsButton() {
         notifier.notify("Please enter a valid IRI.", "error");
         return;
       }
+
       compatiblePluginsBtn.disabled = true;
-      try {
-        const pluginsWithCompatibility = await app.getPluginsCompatibility(iri);
-        const compatiblePlugins = pluginsWithCompatibility.filter(
-          (plugin) => plugin.isCompatible,
-        );
-        const nonComatiblePlugins = pluginsWithCompatibility.filter(
-          (plugin) => !plugin.isCompatible,
-        );
+      const compatibilityResult = await app.getPluginsCompatibility(iri);
+      const pluginsWithCompatibility = compatibilityResult.compatibilities;
+      const errors = compatibilityResult.errors;
 
-        const compatibleOptGroup = document.createElement("optgroup");
-        compatibleOptGroup.label = "Compatible";
-        const nonCompatibleOptGroup = document.createElement("optgroup");
-        nonCompatibleOptGroup.label = "Not Compatible";
-        const compatibleOptions = compatiblePlugins.map((plugin) =>
-          createPluginOption(plugin),
-        );
-        const nonCompatibleOptions = nonComatiblePlugins.map((plugin) =>
-          createPluginOption(plugin),
-        );
-
-        compatibleOptGroup.replaceChildren(...compatibleOptions);
-        nonCompatibleOptGroup.replaceChildren(...nonCompatibleOptions);
-
-        pluginSelectEl.replaceChildren(
-          ...[compatibleOptGroup, nonCompatibleOptGroup],
-        );
-        const firstCompatiblePluginId = compatiblePlugins[0].id;
-        app.setSelectedPlugin(firstCompatiblePluginId);
-
-        notifier.notify(
-          `Found ${compatiblePlugins.length} compatible plugin(s).`,
-          "success",
-        );
-      } catch (err) {
-        console.error("Error while finding compatible plugins", err);
-        notifier.notify(
-          "Failed to find compatible plugins. Please check the console for more details.",
-          "error",
-        );
-      } finally {
-        compatiblePluginsBtn.disabled = false;
+      if (errors.length > 0) {
+        compatibilityResult.errors.forEach((err) => {
+          notifier.notify(err.message, "error");
+        });
       }
+
+      const compatiblePlugins = pluginsWithCompatibility.filter(
+        (plugin) => plugin.isCompatible,
+      );
+      const nonComatiblePlugins = pluginsWithCompatibility.filter(
+        (plugin) => !plugin.isCompatible,
+      );
+
+      if (compatiblePlugins.length === 0) {
+        notifier.notify("No compatible plugins found.", "warning");
+      }
+
+      // Divide plugins by compatibility in select element
+      const compatibleOptGroup = document.createElement("optgroup");
+      compatibleOptGroup.label = "Compatible";
+      const nonCompatibleOptGroup = document.createElement("optgroup");
+      nonCompatibleOptGroup.label = "Not Compatible";
+      const compatibleOptions = compatiblePlugins.map((plugin) =>
+        createPluginOption(plugin),
+      );
+      const nonCompatibleOptions = nonComatiblePlugins.map((plugin) =>
+        createPluginOption(plugin),
+      );
+
+      compatibleOptGroup.replaceChildren(...compatibleOptions);
+      nonCompatibleOptGroup.replaceChildren(...nonCompatibleOptions);
+
+      pluginSelectEl.replaceChildren(
+        ...[compatibleOptGroup, nonCompatibleOptGroup],
+      );
+      const firstCompatiblePluginId = compatiblePlugins[0].id;
+      app.setSelectedPlugin(firstCompatiblePluginId);
+
+      notifier.notify(
+        `Found ${compatiblePlugins.length} compatible plugin(s).`,
+        "success",
+      );
+
+      compatiblePluginsBtn.disabled = false;
     });
   });
 }
