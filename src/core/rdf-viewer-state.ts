@@ -1,19 +1,20 @@
-import { rdfViewerConfig } from "../rdf-viewer.config";
-import { dataSourceFactory } from "./fetch/data-source-factory";
+import { validateIri } from "validate-iri";
+import { rdfViewerConfig } from "../../rdf-viewer.config";
+import { dataSourceFactory } from "../fetch/data-source-factory";
 import {
   DataSource,
   DataSourceType,
-} from "./fetch/data-source-implementations";
+} from "../fetch/data-source-implementations";
 import {
   createCompatibilityContext,
   createSetupContext,
-} from "./plugin-api/context-implementations";
+} from "../plugin-api/context-implementations";
 import {
   LabeledPlugin,
   PluginModule,
-} from "./plugin-api/plugin-api-interfaces";
-import { Language } from "./query/query";
-import { IRI } from "./rdf-types";
+} from "../plugin-api/plugin-api-interfaces";
+import { Language } from "../query/query";
+import { IRI } from "../rdf-types";
 
 type Listener = () => void;
 type StateMember =
@@ -303,10 +304,17 @@ class RdfViewerState {
   /**
    * Sets the entity that will be displayed by a plugin
    * @param iri - The IRI of an entity that is desired to be displayed by a plugin
+   * @throws Error if the provided IRI is not valid according to validate-iri library
    */
   setEntityIri(iri: IRI) {
-    this.entityIri = decodeURIComponent(iri);
-    this.notify(["entityIri"]);
+    const decodedIri = decodeURIComponent(iri);
+    const iriValidation = validateIri(decodedIri);
+    if (iriValidation instanceof Error) {
+      throw iriValidation;
+    } else {
+      this.entityIri = decodedIri;
+      this.notify(["entityIri"]);
+    }
   }
 
   /**
