@@ -4,7 +4,7 @@ import { IRI } from "../core/rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { notifier } from "../view/notifier";
 import { withLoading } from "../view/spinner";
-import { getIcon } from "../view/get-icon";
+import { getIcon, iconType } from "../view/get-icon";
 
 function setupConfigurationElements() {
   setupDataSourceForm();
@@ -341,7 +341,7 @@ function createDataSourceEntry(
 
   // add remove button for data source
   const removeButton = document.createElement("button");
-  removeButton.appendChild(getIcon("bin-icon"));
+  removeButton.appendChild(getIcon(iconType.bin));
   removeButton.addEventListener("click", () => {
     entryEl.remove();
     app.removeDataSource(identifier);
@@ -384,7 +384,7 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
   entryEl.setAttribute("data-id", plugin.id.toString());
 
   const removeButton = document.createElement("button");
-  removeButton.appendChild(getIcon("bin-icon"));
+  removeButton.appendChild(getIcon(iconType.bin));
   entryEl.appendChild(removeButton);
   removeButton.addEventListener("click", () => {
     const listElement = entryEl.parentElement;
