@@ -2,7 +2,7 @@
 
 You can try RDF Viewer [here](https://adamrer.github.io/rdf-viewer/).
 
-# Build
+## Build
 
 You will need `git`, `npm` and `make`.
 
@@ -21,7 +21,7 @@ make build
 
 Build of the application will be in the `/dist` folder.
 
-# Run with Docker
+## Run with Docker
 
 Clone the repository:
 
