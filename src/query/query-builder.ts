@@ -6,7 +6,7 @@ import {
   GraphPatternBuilder,
   graphPatternBuilder,
 } from "./graph-pattern-builder";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 import { langEquality, or, isIri, isBlank } from "./query-functions-factories";
 
 /**

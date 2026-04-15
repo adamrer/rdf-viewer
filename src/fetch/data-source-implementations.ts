@@ -12,7 +12,7 @@ import { queryProcessor } from "../query/query-processor";
 import pLimit from "p-limit";
 import { Query, queryBuilder } from "../query/query-builder";
 import { DataSource, DataSourceType, Sourced } from "./data-source";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 import { SparqlJsonParser } from "sparqljson-parse";
 
 /**

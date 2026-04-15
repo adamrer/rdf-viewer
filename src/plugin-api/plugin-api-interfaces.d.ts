@@ -1,4 +1,4 @@
-import { IRI, LanguageString } from "../rdf-types";
+import { IRI, LanguageString } from "../core/rdf-types";
 import { NotifierService } from "../view/notifier";
 import { Quad_Object } from "n3";
 import { Language, QueryBuilder } from "../query/query-builder";

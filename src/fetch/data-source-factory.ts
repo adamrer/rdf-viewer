@@ -1,4 +1,4 @@
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 import { DataSourceType, DataSource } from "./data-source";
 import {
   SparqlDataSource,

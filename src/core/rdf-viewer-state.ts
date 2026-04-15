@@ -14,7 +14,7 @@ import {
   PluginModule,
 } from "../plugin-api/plugin-api-interfaces";
 import { Language } from "../query/query";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 
 type Listener = () => void;
 type StateMember =

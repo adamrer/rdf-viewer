@@ -19,7 +19,7 @@ import {
   GraphNavigator,
   SubjectNavigator,
 } from "./plugin-api-interfaces";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 import { RdfViewerState } from "../core/rdf-viewer-state";
 import { createSpinner } from "../view/spinner";
 import { Quad_Object } from "n3";

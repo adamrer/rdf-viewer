@@ -1,6 +1,6 @@
 import { DataSourceType } from "../fetch/data-source";
 import { Language } from "../query/query";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 
 /**
  * The initial configuration of the RdfViewerState

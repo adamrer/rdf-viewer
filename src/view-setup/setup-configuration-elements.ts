@@ -1,6 +1,6 @@
 import Sortable from "sortablejs";
 import { DataSourceType } from "../fetch/data-source";
-import { IRI } from "../rdf-types";
+import { IRI } from "../core/rdf-types";
 import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { notifier } from "../view/notifier";
 import { withLoading } from "../view/spinner";
@@ -401,8 +401,7 @@ function createPluginEntry(plugin: LabeledPluginWithId): HTMLElement {
 
   if (app.getAppLanguage() in plugin.label)
     textEl.textContent = plugin.label[app.getAppLanguage()];
-  else textEl.textContent = Object.values(plugin.label)[0];
-
+  else textEl.textContent = Object.values(plugin.label)[0] as string;
   entryEl.appendChild(textEl);
 
   return entryEl;
