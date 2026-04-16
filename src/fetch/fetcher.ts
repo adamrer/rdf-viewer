@@ -17,7 +17,7 @@ interface Fetcher {
    *
    * @param query - Query which specifies the desired quads to fetch.
    */
-  fetchQuads(query: Query): Promise<Array<Sourced<Quad>>>;
+  fetchQuads(query: Query): Promise<FetchResult<Array<Sourced<Quad>>>>;
 
   /**
    * Fetches RDF quads from all of the specified data sources and returns them as StructuredQuads
@@ -25,7 +25,7 @@ interface Fetcher {
    * @param query - Query which specifies the desired quads to fetch.
    * @see StructuredQuads
    */
-  fetchStructuredQuads(query: Query): Promise<StructuredQuads>;
+  fetchStructuredQuads(query: Query): Promise<FetchResult<StructuredQuads>>;
 
   /**
    * @returns a query builder for creating the query
@@ -33,14 +33,17 @@ interface Fetcher {
   builder(): QueryBuilder;
 }
 
+/**
+ * Result of a fetching operation.
+ * Consists of the data and errors that occured while fetching.
+ */
+interface FetchResult<DataType> {
+  data: DataType 
+  errors: Error[]
+}
+
 const DEFAULT_GRAPH = "default";
 
-class DataSourcesError extends AggregateError {
-  constructor(errors: Error[]) {
-    super(errors, "One or more data sources failed to fetch quads");
-    this.name = "DataSourcesError";
-  }
-}
 
 /**
  * Class implementing the QuadsFetcher interface.
@@ -54,7 +57,7 @@ class FetcherImpl implements Fetcher {
     this.dataSources = dataSources;
   }
 
-  async fetchQuads(query: Query): Promise<Array<Sourced<Quad>>> {
+  async fetchQuads(query: Query): Promise<FetchResult<Array<Sourced<Quad>>>> {
     const results = await Promise.allSettled(
       this.dataSources.map((ds) => ds.fetchQuads(query)),
     );
@@ -72,16 +75,19 @@ class FetcherImpl implements Fetcher {
       }
     });
 
-    if (errors.length > 0) {
-      throw new DataSourcesError(errors);
-    }
 
-    return successfulResults;
+    return {
+      data: successfulResults,
+      errors: errors
+    };
   }
 
-  async fetchStructuredQuads(query: Query): Promise<StructuredQuads> {
+  async fetchStructuredQuads(query: Query): Promise<FetchResult<StructuredQuads>> {
     const fetchResult = await this.fetchQuads(query);
-    return this.structureQuads(fetchResult);
+    return {
+      data: this.structureQuads(fetchResult.data),
+      errors: fetchResult.errors
+    };
   }
 
   structureQuads(fetchResult: Array<Sourced<Quad>>): StructuredQuads {
@@ -200,4 +206,4 @@ function fetcher(dataSources: readonly DataSource[]): Fetcher {
 
 export type { Fetcher, StructuredQuads };
 
-export { fetcher, mergeStructuredQuads, DataSourcesError };
+export { fetcher, mergeStructuredQuads };

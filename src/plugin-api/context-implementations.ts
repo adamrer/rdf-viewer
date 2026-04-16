@@ -103,6 +103,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
 class PluginV1DataContextImpl implements PluginV1DataContext {
   private fetchedStructured: StructuredQuads = {};
   private fetcher: Fetcher;
+  private fetchErrors: Map<string, Error> = new Map();
 
   fetched = graphNavigator(this.fetchedStructured);
 
@@ -127,9 +128,10 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     this.vocabulary = vocabulary;
   }
   async execute(query: Query) {
-    const structuredQuads = await this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(structuredQuads);
-    const navigator = graphNavigator(structuredQuads);
+    const fetchResult = await this.fetcher.fetchStructuredQuads(query);
+    this.addFetched(fetchResult.data);
+    const navigator = graphNavigator(fetchResult.data);
+    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
     return navigator;
   }
 
@@ -142,9 +144,11 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
       .predicates([typePredicate])
       .objects()
       .build();
-    const typesQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await typesQuads);
-    const navigator = graphNavigator(await typesQuads);
+    const fetchResult = await this.fetcher.fetchStructuredQuads(query);
+    const typesQuads = fetchResult.data;
+    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
+
+    const navigator = graphNavigator(typesQuads);
     return navigator.subject(subject).predicate(typePredicate);
   }
   async quads(subjects: IRI[], predicates?: IRI[], languages?: Language[]) {
@@ -155,10 +159,16 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     if (languages) queryStep = queryStep.langs(languages);
     const query = queryStep.build();
 
-    const predsQuads = this.fetcher.fetchStructuredQuads(query);
-    this.addFetched(await predsQuads);
-    const navigator = graphNavigator(await predsQuads);
+    const fetchResult = await this.fetcher.fetchStructuredQuads(query);
+    const predsQuads = fetchResult.data
+    this.addFetched(predsQuads);
+    const navigator = graphNavigator(predsQuads);
+    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
     return navigator;
+  }
+
+  getFetchErrors(): Error[] {
+    return Array.from(this.fetchErrors.values())
   }
 
   addFetched(quads: StructuredQuads) {

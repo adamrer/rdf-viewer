@@ -54,10 +54,10 @@ async function renderEntityWithPlugin(
   await withLoading(contentElement, async () => {
     await pluginInstance.mount(contentElement);
   });
-
   return {
     pluginLabel: plugin.label,
     pluginPriority: plugin.v1.priority,
+    errors: instanceContext.data.getFetchErrors(),
     unmount: pluginInstance.unmount,
   };
 }

@@ -209,6 +209,12 @@ interface PluginV1DataContext {
     execute: (query: Query) => Promise<GraphNavigator>;
   };
 
+  /**
+   * 
+   * @returns an array of errors that occured while fetching data
+   */
+  getFetchErrors: () => Error[];
+
   vocabulary: PluginV1Vocabulary;
 }
 
@@ -233,6 +239,7 @@ enum PluginV1Match {
 interface PluginV1Handler {
   pluginLabel: LanguageString;
   pluginPriority: PluginV1Match;
+  errors: Error[]
   unmount: () => void;
 }
 

@@ -2,7 +2,6 @@ import { renderEntityWithPlugin } from "../core/render-entity-with-plugin";
 import { notifier } from "../view/notifier";
 import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { withLoading } from "../view/spinner";
-import { DataSourcesError } from "../fetch/fetcher";
 
 /**
  * Setups the HTML elements that are in the main settings of the UI
@@ -198,25 +197,27 @@ function setupDisplayButton(resultsEl: HTMLDivElement) {
     try {
       if (selectedPlugin) {
         if (!iriIsInvalid) {
-          await renderEntityWithPlugin(
+          const handler = await renderEntityWithPlugin(
             selectedPlugin,
             app.getEntityIri(),
             resultsEl,
           );
+          if (handler == null){
+            notifier.notify("No available plugin for this entity.", "error")
+            return
+          }
+          const errors = handler.errors
+          errors.forEach(err => {
+            notifier.notify(err.message, "error") 
+          })
         } else {
           notifier.notify("Please enter a valid IRI.", "error");
         }
       } else {
         notifier.notify("No plugin selected.", "error");
       }
-    } catch (error) {
-      if (error instanceof DataSourcesError) {
-        error.errors.forEach((err) => {
-          notifier.notify(err.message, "error");
-        });
-      } else {
-        notifier.notify("Couldn't display entity", "error");
-      }
+    } catch {
+      notifier.notify("Couldn't display entity", "error");
     } finally {
       displayBtn.disabled = false;
     }
