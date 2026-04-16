@@ -210,7 +210,7 @@ interface PluginV1DataContext {
   };
 
   /**
-   * 
+   *
    * @returns an array of errors that occured while fetching data
    */
   getFetchErrors: () => Error[];
@@ -239,7 +239,7 @@ enum PluginV1Match {
 interface PluginV1Handler {
   pluginLabel: LanguageString;
   pluginPriority: PluginV1Match;
-  errors: Error[]
+  errors: Error[];
   unmount: () => void;
 }
 

@@ -2,6 +2,8 @@ import { renderEntityWithPlugin } from "../core/render-entity-with-plugin";
 import { notifier } from "../view/notifier";
 import { LabeledPluginWithId, RdfViewerState } from "../core/rdf-viewer-state";
 import { withLoading } from "../view/spinner";
+import { SearchParams } from "./setup-window";
+import { Language } from "../query/query";
 
 /**
  * Setups the HTML elements that are in the main settings of the UI
@@ -190,38 +192,77 @@ function setupDisplayButton(resultsEl: HTMLDivElement) {
 
   // handle display button click
   displayBtn.addEventListener("click", async () => {
-    displayBtn.disabled = true;
-    const selectedPlugin = app.getSelectedPlugin();
-    const invalidIriElement = document.getElementById("invalid-iri-error");
-    const iriIsInvalid = !invalidIriElement?.classList.contains("u-hidden");
-    try {
-      if (selectedPlugin) {
-        if (!iriIsInvalid) {
-          const handler = await renderEntityWithPlugin(
-            selectedPlugin,
-            app.getEntityIri(),
-            resultsEl,
-          );
-          if (handler == null){
-            notifier.notify("No available plugin for this entity.", "error")
-            return
-          }
-          const errors = handler.errors
-          errors.forEach(err => {
-            notifier.notify(err.message, "error") 
-          })
-        } else {
-          notifier.notify("Please enter a valid IRI.", "error");
-        }
-      } else {
-        notifier.notify("No plugin selected.", "error");
-      }
-    } catch {
-      notifier.notify("Couldn't display entity", "error");
-    } finally {
-      displayBtn.disabled = false;
-    }
+    await handleEntityRender(displayBtn, resultsEl);
+    pushViewState(
+      app.getEntityIri(),
+      app.getSelectedPlugin().id,
+      app.getLanguages(),
+    );
   });
+}
+/**
+ * Handles errors and gives notifications to the user
+ * rendering an entity with a plugin from RdfViewerState.
+ *
+ * @param displayBtn - button that will start the render
+ * @param resultsEl - HTML element that will contain the results of the render
+ */
+async function handleEntityRender(
+  displayBtn: HTMLButtonElement,
+  resultsEl: HTMLElement,
+) {
+  const app = RdfViewerState.getInstance();
+
+  displayBtn.disabled = true;
+  const selectedPlugin = app.getSelectedPlugin();
+  const invalidIriElement = document.getElementById("invalid-iri-error");
+  const iriIsInvalid = !invalidIriElement?.classList.contains("u-hidden");
+  try {
+    if (selectedPlugin) {
+      if (!iriIsInvalid) {
+        const handler = await renderEntityWithPlugin(
+          selectedPlugin,
+          app.getEntityIri(),
+          resultsEl,
+        );
+        if (handler == null) {
+          notifier.notify("No available plugin for this entity.", "error");
+          return;
+        }
+        const errors = handler.errors;
+        errors.forEach((err) => {
+          notifier.notify(err.message, "error");
+        });
+      } else {
+        notifier.notify("Please enter a valid IRI.", "error");
+      }
+    } else {
+      notifier.notify("No plugin selected.", "error");
+    }
+  } catch {
+    notifier.notify("Couldn't display entity", "error");
+  } finally {
+    displayBtn.disabled = false;
+  }
+}
+function pushViewState(
+  iri: string,
+  pluginId: number,
+  languages: readonly Language[],
+) {
+  const url = new URL(window.location.href);
+  url.searchParams.set(SearchParams.iri.toString(), iri);
+  url.searchParams.set(SearchParams.plugin.toString(), pluginId.toString());
+  url.searchParams.set(SearchParams.languages.toString(), languages.toString());
+  history.pushState(
+    {
+      iri: iri,
+      plugin: pluginId,
+      languages: languages,
+    },
+    "",
+    url.toString(),
+  );
 }
 
 /**
@@ -276,4 +317,4 @@ function createPluginOption(plugin: LabeledPluginWithId): HTMLOptionElement {
   return option;
 }
 
-export { setupMainSettingsElements };
+export { setupMainSettingsElements, handleEntityRender };

@@ -38,12 +38,11 @@ interface Fetcher {
  * Consists of the data and errors that occured while fetching.
  */
 interface FetchResult<DataType> {
-  data: DataType 
-  errors: Error[]
+  data: DataType;
+  errors: Error[];
 }
 
 const DEFAULT_GRAPH = "default";
-
 
 /**
  * Class implementing the QuadsFetcher interface.
@@ -70,23 +69,26 @@ class FetcherImpl implements Fetcher {
         successfulResults.push(...result.value);
       } else {
         errors.push(
-          new Error(`DataSource ${this.dataSources[index].identifier} failed to fetch.`),
+          new Error(
+            `DataSource ${this.dataSources[index].identifier} failed to fetch.`,
+          ),
         );
       }
     });
 
-
     return {
       data: successfulResults,
-      errors: errors
+      errors: errors,
     };
   }
 
-  async fetchStructuredQuads(query: Query): Promise<FetchResult<StructuredQuads>> {
+  async fetchStructuredQuads(
+    query: Query,
+  ): Promise<FetchResult<StructuredQuads>> {
     const fetchResult = await this.fetchQuads(query);
     return {
       data: this.structureQuads(fetchResult.data),
-      errors: fetchResult.errors
+      errors: fetchResult.errors,
     };
   }
 

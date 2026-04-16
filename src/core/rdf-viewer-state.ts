@@ -215,9 +215,7 @@ class RdfViewerState {
    * @param iri - IRI of the entity to find compatible plugins for
    * @returns list of plugins with information about compatibility and sorted by their priority
    */
-  async getPluginsCompatibility(
-    iri: IRI,
-  ): Promise<{
+  async getPluginsCompatibility(iri: IRI): Promise<{
     compatibilities: CompatibleLabeledPluginWithId[];
     errors: Error[];
   }> {
@@ -242,7 +240,7 @@ class RdfViewerState {
       );
     return {
       compatibilities: compatiblePlugins,
-      errors: context.data.getFetchErrors()
+      errors: context.data.getFetchErrors(),
     };
   }
 

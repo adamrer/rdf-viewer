@@ -59,8 +59,8 @@ test("fetch label for dcterms:title", async () => {
     .langs(["en"])
     .build();
   const result = await fetcherInstance.fetchQuads(query);
-  const data = result.data
-  const errors = result.errors
+  const data = result.data;
+  const errors = result.errors;
   expect(data.length).toBeGreaterThan(0);
   expect(errors.length).toEqual(0);
   expect(data[0].value.object.value).toBe("Title");
@@ -80,9 +80,9 @@ test("fetch label for dcat:theme", async () => {
     .langs(["en"])
     .build();
   const result = await fetcherInstance.fetchQuads(query);
-  const data = result.data
-  const errors = result.errors
+  const data = result.data;
+  const errors = result.errors;
   expect(data.length).toBeGreaterThan(0);
-  expect(errors.length).toEqual(0)
+  expect(errors.length).toEqual(0);
   expect(data[0].value.object.value).toBe("theme");
 });

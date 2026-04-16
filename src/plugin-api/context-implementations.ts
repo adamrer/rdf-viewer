@@ -131,7 +131,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     const fetchResult = await this.fetcher.fetchStructuredQuads(query);
     this.addFetched(fetchResult.data);
     const navigator = graphNavigator(fetchResult.data);
-    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
+    fetchResult.errors.forEach((err) => this.fetchErrors.set(err.message, err));
     return navigator;
   }
 
@@ -146,7 +146,7 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
       .build();
     const fetchResult = await this.fetcher.fetchStructuredQuads(query);
     const typesQuads = fetchResult.data;
-    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
+    fetchResult.errors.forEach((err) => this.fetchErrors.set(err.message, err));
 
     const navigator = graphNavigator(typesQuads);
     return navigator.subject(subject).predicate(typePredicate);
@@ -160,15 +160,15 @@ class PluginV1DataContextImpl implements PluginV1DataContext {
     const query = queryStep.build();
 
     const fetchResult = await this.fetcher.fetchStructuredQuads(query);
-    const predsQuads = fetchResult.data
+    const predsQuads = fetchResult.data;
     this.addFetched(predsQuads);
     const navigator = graphNavigator(predsQuads);
-    fetchResult.errors.forEach(err => this.fetchErrors.set(err.message, err))
+    fetchResult.errors.forEach((err) => this.fetchErrors.set(err.message, err));
     return navigator;
   }
 
   getFetchErrors(): Error[] {
-    return Array.from(this.fetchErrors.values())
+    return Array.from(this.fetchErrors.values());
   }
 
   addFetched(quads: StructuredQuads) {

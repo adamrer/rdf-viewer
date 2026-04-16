@@ -1,11 +1,14 @@
-import binIcon from "../../assets/icons/bin-icon.svg"
-import infoIcon from "../../assets/icons/info-icon.svg"
-import settingsIcon from "../../assets/icons/settings-icon.svg"
-import successIcon from "../../assets/icons/success-icon.svg"
+import binIcon from "../../assets/icons/bin-icon.svg";
+import infoIcon from "../../assets/icons/info-icon.svg";
+import settingsIcon from "../../assets/icons/settings-icon.svg";
+import successIcon from "../../assets/icons/success-icon.svg";
 
-
-
-enum iconType { bin, info, settings, success }
+enum iconType {
+  bin,
+  info,
+  settings,
+  success,
+}
 
 /**
  * Creates an HTML image element for an SVG icon
@@ -13,19 +16,19 @@ enum iconType { bin, info, settings, success }
  * @returns an HTML image element of the svg
  */
 function getIcon(iconName: iconType): HTMLImageElement {
-  let iconSrc = ""
+  let iconSrc = "";
   switch (iconName) {
     case iconType.bin:
-      iconSrc = binIcon
+      iconSrc = binIcon;
       break;
     case iconType.info:
-      iconSrc = infoIcon
+      iconSrc = infoIcon;
       break;
     case iconType.settings:
-      iconSrc = settingsIcon
+      iconSrc = settingsIcon;
       break;
     case iconType.success:
-      iconSrc = successIcon
+      iconSrc = successIcon;
       break;
     default:
       break;
@@ -33,6 +36,6 @@ function getIcon(iconName: iconType): HTMLImageElement {
   const icon = document.createElement("img");
   icon.src = iconSrc;
   icon.className = "icon";
-  return icon;  
+  return icon;
 }
 export { getIcon, iconType };
