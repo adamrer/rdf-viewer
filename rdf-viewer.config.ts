@@ -24,16 +24,16 @@ const rdfViewerConfig: RdfViewerConfig = {
 
   pluginModules: [
     {
-      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/dcat-plugins-v1.js",
+      url: "https://adamrer.github.io/rdf-viewer-plugins/dcat-plugins-v1.js",
     },
     {
-      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/generic-plugin-v1-gemini.js",
+      url: "https://adamrer.github.io/rdf-viewer-plugins/generic-plugin-v1-gemini.js",
     },
     {
-      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/ldp-plugin-v1-gemini.js",
+      url: "https://adamrer.github.io/rdf-viewer-plugins/ldp-plugin-v1-gemini.js",
     },
     {
-      url: "https://rero.datapod.igrant.io/public/rdf-viewer/plugins/image-plugin-v1.js",
+      url: "https://adamrer.github.io/rdf-viewer-plugins/image-plugin-v1.js",
     },
   ],
 
