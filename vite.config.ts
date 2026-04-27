@@ -9,10 +9,9 @@ export default defineConfig({
       input: resolve(__dirname, "./index.html"),
     },
   },
-  // server: {
-  //   open: "./view/index.html",
-  //   watch: {
-  //     usePolling: true
-  //   }
-  // }
+  test: {
+    coverage: {
+      provider: 'v8',
+    },
+  },
 });
