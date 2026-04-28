@@ -1,6 +1,6 @@
 # RDF Viewer
 
-RDF visualisation tool running in browser, expandable with plugins
+RDF visualisation tool running in browser, expandable with plugins.
 You can try RDF Viewer [here](https://adamrer.github.io/rdf-viewer/).
 Our plugins are available [here](https://adamrer.github.io/rdf-viewer-plugins/).
 
