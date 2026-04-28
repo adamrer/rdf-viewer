@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RDF Viewer</title>
     <link rel="stylesheet" href="./src/view/styles.css" />
+    <link 
+      rel="icon" 
+      href="http://www.w3.org/RDF/icons/rdf_flyer" 
+      title="RDF Resource Description Framework" 
+      alt="RDF Resource Description Framework Flyer Icon"
+    />
   </head>
 
   <body>
@@ -12,7 +18,16 @@
 
     <!-- HEADER -->
     <header class="header">
+      <div class="flex-wrapper u-center">
+        <a href="http://www.w3.org/RDF/" 
+          title="RDF Resource Description Framework"> 
+          <img border="0" 
+            src="http://www.w3.org/RDF/icons/rdf_flyer.48" 
+            alt="RDF Resource Description Framework Flyer Icon"
+          />
+      </a>
       <h2>RDF Viewer</h2>
+    </div>
       <div class="form-group">
         <label for="app-language">Language</label>
         <select name="language-select" id="app-language">
@@ -220,6 +235,8 @@ that will register a plugin(s)"
     <!-- RESULTS -->
     <section id="results" class="layout-container"></section>
 
+    <footer class="footer">
+    </footer>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
