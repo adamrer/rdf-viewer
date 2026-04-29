@@ -12,8 +12,10 @@ import { setupWindow } from "./setup-window";
  * @see RdfViewerState
  */
 function setupElements() {
+  // Load RDFViewer State configuration
   loadStateConfiguration();
 
+  // Setup browser window to navigate between views
   setupWindow();
 
   // header
