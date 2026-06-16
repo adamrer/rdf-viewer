@@ -1,15 +1,14 @@
 import {
-  LabeledPlugin,
   PluginV1Handler,
 } from "../plugin-api/plugin-api-interfaces";
-import { RdfViewerState } from "./rdf-viewer-state";
+import { LabeledPluginWithId, RdfViewerState } from "./rdf-viewer-state";
 import { IRI } from "./rdf-types";
 import {
   createInstanceContext,
   createSetupContext,
 } from "../plugin-api/context-implementations";
 import { withLoading } from "../view/spinner";
-
+import { RenderState } from "../plugin-api/context-implementations";
 /**
  * Is responsible for displaying the entity with a plugin to the user.
  *
@@ -21,17 +20,25 @@ import { withLoading } from "../view/spinner";
  * @see PluginV1Handler
  */
 async function renderEntityWithPlugin(
-  plugin: LabeledPlugin,
+  plugin: LabeledPluginWithId,
   entityIri: IRI,
   element: HTMLElement,
+  renderState: RenderState = { path: [] }
 ): Promise<PluginV1Handler | null> {
+  
   const app = RdfViewerState.getInstance();
-
+  if (renderState.path.includes(plugin.id)) {
+    console.warn(`Plugin ${plugin.label[app.getAppLanguage()]} is already active, skipping to avoid infinite loop.`);
+    return null; // Avoid infinite loop if the plugin is already active
+  }
+  
+  renderState.path = [...renderState.path, plugin.id];
   const instanceContext = createInstanceContext(
     app,
     createSetupContext().vocabulary.getReadableVocabulary(),
+    renderState
   );
-
+  
   const usedPluginElement = document.createElement("span");
   const contentElement = document.createElement("div");
 
@@ -54,6 +61,8 @@ async function renderEntityWithPlugin(
   await withLoading(contentElement, async () => {
     await pluginInstance.mount(contentElement);
   });
+  renderState.path.pop();
+
   return {
     pluginLabel: plugin.label,
     pluginPriority: plugin.v1.priority,
@@ -61,5 +70,6 @@ async function renderEntityWithPlugin(
     unmount: pluginInstance.unmount,
   };
 }
+
 
 export { renderEntityWithPlugin };

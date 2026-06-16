@@ -27,12 +27,14 @@ import { Quad_Object } from "n3";
 function createInstanceContext(
   app: RdfViewerState,
   vocabulary: PluginV1Vocabulary,
+  renderState: RenderState = { path: [] }
 ): PluginV1InstanceContext {
   const data = createDataContext(app.getDataSources(), vocabulary);
   return new PluginV1InstanceContextImpl(
     data,
     [...app.getLanguages(), NO_LANG_SPECIFIED],
     notifier,
+    renderState
   );
 }
 
@@ -50,17 +52,31 @@ function createCompatibilityContext(
   return { data: createDataContext(dataSources, vocabulary) };
 }
 
+/**
+ * Tracks the plugins used for rendering the current subject to avoid 
+ * infinite loops when plugins use each other.
+ */
+interface RenderState {
+  /**
+   * Path of plugin ids used for rendering the current subject. 
+   * This is used to avoid infinite loops when plugins use each other.
+   */
+  path: number[];
+}
+
 class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
   data: PluginV1InstanceContext["data"];
   configuration: PluginV1InstanceContext["configuration"];
   notification: PluginV1InstanceContext["notification"];
   interoperability: PluginV1InstanceContext["interoperability"];
   html: PluginV1InstanceContext["html"];
+  private renderState: RenderState;
 
   constructor(
     dataContext: PluginV1DataContext,
     languages: readonly Language[],
     notification: NotifierService,
+    renderState: RenderState = { path: [] }
   ) {
     this.data = dataContext;
     this.notification = notification;
@@ -73,6 +89,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
     this.html = {
       renderLoading: this.renderLoading.bind(this),
     };
+    this.renderState = renderState
   }
   async renderSubject(
     subjectIri: IRI,
@@ -89,7 +106,7 @@ class PluginV1InstanceContextImpl implements PluginV1InstanceContext {
         compatibility.isCompatible &&
         compatibility.v1.priority >= minPriority
       ) {
-        return renderEntityWithPlugin(compatibility, subjectIri, element);
+        return renderEntityWithPlugin(compatibility, subjectIri, element,  {path: [...this.renderState.path]});
       }
     }
     return null;
@@ -282,3 +299,6 @@ export {
   createInstanceContext,
   graphNavigator,
 };
+export type {
+  RenderState
+}
